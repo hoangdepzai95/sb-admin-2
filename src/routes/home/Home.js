@@ -4,7 +4,8 @@ import React, { Component } from 'react';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import Button from 'react-bootstrap/lib/Button';
 import Panel from 'react-bootstrap/lib/Panel';
-import { connect } from 'react-redux'; 
+import { connect } from 'react-redux';
+
 import Pagination from 'react-bootstrap/lib/Pagination';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import s from './Home.css';
