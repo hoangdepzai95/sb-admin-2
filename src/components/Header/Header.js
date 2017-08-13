@@ -23,6 +23,10 @@ import Sidebar from '../Sidebar';
 
 const logo = require('./logo.png');
 
+function logOut() {
+  history.push('/login');
+  localStorage.removeItem('access_token');
+}
 function Header() {
   return (
     <div id="wrapper" className="content">
@@ -41,7 +45,7 @@ function Header() {
           <ul className="nav navbar-top-links navbar-right">
 
            <NavDropdown title={<i className="fa fa-user fa-fw"></i> } id = 'navDropdown4'>
-                  <MenuItem eventKey = "4" onClick = {(event) => { history.push('/login');}}>
+                  <MenuItem eventKey = "4" onClick = {logOut}>
                     <span> <i className = "fa fa-sign-out fa-fw" /> Đăng xuất </span>
                   </MenuItem>
             </NavDropdown>

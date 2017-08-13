@@ -14,6 +14,7 @@ import React from 'react';
 import UniversalRouter from 'universal-router';
 import { createStore, applyMiddleware, compose } from 'redux';
 import createSagaMiddleware from 'redux-saga';
+import axios from 'axios';
 import { Provider } from 'react-redux';
 import { readState, saveState } from 'history/lib/DOMStateStorage';
 import routes from './routes';
@@ -26,6 +27,8 @@ import {
 } from './core/DOMUtils';
 import reducers from './reducers';
 import rootSaga from './sagas';
+
+axios.defaults.baseURL = 'http://localhost:3001/api';
 
 const context = {
   insertCss: (...styles) => {
@@ -87,6 +90,9 @@ let renderComplete = (location, callback) => {
 
     callback(true);
   };
+  if (localStorage.getItem('access_token')) {
+    history.push('/');
+  }
 };
 const sagaMiddleware = createSagaMiddleware();
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
