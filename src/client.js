@@ -10,7 +10,11 @@
 import 'babel-polyfill';
 import ReactDOM from 'react-dom';
 import FastClick from 'fastclick';
+import React from 'react';
 import UniversalRouter from 'universal-router';
+import { createStore, applyMiddleware, compose } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { Provider } from 'react-redux';
 import { readState, saveState } from 'history/lib/DOMStateStorage';
 import routes from './routes';
 import history from './core/history';
@@ -20,6 +24,8 @@ import {
   windowScrollX,
   windowScrollY,
 } from './core/DOMUtils';
+import reducers from './reducers';
+import rootSaga from './sagas';
 
 const context = {
   insertCss: (...styles) => {
@@ -82,12 +88,26 @@ let renderComplete = (location, callback) => {
     callback(true);
   };
 };
-
+const sagaMiddleware = createSagaMiddleware();
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(reducers, composeEnhancers(
+                applyMiddleware(sagaMiddleware),
+              ));
+sagaMiddleware.run(rootSaga);
+function injectMiddleWare(component) {
+  return (
+    <Provider
+      store={store}
+    >
+      {component}
+    </Provider>
+  );
+}
 function render(container, location, component) {
   return new Promise((resolve, reject) => {
     try {
       ReactDOM.render(
-        component,
+        injectMiddleWare(component),
         container,
         renderComplete.bind(undefined, location, resolve)
       );
@@ -96,7 +116,6 @@ function render(container, location, component) {
     }
   });
 }
-
 function run() {
   const container = document.getElementById('app');
   let currentLocation = history.getCurrentLocation();
