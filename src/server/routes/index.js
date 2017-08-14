@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import xjwt from 'express-jwt';
 import pool from '../db';
 import user from './user';
+import product from './product';
 
 function genJti() {
   let jti = '';
@@ -18,7 +19,6 @@ function createAccessToken(username, role) {
     iss: 'hoang',
     aud: 'nguyen',
     exp: Math.floor(Date.now() / 1000) + (60 * 600000000),
-    scope: 'full_access',
     username,
     role,
     sub: "lalaland|gonto",
@@ -41,9 +41,9 @@ const jwtCheck = xjwt({
 });
 
 // Check for scope
-function requireScope(scope) {
+function requireScope(role) {
   return function (req, res, next) {
-    var has_scopes = req.user.scope === scope;
+    var has_scopes = req.user.role <= role;
     if (!has_scopes) {
         res.sendStatus(401);
         return;
@@ -83,7 +83,8 @@ router.post('/login', function(req, res) {
     });
   });
 });
-router.use('/auth', jwtCheck, requireScope('full_access'));
-router.use('/auth/user', user);
+router.use('/auth', jwtCheck);
+router.use('/auth/user', requireScope(1), user);
+router.use('/auth/product', requireScope(2), product);
 
 module.exports = router;

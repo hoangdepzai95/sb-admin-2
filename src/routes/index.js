@@ -13,18 +13,18 @@ import App from '../components/App';
 // Child routes
 import home from './home';
 import login from './login';
-import table from './dashboardPages/tables';
-import button from './dashboardPages/buttons';
-import flotcharts from './dashboardPages/flotCharts';
-import forms from './dashboardPages/forms';
-import grid from './dashboardPages/grid';
-import icons from './dashboardPages/icons';
-import morrisjscharts from './dashboardPages/morrisjsCharts';
-import notification from './dashboardPages/notification';
-import panelwells from './dashboardPages/panelWells';
+// import table from './dashboardPages/tables';
+// import button from './dashboardPages/buttons';
+// import flotcharts from './dashboardPages/flotCharts';
+// import forms from './dashboardPages/forms';
+// import grid from './dashboardPages/grid';
+// import icons from './dashboardPages/icons';
+// import morrisjscharts from './dashboardPages/morrisjsCharts';
+// import notification from './dashboardPages/notification';
+// import panelwells from './dashboardPages/panelWells';
 import users from './dashboardPages/users';
-import blank from './dashboardPages/blank';
-import error from './error';
+// import blank from './dashboardPages/blank';
+// import error from './error';
 
 import Header from '../components/Header';
 
@@ -52,22 +52,22 @@ export default [
     children: [
       home,
       // contact,
-      table,
-      button,
-      flotcharts,
-      forms,
-      grid,
-      icons,
-      morrisjscharts,
-      notification,
-      panelwells,
+      // table,
+      // button,
+      // flotcharts,
+      // forms,
+      // grid,
+      // icons,
+      // morrisjscharts,
+      // notification,
+      // panelwells,
       users,
       // register,
-      blank,
+      //blank,
 
       // place new routes before...
       // content,
-      error,
+      //error,
     ],
 
     async action({ next, render, context }) {
@@ -88,7 +88,7 @@ export default [
   {
     path: '/error',
     children: [
-      error,
+    //  error,
     ],
     async action({ next, render, context }) {
       // console.log('inside error');
