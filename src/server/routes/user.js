@@ -5,7 +5,7 @@ import pool from '../db';
 const router = express.Router();
 
 router.post('/create', function (req, res) {
-  if (req.body.name.length > 15 || req.body.password.length > 15) {
+  if (req.body.username.length > 15 || req.body.password.length > 15) {
     res.status(400).send('Không hợp lệ');
     return;
   }
@@ -17,7 +17,7 @@ router.post('/create', function (req, res) {
       role: req.body.role,
     };
     pool.getConnection(function(err, con) {
-      con.query(`SELECT * FROM user WHERE username='${req.body.username}'`, function (error, results, fields) {
+      con.query(`SELECT * FROM user WHERE username='${req.body.username}'`, function (error, results) {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -26,12 +26,18 @@ router.post('/create', function (req, res) {
           res.status(400).send('Tên tài khoản đã sử dụng');
           return;
         }
-        con.query('INSERT INTO user SET ?', user, function (error, results, fields) {
+        con.query('INSERT INTO user SET ?', user, function (error, results) {
         if (error) {
           console.log(error);
           res.status(400).send('Error');
         }else{
-          res.status(200).end('success');
+          con.query(`SELECT * FROM user WHERE username='${user.username}'`, function (error, results) {
+          if (error) {
+            res.status(400).send('Error');
+          }else{
+            res.status(200).json(results[0]);
+          }
+          });
         }
         });
       }
@@ -39,4 +45,27 @@ router.post('/create', function (req, res) {
     });
 });
 });
+router.get('/users', function(req, res) {
+  pool.getConnection(function(err, con) {
+    con.query(`SELECT * FROM user`, function (error, results) {
+    if (error) {
+      res.status(400).send('Error');
+    }else{
+      res.status(200).json(results);
+    }
+    });
+  });
+})
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+  pool.getConnection(function(err, con) {
+    con.query(`DELETE FROM user WHERE id='${id}'`, function (error, results) {
+    if (error) {
+      res.status(400).send('Error');
+    }else{
+      res.status(200).send('Ok');
+    }
+    });
+  });
+})
 module.exports = router

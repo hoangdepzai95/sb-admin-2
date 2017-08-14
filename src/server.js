@@ -76,28 +76,6 @@ app.get('*', async (req, res, next) => {
   }
 });
 
-//
-// Error handling
-// -----------------------------------------------------------------------------
-const pe = new PrettyError();
-pe.skipNodeFiles();
-pe.skipPackage('express');
-
-app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  console.log(pe.render(err)); // eslint-disable-line no-console
-  const statusCode = err.status || 500;
-  const html = ReactDOM.renderToStaticMarkup(
-    <Html
-      title="Internal Server Error"
-      description={err.message}
-      style={errorPageStyle._getCss()} // eslint-disable-line no-underscore-dangle
-    >
-      {ReactDOM.renderToString(<ErrorPageWithoutStyle error={err} />)}
-    </Html>
-  );
-  res.status(statusCode);
-  res.send(`<!doctype html>${html}`);
-});
 
 app.listen(port, () => {
   console.log(`The server is running at http://localhost:${port}/`);

@@ -13,12 +13,14 @@ function genJti() {
   return jti;
 }
 
-function createAccessToken() {
+function createAccessToken(username, role) {
   return jwt.sign({
     iss: 'hoang',
     aud: 'nguyen',
     exp: Math.floor(Date.now() / 1000) + (60 * 600000000),
     scope: 'full_access',
+    username,
+    role,
     sub: "lalaland|gonto",
     jti: genJti(), // unique identifier for the token
     alg: 'HS256'
@@ -69,7 +71,8 @@ router.post('/login', function(req, res) {
       bcrypt.compare(userScheme.password, results[0].password, function(err, _res) {
           if (_res === true) {
             res.status(201).send({
-              access_token: createAccessToken()
+              access_token: createAccessToken(results[0].username, results[0].role),
+              user: results[0],
             });
           } else {
             res.status(400).send('Sai thông tin');

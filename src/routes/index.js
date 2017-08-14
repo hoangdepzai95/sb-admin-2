@@ -22,7 +22,7 @@ import icons from './dashboardPages/icons';
 import morrisjscharts from './dashboardPages/morrisjsCharts';
 import notification from './dashboardPages/notification';
 import panelwells from './dashboardPages/panelWells';
-import typography from './dashboardPages/typography';
+import users from './dashboardPages/users';
 import blank from './dashboardPages/blank';
 import error from './error';
 
@@ -61,7 +61,7 @@ export default [
       morrisjscharts,
       notification,
       panelwells,
-      typography,
+      users,
       // register,
       blank,
 

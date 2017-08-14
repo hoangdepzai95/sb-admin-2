@@ -17,6 +17,7 @@ import NProgress from 'nprogress';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Login.css';
 import history from '../../core/history';
+import { getUser } from '../util';
 
 class Login extends Component {
   constructor(props) {
@@ -38,6 +39,7 @@ class Login extends Component {
       if (res.data.access_token) {
         localStorage.setItem('access_token', res.data.access_token);
         history.push('/');
+        getUser(this.props.dispatch);
       }
       NProgress.done();
     }, () => {

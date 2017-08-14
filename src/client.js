@@ -27,8 +27,9 @@ import {
 } from './core/DOMUtils';
 import reducers from './reducers';
 import rootSaga from './sagas';
+import { getUser } from './routes/util';
 
-axios.defaults.baseURL = 'http://localhost:3001/api';
+axios.defaults.baseURL = `${window.location.origin}/api`;
 
 const context = {
   insertCss: (...styles) => {
@@ -74,7 +75,12 @@ function restoreScrollPosition({ state, hash }) {
 
   window.scrollTo(0, 0);
 }
-
+const sagaMiddleware = createSagaMiddleware();
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(reducers, composeEnhancers(
+                applyMiddleware(sagaMiddleware),
+              ));
+sagaMiddleware.run(rootSaga);
 let renderComplete = (location, callback) => {
   const elem = document.getElementById('css');
   if (elem) elem.parentNode.removeChild(elem);
@@ -90,16 +96,22 @@ let renderComplete = (location, callback) => {
 
     callback(true);
   };
-  if (localStorage.getItem('access_token')) {
+  const tooken = localStorage.getItem('access_token');
+  if (tooken) {
     history.push('/');
+    getUser(store.dispatch);
+  } else {
+    history.push('/login');
   }
 };
-const sagaMiddleware = createSagaMiddleware();
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(reducers, composeEnhancers(
-                applyMiddleware(sagaMiddleware),
-              ));
-sagaMiddleware.run(rootSaga);
+function listenToAjax() {
+  const origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url) {
+      origOpen.apply(this, arguments);
+      this.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('access_token')}`);
+  };
+}
+listenToAjax();
 function injectMiddleWare(component) {
   return (
     <Provider

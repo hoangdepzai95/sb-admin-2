@@ -27,7 +27,6 @@ const login = (state = initialState, action) => {
       } else if (action.ggToken) {
         authType = 'google';
       }
-      console.log(action.location);
       return _.assign(
         {},
         state,
