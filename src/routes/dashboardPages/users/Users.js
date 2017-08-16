@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
-import { Button, Modal, FormControl } from 'react-bootstrap';
+import { Button, Modal, FormControl, DropdownButton, MenuItem } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import Select from 'react-select';
 
 import Pagination from 'react-bootstrap/lib/Pagination';
 import { receiveUsers } from '../../../actions/fetchData';
@@ -16,6 +17,7 @@ class Home extends Component {
       name: '',
       username: '',
       password: '',
+      role : 3,
     };
   }
   componentDidMount() {
@@ -47,7 +49,7 @@ class Home extends Component {
   }
   addUser(e) {
     e.preventDefault();
-    const { name, username, password } = this.state;
+    const { name, username, password, role } = this.state;
     if (
       name.length < 1 ||
       username.length < 1 ||
@@ -57,7 +59,7 @@ class Home extends Component {
       username,
       password,
       full_name: name,
-      role: 2,
+      role,
     })
       .then(
         (res) => {
@@ -82,9 +84,16 @@ class Home extends Component {
       )
     }
   }
+  logChange(v) {
+    this.setState({ role: v.value });
+  }
   render() {
     const { users, user } = this.props;
-    const { showForm, name, username, password } = this.state;
+    const { showForm, name, username, password, role } = this.state;
+    var options = [
+  { value: 2 , label: 'Quản lí' },
+  { value: 3, label: 'Nhân viên' }
+];
     if (user.role != 1) return null;
     return (
       <div className="row ng-scope">
@@ -97,6 +106,7 @@ class Home extends Component {
                     <th># </th>
                     <th>Họ tên </th>
                     <th>Tên đăng nhập</th>
+                    <td>Chức vụ</td>
                     <th>Thao tác </th>
                   </tr>
                 </thead>
@@ -108,6 +118,7 @@ class Home extends Component {
                           <td>{index} </td>
                           <td>{user.full_name} </td>
                           <td>{user.username} </td>
+                          <td>{user.role == 2 ? 'Quản lí' : user.role == 3 ? 'Nhân viên' : ''} </td>
                           <td>
                             <Button bsStyle="danger" bsSize="xs" active onClick={this.removeUser.bind(this, user.id)}>
                               Xóa
@@ -159,6 +170,16 @@ class Home extends Component {
                     value={password}
                     onChange={this.onChange.bind(this, 'password')}
                   />
+                </div>
+                <div className="form-group">
+                <Select
+                name="form-field-name"
+                value={role}
+                placeholder="Chức vụ"
+                options={options}
+                onChange={this.logChange.bind(this)}
+                clearable={false}
+                />
                 </div>
                 <Button type="submit" bsSize="large" bsStyle="success" block>Thêm mới</Button>
               </fieldset>

@@ -41,9 +41,10 @@ const jwtCheck = xjwt({
 });
 
 // Check for scope
-function requireScope(role) {
+function requireScope(role, ingore) {
   return function (req, res, next) {
     var has_scopes = req.user.role <= role;
+    if (req.method === ingore) has_scopes = true;
     if (!has_scopes) {
         res.sendStatus(401);
         return;
@@ -85,6 +86,6 @@ router.post('/login', function(req, res) {
 });
 router.use('/auth', jwtCheck);
 router.use('/auth/user', requireScope(1), user);
-router.use('/auth/product', requireScope(2), product);
+router.use('/auth/product', requireScope(2, 'GET'), product);
 
 module.exports = router;

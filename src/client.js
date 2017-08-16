@@ -27,7 +27,7 @@ import {
 } from './core/DOMUtils';
 import reducers from './reducers';
 import rootSaga from './sagas';
-import { getUser } from './routes/util';
+import { getUser, listenToAjax } from './routes/util';
 
 axios.defaults.baseURL = `${window.location.origin}/api`;
 
@@ -104,13 +104,6 @@ let renderComplete = (location, callback) => {
     history.push('/login');
   }
 };
-function listenToAjax() {
-  const origOpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function(method, url) {
-      origOpen.apply(this, arguments);
-      this.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('access_token')}`);
-  };
-}
 listenToAjax();
 function injectMiddleWare(component) {
   return (

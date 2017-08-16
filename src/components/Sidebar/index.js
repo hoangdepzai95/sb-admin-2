@@ -33,7 +33,7 @@ class Sidebar extends Component {
               null
             }
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/table'); }} >
+              <a href="" onClick={(e) => { e.preventDefault(); history.push('/product'); }} >
                 <i className="fa fa-table fa-fw" /> &nbsp;Kho hàng
               </a>
             </li>

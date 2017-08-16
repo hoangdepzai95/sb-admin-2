@@ -23,6 +23,7 @@ import login from './login';
 // import notification from './dashboardPages/notification';
 // import panelwells from './dashboardPages/panelWells';
 import users from './dashboardPages/users';
+import product from './dashboardPages/product';
 // import blank from './dashboardPages/blank';
 // import error from './error';
 
@@ -62,6 +63,7 @@ export default [
       // notification,
       // panelwells,
       users,
+      product,
       // register,
       //blank,
 

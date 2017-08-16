@@ -112,13 +112,13 @@ module.exports =
   
   var _routes2 = _interopRequireDefault(_routes);
   
-  var _assets = __webpack_require__(68);
+  var _assets = __webpack_require__(73);
   
   var _assets2 = _interopRequireDefault(_assets);
   
   var _config = __webpack_require__(15);
   
-  var _routes3 = __webpack_require__(69);
+  var _routes3 = __webpack_require__(74);
   
   var _routes4 = _interopRequireDefault(_routes3);
   
@@ -842,36 +842,19 @@ module.exports =
   
   var _login2 = _interopRequireDefault(_login);
   
-  var _users = __webpack_require__(66);
+  var _users = __webpack_require__(68);
   
   var _users2 = _interopRequireDefault(_users);
+  
+  var _product = __webpack_require__(71);
+  
+  var _product2 = _interopRequireDefault(_product);
   
   var _Header = __webpack_require__(36);
   
   var _Header2 = _interopRequireDefault(_Header);
   
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-  
-  // import table from './dashboardPages/tables';
-  // import button from './dashboardPages/buttons';
-  // import flotcharts from './dashboardPages/flotCharts';
-  // import forms from './dashboardPages/forms';
-  // import grid from './dashboardPages/grid';
-  // import icons from './dashboardPages/icons';
-  // import morrisjscharts from './dashboardPages/morrisjsCharts';
-  // import notification from './dashboardPages/notification';
-  // import panelwells from './dashboardPages/panelWells';
-  
-  
-  // Child routes
-  /**
-   * React Starter Kit (https://www.reactstarterkit.com/)
-   *
-   * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE.txt file in the root directory of this source tree.
-   */
   
   exports.default = [{
     path: '/login',
@@ -931,7 +914,7 @@ module.exports =
     // morrisjscharts,
     // notification,
     // panelwells,
-    _users2.default],
+    _users2.default, _product2.default],
   
     action: function action(_ref2) {
       var _this2 = this;
@@ -1030,6 +1013,27 @@ module.exports =
   }];
   // import blank from './dashboardPages/blank';
   // import error from './error';
+  
+  // import table from './dashboardPages/tables';
+  // import button from './dashboardPages/buttons';
+  // import flotcharts from './dashboardPages/flotCharts';
+  // import forms from './dashboardPages/forms';
+  // import grid from './dashboardPages/grid';
+  // import icons from './dashboardPages/icons';
+  // import morrisjscharts from './dashboardPages/morrisjsCharts';
+  // import notification from './dashboardPages/notification';
+  // import panelwells from './dashboardPages/panelWells';
+  
+  
+  // Child routes
+  /**
+   * React Starter Kit (https://www.reactstarterkit.com/)
+   *
+   * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.txt file in the root directory of this source tree.
+   */
 
 /***/ }),
 /* 27 */
@@ -1517,7 +1521,7 @@ module.exports =
                 _react2.default.createElement(
                   'a',
                   { href: '', onClick: function onClick(e) {
-                      e.preventDefault();_history2.default.push('/table');
+                      e.preventDefault();_history2.default.push('/product');
                     } },
                   _react2.default.createElement('i', { className: 'fa fa-table fa-fw' }),
                   ' \xA0Kho h\xE0ng'
@@ -1844,8 +1848,10 @@ module.exports =
   });
   exports.receiveUsers = receiveUsers;
   exports.receiveUser = receiveUser;
+  exports.receiveProduct = receiveProduct;
   var RECEIVE_USERS = exports.RECEIVE_USERS = 'RECEIVE_USERS';
   var RECEIVE_USER = exports.RECEIVE_USER = 'RECEIVE_USER';
+  var RECEIVE_PRODUCT = exports.RECEIVE_PRODUCT = 'RECEIVE_PRODUCT';
   
   function receiveUsers(users) {
     return {
@@ -1858,6 +1864,12 @@ module.exports =
     return {
       type: RECEIVE_USER,
       user: user
+    };
+  }
+  function receiveProduct(product) {
+    return {
+      type: RECEIVE_PRODUCT,
+      product: product
     };
   }
 
@@ -2187,12 +2199,25 @@ module.exports =
     value: true
   });
   exports.getUser = getUser;
+  exports.listenToAjax = listenToAjax;
+  
+  var _nprogress = __webpack_require__(61);
+  
+  var _nprogress2 = _interopRequireDefault(_nprogress);
+  
+  var _shortid = __webpack_require__(65);
+  
+  var _shortid2 = _interopRequireDefault(_shortid);
+  
+  var _lodash = __webpack_require__(66);
+  
+  var _lodash2 = _interopRequireDefault(_lodash);
   
   var _axios = __webpack_require__(51);
   
   var _axios2 = _interopRequireDefault(_axios);
   
-  var _base = __webpack_require__(65);
+  var _base = __webpack_require__(67);
   
   var _base2 = _interopRequireDefault(_base);
   
@@ -2200,20 +2225,80 @@ module.exports =
   
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
   
+  /*eslint-disable */
   function getUser(dispatch) {
     var tooken = localStorage.getItem('access_token');
     var info = JSON.parse(_base2.default.decode(tooken.split('.')[1]));
     dispatch((0, _fetchData.receiveUser)(info));
+  }
+  
+  var IGNORE_ENDPOINT = ['threads?view=count&in=', 'api/delta/'];
+  
+  function isIgnoreEndpoint(url) {
+    return IGNORE_ENDPOINT.find(function (o) {
+      return url.indexOf(o) !== -1;
+    });
+  }
+  var requests = [];
+  function onXhrEnd(request) {
+    requests = requests.filter(function (o) {
+      return o !== request;
+    });
+    if (!requests.length) {
+      _nprogress2.default.done();
+    }
+  }
+  function increaseProgress() {
+    if (requests.length) {
+      _nprogress2.default.inc(0.02);
+    }
+  }
+  increaseProgress = _lodash2.default.debounce(increaseProgress, 20);
+  function listenToAjax() {
+    var origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      if (!isIgnoreEndpoint(url)) {
+        if (!requests.length && document.getElementById('navbarInput-01')) {
+          _nprogress2.default.start();
+          _nprogress2.default.set(0.1);
+        }
+        var request = _shortid2.default.generate();
+        requests.push(request);
+        // make smooth
+        for (var i = 0; i < 15; i++) {
+          setTimeout(function () {
+            increaseProgress();
+          }, i * 60);
+        }
+        this.addEventListener('loadend', function () {
+          onXhrEnd(request);
+        });
+      }
+      origOpen.apply(this, arguments);
+      this.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('access_token'));
+    };
   }
 
 /***/ }),
 /* 65 */
 /***/ (function(module, exports) {
 
-  module.exports = require("base-64");
+  module.exports = require("shortid");
 
 /***/ }),
 /* 66 */
+/***/ (function(module, exports) {
+
+  module.exports = require("lodash");
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports) {
+
+  module.exports = require("base-64");
+
+/***/ }),
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
@@ -2226,7 +2311,7 @@ module.exports =
   
   var _react2 = _interopRequireDefault(_react);
   
-  var _Users = __webpack_require__(67);
+  var _Users = __webpack_require__(69);
   
   var _Users2 = _interopRequireDefault(_Users);
   
@@ -2242,7 +2327,7 @@ module.exports =
   };
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
@@ -2299,6 +2384,10 @@ module.exports =
   
   var _reactRedux = __webpack_require__(46);
   
+  var _reactSelect = __webpack_require__(70);
+  
+  var _reactSelect2 = _interopRequireDefault(_reactSelect);
+  
   var _Pagination = __webpack_require__(53);
   
   var _Pagination2 = _interopRequireDefault(_Pagination);
@@ -2319,7 +2408,8 @@ module.exports =
         showForm: false,
         name: '',
         username: '',
-        password: ''
+        password: '',
+        role: 3
       };
       return _this;
     }
@@ -2367,14 +2457,15 @@ module.exports =
         var _state = this.state,
             name = _state.name,
             username = _state.username,
-            password = _state.password;
+            password = _state.password,
+            role = _state.role;
   
         if (name.length < 1 || username.length < 1 || password.length < 1) return;
         _axios2.default.post('/auth/user/create', {
           username: username,
           password: password,
           full_name: name,
-          role: 2
+          role: role
         }).then(function (res) {
           _this3.close();
           _this3.props.dispatch((0, _fetchData.receiveUsers)([].concat((0, _toConsumableArray3.default)(_this3.props.users), [res.data])));
@@ -2398,6 +2489,11 @@ module.exports =
         }
       }
     }, {
+      key: 'logChange',
+      value: function logChange(v) {
+        this.setState({ role: v.value });
+      }
+    }, {
       key: 'render',
       value: function render() {
         var _this5 = this;
@@ -2409,8 +2505,10 @@ module.exports =
             showForm = _state2.showForm,
             name = _state2.name,
             username = _state2.username,
-            password = _state2.password;
+            password = _state2.password,
+            role = _state2.role;
   
+        var options = [{ value: 2, label: 'Quản lí' }, { value: 3, label: 'Nhân viên' }];
         if (user.role != 1) return null;
         return _react2.default.createElement(
           'div',
@@ -2453,6 +2551,11 @@ module.exports =
                         'T\xEAn \u0111\u0103ng nh\u1EADp'
                       ),
                       _react2.default.createElement(
+                        'td',
+                        null,
+                        'Ch\u1EE9c v\u1EE5'
+                      ),
+                      _react2.default.createElement(
                         'th',
                         null,
                         'Thao t\xE1c '
@@ -2482,6 +2585,12 @@ module.exports =
                           'td',
                           null,
                           user.username,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          user.role == 2 ? 'Quản lí' : user.role == 3 ? 'Nhân viên' : '',
                           ' '
                         ),
                         _react2.default.createElement(
@@ -2560,6 +2669,18 @@ module.exports =
                       })
                     ),
                     _react2.default.createElement(
+                      'div',
+                      { className: 'form-group' },
+                      _react2.default.createElement(_reactSelect2.default, {
+                        name: 'form-field-name',
+                        value: role,
+                        placeholder: 'Ch\u1EE9c v\u1EE5',
+                        options: options,
+                        onChange: this.logChange.bind(this),
+                        clearable: false
+                      })
+                    ),
+                    _react2.default.createElement(
                       _reactBootstrap.Button,
                       { type: 'submit', bsSize: 'large', bsStyle: 'success', block: true },
                       'Th\xEAm m\u1EDBi'
@@ -2586,38 +2707,602 @@ module.exports =
   })(Home);
 
 /***/ }),
-/* 68 */
+/* 70 */
+/***/ (function(module, exports) {
+
+  module.exports = require("react-select");
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  
+  var _react = __webpack_require__(10);
+  
+  var _react2 = _interopRequireDefault(_react);
+  
+  var _Product = __webpack_require__(72);
+  
+  var _Product2 = _interopRequireDefault(_Product);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  exports.default = {
+  
+    path: '/product',
+  
+    action: function action() {
+      return _react2.default.createElement(_Product2.default, null);
+    }
+  };
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  
+  var _toConsumableArray2 = __webpack_require__(2);
+  
+  var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+  
+  var _defineProperty2 = __webpack_require__(60);
+  
+  var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+  
+  var _getPrototypeOf = __webpack_require__(28);
+  
+  var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+  
+  var _classCallCheck2 = __webpack_require__(29);
+  
+  var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+  
+  var _createClass2 = __webpack_require__(30);
+  
+  var _createClass3 = _interopRequireDefault(_createClass2);
+  
+  var _possibleConstructorReturn2 = __webpack_require__(31);
+  
+  var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+  
+  var _inherits2 = __webpack_require__(32);
+  
+  var _inherits3 = _interopRequireDefault(_inherits2);
+  
+  var _react = __webpack_require__(10);
+  
+  var _react2 = _interopRequireDefault(_react);
+  
+  var _withStyles = __webpack_require__(17);
+  
+  var _withStyles2 = _interopRequireDefault(_withStyles);
+  
+  var _axios = __webpack_require__(51);
+  
+  var _axios2 = _interopRequireDefault(_axios);
+  
+  var _lodash = __webpack_require__(66);
+  
+  var _lodash2 = _interopRequireDefault(_lodash);
+  
+  var _Panel = __webpack_require__(52);
+  
+  var _Panel2 = _interopRequireDefault(_Panel);
+  
+  var _reactBootstrap = __webpack_require__(37);
+  
+  var _reactRedux = __webpack_require__(46);
+  
+  var _reactSelect = __webpack_require__(70);
+  
+  var _reactSelect2 = _interopRequireDefault(_reactSelect);
+  
+  var _Pagination = __webpack_require__(53);
+  
+  var _Pagination2 = _interopRequireDefault(_Pagination);
+  
+  var _fetchData = __webpack_require__(57);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  var Home = function (_Component) {
+    (0, _inherits3.default)(Home, _Component);
+  
+    function Home(props) {
+      (0, _classCallCheck3.default)(this, Home);
+  
+      var _this = (0, _possibleConstructorReturn3.default)(this, (Home.__proto__ || (0, _getPrototypeOf2.default)(Home)).call(this, props));
+  
+      _this.state = {
+        showForm: false,
+        name: '',
+        size: '',
+        code: '',
+        quantity: '',
+        type: '',
+        id: '',
+        instock: 1
+      };
+      return _this;
+    }
+  
+    (0, _createClass3.default)(Home, [{
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        var _this2 = this;
+  
+        var loaded = this.props.loaded;
+  
+        if (!loaded) {
+          _axios2.default.get('/auth/product').then(function (res) {
+            _this2.props.dispatch((0, _fetchData.receiveProduct)(res.data));
+          });
+        }
+      }
+    }, {
+      key: 'open',
+      value: function open(type, id) {
+        this.setState({
+          showForm: true,
+          type: type
+        });
+        if (type === 'edit') {
+          var product = this.props.products.find(function (product) {
+            return product.id === id;
+          });
+          this.setState({
+            name: product.name,
+            code: product.code,
+            quantity: product.quantity,
+            size: product.size,
+            id: product.id,
+            instock: product.instock
+          });
+        } else {
+          this.setState({
+            name: '',
+            code: '',
+            quantity: 0,
+            size: '',
+            id: '',
+            instock: 1
+          });
+        }
+      }
+    }, {
+      key: 'close',
+      value: function close() {
+        this.setState({
+          showForm: false
+        });
+      }
+    }, {
+      key: 'onChange',
+      value: function onChange(type, e) {
+        var value = e.target.value;
+        if (value.length > 180) return;
+        this.setState((0, _defineProperty3.default)({}, type, value));
+      }
+    }, {
+      key: 'replaceProduct',
+      value: function replaceProduct(products, target) {
+        var clone = [].concat((0, _toConsumableArray3.default)(products));
+        clone = clone.map(function (product) {
+          if (product.id === target.id) {
+            return target;
+          }
+          return product;
+        });
+        return clone;
+      }
+    }, {
+      key: 'addProduct',
+      value: function addProduct(e) {
+        var _this3 = this;
+  
+        e.preventDefault();
+        var _state = this.state,
+            name = _state.name,
+            size = _state.size,
+            code = _state.code,
+            quantity = _state.quantity,
+            type = _state.type,
+            id = _state.id,
+            instock = _state.instock;
+  
+        if (name.length < 1) return;
+        if (type === 'edit') {
+          _axios2.default.put('/auth/product', {
+            name: name,
+            size: size,
+            code: code,
+            quantity: quantity || 0,
+            id: id,
+            instock: instock
+          }).then(function (res) {
+            _this3.close();
+            _this3.props.dispatch((0, _fetchData.receiveProduct)(_this3.replaceProduct(_this3.props.products, res.data)));
+          }, function (err) {
+            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+          });
+        } else {
+          _axios2.default.post('/auth/product', {
+            name: name,
+            size: size,
+            code: code,
+            quantity: quantity || 0,
+            instock: instock
+          }).then(function (res) {
+            _this3.close();
+            _this3.props.dispatch((0, _fetchData.receiveProduct)([].concat((0, _toConsumableArray3.default)(_this3.props.products), [res.data])));
+          }, function (err) {
+            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+          });
+        }
+      }
+    }, {
+      key: 'removeProduct',
+      value: function removeProduct(id) {
+        var _this4 = this;
+  
+        if (confirm('Bạn có chắc chắn ?')) {
+          _axios2.default.delete('/auth/product/' + id).then(function (res) {
+            _this4.props.dispatch((0, _fetchData.receiveProduct)(_this4.props.products.filter(function (product) {
+              return product.id != id;
+            })));
+          }, function (err) {
+            alert('Co loi xay ra');
+          });
+        }
+      }
+    }, {
+      key: 'logChange',
+      value: function logChange(v) {
+        this.setState({ instock: v.value });
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var _this5 = this;
+  
+        var _props = this.props,
+            products = _props.products,
+            user = _props.user;
+        var _state2 = this.state,
+            showForm = _state2.showForm,
+            name = _state2.name,
+            username = _state2.username,
+            password = _state2.password,
+            role = _state2.role,
+            type = _state2.type,
+            size = _state2.size,
+            code = _state2.code,
+            quantity = _state2.quantity,
+            instock = _state2.instock;
+  
+        var options = [{ value: 1, label: 'Còn hàng' }, { value: 0, label: 'Hết hàng' }];
+        return _react2.default.createElement(
+          'div',
+          { className: 'row ng-scope' },
+          _react2.default.createElement(
+            'div',
+            { className: '' },
+            _react2.default.createElement(
+              _Panel2.default,
+              { header: _react2.default.createElement(
+                  'span',
+                  null,
+                  'Danh s\xE1ch s\u1EA3n ph\u1EA9m '
+                ) },
+              _react2.default.createElement(
+                'div',
+                { className: 'table-responsive' },
+                _react2.default.createElement(
+                  'table',
+                  { className: 'table table-striped table-bordered table-hover' },
+                  _react2.default.createElement(
+                    'thead',
+                    null,
+                    _react2.default.createElement(
+                      'tr',
+                      null,
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        '# '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'T\xEAn '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'M\xE3'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Size'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'S\u1ED1 l\u01B0\u1EE3ng '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Tr\u1EA1ng th\xE1i'
+                      ),
+                      user.role < 3 ? _react2.default.createElement(
+                        'th',
+                        null,
+                        'Thao t\xE1c'
+                      ) : null
+                    )
+                  ),
+                  _react2.default.createElement(
+                    'tbody',
+                    null,
+                    products.map(function (product, index) {
+                      return _react2.default.createElement(
+                        'tr',
+                        { key: product.id },
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          index,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.name,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.code,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.size,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.quantity,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.instock == 1 ? _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'success', bsSize: 'xs' },
+                            ' C\xF2n h\xE0ng'
+                          ) : _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'danger', bsSize: 'xs' },
+                            ' H\u1EBFt h\xE0ng'
+                          )
+                        ),
+                        user.role < 3 ? _react2.default.createElement(
+                          'td',
+                          null,
+                          _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'danger', bsSize: 'xs', active: true, onClick: _this5.removeProduct.bind(_this5, product.id) },
+                            'X\xF3a'
+                          ),
+                          _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'info', bsSize: 'xs', active: true, onClick: _this5.open.bind(_this5, 'edit', product.id) },
+                            'Ch\u1EC9nh s\u1EEDa'
+                          )
+                        ) : null
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+            user.role < 3 ? _react2.default.createElement(
+              _reactBootstrap.Button,
+              { bsStyle: 'success', bsSize: 'large', active: true, onClick: this.open.bind(this, 'add') },
+              'Th\xEAm s\u1EA3n ph\u1EA9m'
+            ) : null,
+            _react2.default.createElement(
+              _reactBootstrap.Modal,
+              { show: showForm, onHide: this.close.bind(this) },
+              _react2.default.createElement(
+                _reactBootstrap.Modal.Header,
+                { closeButton: true },
+                _react2.default.createElement(
+                  _reactBootstrap.Modal.Title,
+                  null,
+                  type === 'add' ? 'Thêm sản phẩm' : 'Chỉnh sửa'
+                )
+              ),
+              _react2.default.createElement(
+                _reactBootstrap.Modal.Body,
+                null,
+                _react2.default.createElement(
+                  _reactBootstrap.Form,
+                  { horizontal: true },
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'T\xEAn'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'text',
+                        onChange: this.onChange.bind(this, 'name'),
+                        value: name
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'M\xE3 s\u1EA3n ph\u1EA9m'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'text',
+                        onChange: this.onChange.bind(this, 'code'),
+                        value: code
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'Size'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'text',
+                        onChange: this.onChange.bind(this, 'size'),
+                        value: size
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'S\u1ED1 l\u01B0\u1EE3ng'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'number',
+                        onChange: this.onChange.bind(this, 'quantity'),
+                        value: quantity
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'Tr\u1EA1ng th\xE1i'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactSelect2.default, {
+                        name: 'form-field-name',
+                        value: instock,
+                        placeholder: 'Tr\u1EA1ng th\xE1i',
+                        options: options,
+                        onChange: this.logChange.bind(this),
+                        clearable: false
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { smOffset: 2, sm: 10 },
+                      _react2.default.createElement(
+                        _reactBootstrap.Button,
+                        { onClick: this.addProduct.bind(this), bsStyle: 'success', bsSize: 'large' },
+                        type === 'add' ? 'Thêm sản phẩm' : 'Chỉnh sửa'
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        );
+      }
+    }]);
+    return Home;
+  }(_react.Component);
+  
+  exports.default = (0, _reactRedux.connect)(function (state) {
+    return {
+      loaded: state.data.product.loaded,
+      products: state.data.product.data,
+      user: state.data.user
+    };
+  })(Home);
+
+/***/ }),
+/* 73 */
 /***/ (function(module, exports) {
 
   module.exports = require("./assets");
 
 /***/ }),
-/* 69 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _jsonwebtoken = __webpack_require__(70);
+  var _jsonwebtoken = __webpack_require__(75);
   
   var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
   
-  var _bcrypt = __webpack_require__(71);
+  var _bcrypt = __webpack_require__(76);
   
   var _bcrypt2 = _interopRequireDefault(_bcrypt);
   
-  var _expressJwt = __webpack_require__(72);
+  var _expressJwt = __webpack_require__(77);
   
   var _expressJwt2 = _interopRequireDefault(_expressJwt);
   
-  var _db = __webpack_require__(73);
+  var _db = __webpack_require__(78);
   
   var _db2 = _interopRequireDefault(_db);
   
-  var _user = __webpack_require__(75);
+  var _user = __webpack_require__(80);
   
   var _user2 = _interopRequireDefault(_user);
   
-  var _product = __webpack_require__(76);
+  var _product = __webpack_require__(81);
   
   var _product2 = _interopRequireDefault(_product);
   
@@ -2659,9 +3344,10 @@ module.exports =
   });
   
   // Check for scope
-  function requireScope(role) {
+  function requireScope(role, ingore) {
     return function (req, res, next) {
       var has_scopes = req.user.role <= role;
+      if (req.method === ingore) has_scopes = true;
       if (!has_scopes) {
         res.sendStatus(401);
         return;
@@ -2702,35 +3388,35 @@ module.exports =
   });
   router.use('/auth', jwtCheck);
   router.use('/auth/user', requireScope(1), _user2.default);
-  router.use('/auth/product', requireScope(2), _product2.default);
+  router.use('/auth/product', requireScope(2, 'GET'), _product2.default);
   
   module.exports = router;
 
 /***/ }),
-/* 70 */
+/* 75 */
 /***/ (function(module, exports) {
 
   module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 71 */
+/* 76 */
 /***/ (function(module, exports) {
 
   module.exports = require("bcrypt");
 
 /***/ }),
-/* 72 */
+/* 77 */
 /***/ (function(module, exports) {
 
   module.exports = require("express-jwt");
 
 /***/ }),
-/* 73 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _mysql = __webpack_require__(74);
+  var _mysql = __webpack_require__(79);
   
   var _mysql2 = _interopRequireDefault(_mysql);
   
@@ -2752,22 +3438,22 @@ module.exports =
   module.exports = pool;
 
 /***/ }),
-/* 74 */
+/* 79 */
 /***/ (function(module, exports) {
 
   module.exports = require("mysql");
 
 /***/ }),
-/* 75 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _bcrypt = __webpack_require__(71);
+  var _bcrypt = __webpack_require__(76);
   
   var _bcrypt2 = _interopRequireDefault(_bcrypt);
   
-  var _db = __webpack_require__(73);
+  var _db = __webpack_require__(78);
   
   var _db2 = _interopRequireDefault(_db);
   
@@ -2845,12 +3531,12 @@ module.exports =
   module.exports = router;
 
 /***/ }),
-/* 76 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _db = __webpack_require__(73);
+  var _db = __webpack_require__(78);
   
   var _db2 = _interopRequireDefault(_db);
   

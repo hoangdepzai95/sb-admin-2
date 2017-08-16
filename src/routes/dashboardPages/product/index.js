@@ -1,9 +1,9 @@
 import React from 'react';
-import Table from './Table';
+import Table from './Product';
 
 export default {
 
-  path: '/table',
+  path: '/product',
 
   action() {
     return <Table />;
