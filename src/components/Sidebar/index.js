@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import classNames from 'classnames';
 import { connect } from 'react-redux';
-import history from '../../core/history';
+import { Link } from 'react-router-dom';
 
 class Sidebar extends Component {
 
@@ -25,34 +24,34 @@ class Sidebar extends Component {
             {
               user.role == 1 ?
               <li>
-                <a href="" onClick={(e) => { e.preventDefault(); history.push('/users'); }} >
+                <Link to="/home/users">
                   <i className="fa fa-users" /> &nbsp;Quản lí nhân viên
-                </a>
+                </Link>
               </li>
               :
               null
             }
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/product'); }} >
+              <Link to="/home/product">
                 <i className="fa fa-table fa-fw" /> &nbsp;Kho hàng
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/bill'); }} >
+              <Link to="/home/bill">
                 <i className="fa fa-sticky-note-o" /> &nbsp;Đơn hàng
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/forms'); }} >
+              <Link to="/home/customer">
                 <i className="fa fa-address-book-o" /> &nbsp;Khách hàng
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/forms'); }} >
+              <Link to="/home/chart">
                 <i className="fa fa-bar-chart" /> &nbsp;Thống kê
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
