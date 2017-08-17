@@ -24,6 +24,7 @@ import login from './login';
 // import panelwells from './dashboardPages/panelWells';
 import users from './dashboardPages/users';
 import product from './dashboardPages/product';
+import bill from './dashboardPages/bill';
 // import blank from './dashboardPages/blank';
 // import error from './error';
 
@@ -64,6 +65,7 @@ export default [
       // panelwells,
       users,
       product,
+      bill,
       // register,
       //blank,
 

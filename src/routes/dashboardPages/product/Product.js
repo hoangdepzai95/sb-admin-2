@@ -149,6 +149,17 @@ class Home extends Component {
     return (
       <div className="row ng-scope">
         <div className="">
+        <p></p>
+        <div className="text-right">
+        {
+          user.role < 3 ?
+          <Button bsStyle="success" active onClick={this.open.bind(this, 'add')}>
+            Thêm sản phẩm
+          </Button>
+          : null
+        }
+        </div>
+        <p></p>
           <Panel header={<span>Danh sách sản phẩm </span>} >
             <div className="table-responsive">
               <table className="table table-striped table-bordered table-hover">
@@ -191,6 +202,7 @@ class Home extends Component {
                               <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id)}>
                                 Xóa
                               </Button>
+                              &nbsp;
                               <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', product.id)}>
                                 Chỉnh sửa
                               </Button>
@@ -205,13 +217,6 @@ class Home extends Component {
               </table>
             </div>
           </Panel>
-          {
-            user.role < 3 ?
-            <Button bsStyle="success" bsSize="large" active onClick={this.open.bind(this, 'add')}>
-              Thêm sản phẩm
-            </Button>
-            : null
-          }
           <Modal show={showForm} onHide={this.close.bind(this)}>
           <Modal.Header closeButton>
             <Modal.Title>{type === 'add' ? 'Thêm sản phẩm' : 'Chỉnh sửa'}</Modal.Title>

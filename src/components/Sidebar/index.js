@@ -26,7 +26,7 @@ class Sidebar extends Component {
               user.role == 1 ?
               <li>
                 <a href="" onClick={(e) => { e.preventDefault(); history.push('/users'); }} >
-                  <i className="fa fa-dashboard fa-fw" /> &nbsp;Quản lí nhân viên
+                  <i className="fa fa-users" /> &nbsp;Quản lí nhân viên
                 </a>
               </li>
               :
@@ -39,19 +39,19 @@ class Sidebar extends Component {
             </li>
 
             <li>
-              <a href="" onClick={(e) => { e.preventDefault(); history.push('/forms'); }} >
-                <i className="fa fa-table fa-fw" /> &nbsp;Đơn hàng
+              <a href="" onClick={(e) => { e.preventDefault(); history.push('/bill'); }} >
+                <i className="fa fa-sticky-note-o" /> &nbsp;Đơn hàng
               </a>
             </li>
 
             <li>
               <a href="" onClick={(e) => { e.preventDefault(); history.push('/forms'); }} >
-                <i className="fa fa-table fa-fw" /> &nbsp;Khách hàng
+                <i className="fa fa-address-book-o" /> &nbsp;Khách hàng
               </a>
             </li>
             <li>
               <a href="" onClick={(e) => { e.preventDefault(); history.push('/forms'); }} >
-                <i className="fa fa-table fa-fw" /> &nbsp;Thống kê
+                <i className="fa fa-bar-chart" /> &nbsp;Thống kê
               </a>
             </li>
           </ul>

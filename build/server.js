@@ -112,13 +112,13 @@ module.exports =
   
   var _routes2 = _interopRequireDefault(_routes);
   
-  var _assets = __webpack_require__(73);
+  var _assets = __webpack_require__(78);
   
   var _assets2 = _interopRequireDefault(_assets);
   
   var _config = __webpack_require__(15);
   
-  var _routes3 = __webpack_require__(74);
+  var _routes3 = __webpack_require__(79);
   
   var _routes4 = _interopRequireDefault(_routes3);
   
@@ -850,11 +850,36 @@ module.exports =
   
   var _product2 = _interopRequireDefault(_product);
   
+  var _bill = __webpack_require__(73);
+  
+  var _bill2 = _interopRequireDefault(_bill);
+  
   var _Header = __webpack_require__(36);
   
   var _Header2 = _interopRequireDefault(_Header);
   
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  // import table from './dashboardPages/tables';
+  // import button from './dashboardPages/buttons';
+  // import flotcharts from './dashboardPages/flotCharts';
+  // import forms from './dashboardPages/forms';
+  // import grid from './dashboardPages/grid';
+  // import icons from './dashboardPages/icons';
+  // import morrisjscharts from './dashboardPages/morrisjsCharts';
+  // import notification from './dashboardPages/notification';
+  // import panelwells from './dashboardPages/panelWells';
+  
+  
+  // Child routes
+  /**
+   * React Starter Kit (https://www.reactstarterkit.com/)
+   *
+   * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.txt file in the root directory of this source tree.
+   */
   
   exports.default = [{
     path: '/login',
@@ -914,7 +939,7 @@ module.exports =
     // morrisjscharts,
     // notification,
     // panelwells,
-    _users2.default, _product2.default],
+    _users2.default, _product2.default, _bill2.default],
   
     action: function action(_ref2) {
       var _this2 = this;
@@ -1013,27 +1038,6 @@ module.exports =
   }];
   // import blank from './dashboardPages/blank';
   // import error from './error';
-  
-  // import table from './dashboardPages/tables';
-  // import button from './dashboardPages/buttons';
-  // import flotcharts from './dashboardPages/flotCharts';
-  // import forms from './dashboardPages/forms';
-  // import grid from './dashboardPages/grid';
-  // import icons from './dashboardPages/icons';
-  // import morrisjscharts from './dashboardPages/morrisjsCharts';
-  // import notification from './dashboardPages/notification';
-  // import panelwells from './dashboardPages/panelWells';
-  
-  
-  // Child routes
-  /**
-   * React Starter Kit (https://www.reactstarterkit.com/)
-   *
-   * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE.txt file in the root directory of this source tree.
-   */
 
 /***/ }),
 /* 27 */
@@ -1511,7 +1515,7 @@ module.exports =
                   { href: '', onClick: function onClick(e) {
                       e.preventDefault();_history2.default.push('/users');
                     } },
-                  _react2.default.createElement('i', { className: 'fa fa-dashboard fa-fw' }),
+                  _react2.default.createElement('i', { className: 'fa fa-users' }),
                   ' \xA0Qu\u1EA3n l\xED nh\xE2n vi\xEAn'
                 )
               ) : null,
@@ -1533,9 +1537,9 @@ module.exports =
                 _react2.default.createElement(
                   'a',
                   { href: '', onClick: function onClick(e) {
-                      e.preventDefault();_history2.default.push('/forms');
+                      e.preventDefault();_history2.default.push('/bill');
                     } },
-                  _react2.default.createElement('i', { className: 'fa fa-table fa-fw' }),
+                  _react2.default.createElement('i', { className: 'fa fa-sticky-note-o' }),
                   ' \xA0\u0110\u01A1n h\xE0ng'
                 )
               ),
@@ -1547,7 +1551,7 @@ module.exports =
                   { href: '', onClick: function onClick(e) {
                       e.preventDefault();_history2.default.push('/forms');
                     } },
-                  _react2.default.createElement('i', { className: 'fa fa-table fa-fw' }),
+                  _react2.default.createElement('i', { className: 'fa fa-address-book-o' }),
                   ' \xA0Kh\xE1ch h\xE0ng'
                 )
               ),
@@ -1559,7 +1563,7 @@ module.exports =
                   { href: '', onClick: function onClick(e) {
                       e.preventDefault();_history2.default.push('/forms');
                     } },
-                  _react2.default.createElement('i', { className: 'fa fa-table fa-fw' }),
+                  _react2.default.createElement('i', { className: 'fa fa-bar-chart' }),
                   ' \xA0Th\u1ED1ng k\xEA'
                 )
               )
@@ -2516,6 +2520,17 @@ module.exports =
           _react2.default.createElement(
             'div',
             { className: '' },
+            _react2.default.createElement('p', null),
+            _react2.default.createElement(
+              'div',
+              { className: 'text-right' },
+              _react2.default.createElement(
+                _reactBootstrap.Button,
+                { bsStyle: 'success', active: true, onClick: this.open.bind(this) },
+                'Th\xEAm nh\xE2n vi\xEAn'
+              )
+            ),
+            _react2.default.createElement('p', null),
             _react2.default.createElement(
               _Panel2.default,
               { header: _react2.default.createElement(
@@ -2607,11 +2622,6 @@ module.exports =
                   )
                 )
               )
-            ),
-            _react2.default.createElement(
-              _reactBootstrap.Button,
-              { bsStyle: 'success', bsSize: 'large', active: true, onClick: this.open.bind(this) },
-              'Th\xEAm nh\xE2n vi\xEAn'
             ),
             _react2.default.createElement(
               _reactBootstrap.Modal,
@@ -2997,6 +3007,17 @@ module.exports =
           _react2.default.createElement(
             'div',
             { className: '' },
+            _react2.default.createElement('p', null),
+            _react2.default.createElement(
+              'div',
+              { className: 'text-right' },
+              user.role < 3 ? _react2.default.createElement(
+                _reactBootstrap.Button,
+                { bsStyle: 'success', active: true, onClick: this.open.bind(this, 'add') },
+                'Th\xEAm s\u1EA3n ph\u1EA9m'
+              ) : null
+            ),
+            _react2.default.createElement('p', null),
             _react2.default.createElement(
               _Panel2.default,
               { header: _react2.default.createElement(
@@ -3111,6 +3132,7 @@ module.exports =
                             { bsStyle: 'danger', bsSize: 'xs', active: true, onClick: _this5.removeProduct.bind(_this5, product.id) },
                             'X\xF3a'
                           ),
+                          '\xA0',
                           _react2.default.createElement(
                             _reactBootstrap.Button,
                             { bsStyle: 'info', bsSize: 'xs', active: true, onClick: _this5.open.bind(_this5, 'edit', product.id) },
@@ -3123,11 +3145,6 @@ module.exports =
                 )
               )
             ),
-            user.role < 3 ? _react2.default.createElement(
-              _reactBootstrap.Button,
-              { bsStyle: 'success', bsSize: 'large', active: true, onClick: this.open.bind(this, 'add') },
-              'Th\xEAm s\u1EA3n ph\u1EA9m'
-            ) : null,
             _react2.default.createElement(
               _reactBootstrap.Modal,
               { show: showForm, onHide: this.close.bind(this) },
@@ -3272,9 +3289,32 @@ module.exports =
 
 /***/ }),
 /* 73 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-  module.exports = require("./assets");
+  'use strict';
+  
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  
+  var _react = __webpack_require__(10);
+  
+  var _react2 = _interopRequireDefault(_react);
+  
+  var _Bill = __webpack_require__(74);
+  
+  var _Bill2 = _interopRequireDefault(_Bill);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  exports.default = {
+  
+    path: '/bill',
+  
+    action: function action() {
+      return _react2.default.createElement(_Bill2.default, null);
+    }
+  };
 
 /***/ }),
 /* 74 */
@@ -3282,29 +3322,647 @@ module.exports =
 
   'use strict';
   
-  var _jsonwebtoken = __webpack_require__(75);
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  
+  var _toConsumableArray2 = __webpack_require__(2);
+  
+  var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+  
+  var _defineProperty2 = __webpack_require__(60);
+  
+  var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+  
+  var _getPrototypeOf = __webpack_require__(28);
+  
+  var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+  
+  var _classCallCheck2 = __webpack_require__(29);
+  
+  var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+  
+  var _createClass2 = __webpack_require__(30);
+  
+  var _createClass3 = _interopRequireDefault(_createClass2);
+  
+  var _possibleConstructorReturn2 = __webpack_require__(31);
+  
+  var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+  
+  var _inherits2 = __webpack_require__(32);
+  
+  var _inherits3 = _interopRequireDefault(_inherits2);
+  
+  var _react = __webpack_require__(10);
+  
+  var _react2 = _interopRequireDefault(_react);
+  
+  var _axios = __webpack_require__(51);
+  
+  var _axios2 = _interopRequireDefault(_axios);
+  
+  var _lodash = __webpack_require__(66);
+  
+  var _lodash2 = _interopRequireDefault(_lodash);
+  
+  var _Panel = __webpack_require__(52);
+  
+  var _Panel2 = _interopRequireDefault(_Panel);
+  
+  var _reactBootstrap = __webpack_require__(37);
+  
+  var _reactRedux = __webpack_require__(46);
+  
+  var _reactSelect = __webpack_require__(70);
+  
+  var _reactSelect2 = _interopRequireDefault(_reactSelect);
+  
+  var _AddBill = __webpack_require__(75);
+  
+  var _AddBill2 = _interopRequireDefault(_AddBill);
+  
+  var _fetchData = __webpack_require__(57);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  var Home = function (_Component) {
+    (0, _inherits3.default)(Home, _Component);
+  
+    function Home(props) {
+      (0, _classCallCheck3.default)(this, Home);
+  
+      var _this = (0, _possibleConstructorReturn3.default)(this, (Home.__proto__ || (0, _getPrototypeOf2.default)(Home)).call(this, props));
+  
+      _this.state = {
+        showForm: false,
+        customerInfo: {},
+        billInfo: {},
+        products: [],
+        type: ''
+      };
+      return _this;
+    }
+  
+    (0, _createClass3.default)(Home, [{
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        var _this2 = this;
+  
+        var loaded = this.props.loaded;
+  
+        if (!loaded) {
+          _axios2.default.get('/auth/product').then(function (res) {
+            _this2.props.dispatch((0, _fetchData.receiveProduct)(res.data));
+          });
+        }
+      }
+    }, {
+      key: 'open',
+      value: function open(type, id) {
+        this.setState({
+          showForm: true,
+          type: type
+        });
+        if (type === 'edit') {
+          var product = this.props.products.find(function (product) {
+            return product.id === id;
+          });
+          this.setState({
+            name: product.name,
+            code: product.code,
+            quantity: product.quantity,
+            size: product.size,
+            id: product.id,
+            instock: product.instock
+          });
+        } else {
+          this.setState({
+            customerInfo: {},
+            billInfo: {},
+            products: []
+          });
+        }
+      }
+    }, {
+      key: 'close',
+      value: function close() {
+        this.setState({
+          showForm: false
+        });
+      }
+    }, {
+      key: 'onChange',
+      value: function onChange(type, e) {
+        var value = e.target.value;
+        if (value.length > 180) return;
+        this.setState((0, _defineProperty3.default)({}, type, value));
+      }
+    }, {
+      key: 'replaceProduct',
+      value: function replaceProduct(products, target) {
+        var clone = [].concat((0, _toConsumableArray3.default)(products));
+        clone = clone.map(function (product) {
+          if (product.id === target.id) {
+            return target;
+          }
+          return product;
+        });
+        return clone;
+      }
+    }, {
+      key: 'addProduct',
+      value: function addProduct(e) {
+        var _this3 = this;
+  
+        e.preventDefault();
+        var _state = this.state,
+            name = _state.name,
+            size = _state.size,
+            code = _state.code,
+            quantity = _state.quantity,
+            type = _state.type,
+            id = _state.id,
+            instock = _state.instock;
+  
+        if (name.length < 1) return;
+        if (type === 'edit') {
+          _axios2.default.put('/auth/product', {
+            name: name,
+            size: size,
+            code: code,
+            quantity: quantity || 0,
+            id: id,
+            instock: instock
+          }).then(function (res) {
+            _this3.close();
+            _this3.props.dispatch((0, _fetchData.receiveProduct)(_this3.replaceProduct(_this3.props.products, res.data)));
+          }, function (err) {
+            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+          });
+        } else {
+          _axios2.default.post('/auth/product', {
+            name: name,
+            size: size,
+            code: code,
+            quantity: quantity || 0,
+            instock: instock
+          }).then(function (res) {
+            _this3.close();
+            _this3.props.dispatch((0, _fetchData.receiveProduct)([].concat((0, _toConsumableArray3.default)(_this3.props.products), [res.data])));
+          }, function (err) {
+            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+          });
+        }
+      }
+    }, {
+      key: 'removeProduct',
+      value: function removeProduct(id) {
+        var _this4 = this;
+  
+        if (confirm('Bạn có chắc chắn ?')) {
+          _axios2.default.delete('/auth/product/' + id).then(function (res) {
+            _this4.props.dispatch((0, _fetchData.receiveProduct)(_this4.props.products.filter(function (product) {
+              return product.id != id;
+            })));
+          }, function (err) {
+            alert('Co loi xay ra');
+          });
+        }
+      }
+    }, {
+      key: 'logChange',
+      value: function logChange(v) {
+        this.setState({ instock: v.value });
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var _this5 = this;
+  
+        var _props = this.props,
+            products = _props.products,
+            user = _props.user;
+        var _state2 = this.state,
+            showForm = _state2.showForm,
+            name = _state2.name,
+            username = _state2.username,
+            password = _state2.password,
+            role = _state2.role,
+            type = _state2.type,
+            size = _state2.size,
+            code = _state2.code,
+            quantity = _state2.quantity,
+            instock = _state2.instock;
+  
+        var options = [{ value: 1, label: 'Còn hàng' }, { value: 0, label: 'Hết hàng' }];
+        return _react2.default.createElement(
+          'div',
+          { className: 'row ng-scope' },
+          _react2.default.createElement(
+            'div',
+            { className: '' },
+            _react2.default.createElement('p', null),
+            _react2.default.createElement(
+              'div',
+              { className: 'text-right' },
+              _react2.default.createElement(
+                _reactBootstrap.Button,
+                { onClick: this.open.bind(this, 'add'), bsStyle: 'success' },
+                'T\u1EA1o \u0111\u01A1n h\xE0ng'
+              ),
+              _react2.default.createElement(_AddBill2.default, { showForm: showForm, close: this.close.bind(this), type: type })
+            ),
+            _react2.default.createElement('p', null),
+            _react2.default.createElement(
+              _Panel2.default,
+              { header: _react2.default.createElement(
+                  'span',
+                  null,
+                  'Danh s\xE1ch \u0111\u01A1n h\xE0ng '
+                ) },
+              _react2.default.createElement(
+                'div',
+                { className: 'table-responsive' },
+                _react2.default.createElement(
+                  'table',
+                  { className: 'table table-striped table-bordered table-hover' },
+                  _react2.default.createElement(
+                    'thead',
+                    null,
+                    _react2.default.createElement(
+                      'tr',
+                      null,
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        '# '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'T\xEAn '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'M\xE3'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Size'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'S\u1ED1 l\u01B0\u1EE3ng '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Tr\u1EA1ng th\xE1i'
+                      ),
+                      user.role < 3 ? _react2.default.createElement(
+                        'th',
+                        null,
+                        'Thao t\xE1c'
+                      ) : null
+                    )
+                  ),
+                  _react2.default.createElement(
+                    'tbody',
+                    null,
+                    products.map(function (product, index) {
+                      return _react2.default.createElement(
+                        'tr',
+                        { key: product.id },
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          index,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.name,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.code,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.size,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.quantity,
+                          ' '
+                        ),
+                        _react2.default.createElement(
+                          'td',
+                          null,
+                          product.instock == 1 ? _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'success', bsSize: 'xs' },
+                            ' C\xF2n h\xE0ng'
+                          ) : _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'danger', bsSize: 'xs' },
+                            ' H\u1EBFt h\xE0ng'
+                          )
+                        ),
+                        user.role < 3 ? _react2.default.createElement(
+                          'td',
+                          null,
+                          _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'danger', bsSize: 'xs', active: true, onClick: _this5.removeProduct.bind(_this5, product.id) },
+                            'X\xF3a'
+                          ),
+                          '\xA0',
+                          _react2.default.createElement(
+                            _reactBootstrap.Button,
+                            { bsStyle: 'info', bsSize: 'xs', active: true, onClick: _this5.open.bind(_this5, 'edit', product.id) },
+                            'Ch\u1EC9nh s\u1EEDa'
+                          )
+                        ) : null
+                      );
+                    })
+                  )
+                )
+              )
+            )
+          )
+        );
+      }
+    }]);
+    return Home;
+  }(_react.Component);
+  
+  exports.default = (0, _reactRedux.connect)(function (state) {
+    return {
+      loaded: state.data.product.loaded,
+      products: state.data.product.data,
+      user: state.data.user
+    };
+  })(Home);
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  
+  var _defineProperty2 = __webpack_require__(60);
+  
+  var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+  
+  var _getPrototypeOf = __webpack_require__(28);
+  
+  var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+  
+  var _classCallCheck2 = __webpack_require__(29);
+  
+  var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+  
+  var _createClass2 = __webpack_require__(30);
+  
+  var _createClass3 = _interopRequireDefault(_createClass2);
+  
+  var _possibleConstructorReturn2 = __webpack_require__(31);
+  
+  var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+  
+  var _inherits2 = __webpack_require__(32);
+  
+  var _inherits3 = _interopRequireDefault(_inherits2);
+  
+  var _react = __webpack_require__(10);
+  
+  var _react2 = _interopRequireDefault(_react);
+  
+  var _reactBootstrap = __webpack_require__(37);
+  
+  var _reactRedux = __webpack_require__(46);
+  
+  var _lodash = __webpack_require__(66);
+  
+  var _lodash2 = _interopRequireDefault(_lodash);
+  
+  var _Panel = __webpack_require__(52);
+  
+  var _Panel2 = _interopRequireDefault(_Panel);
+  
+  var _withStyles = __webpack_require__(17);
+  
+  var _withStyles2 = _interopRequireDefault(_withStyles);
+  
+  var _AddBill = __webpack_require__(76);
+  
+  var _AddBill2 = _interopRequireDefault(_AddBill);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  var AddBill = function (_Component) {
+    (0, _inherits3.default)(AddBill, _Component);
+  
+    function AddBill(props) {
+      (0, _classCallCheck3.default)(this, AddBill);
+  
+      var _this = (0, _possibleConstructorReturn3.default)(this, (AddBill.__proto__ || (0, _getPrototypeOf2.default)(AddBill)).call(this, props));
+  
+      _this.state = {
+        customer: {
+          phone: ''
+        }
+      };
+      return _this;
+    }
+  
+    (0, _createClass3.default)(AddBill, [{
+      key: 'onChange',
+      value: function onChange(type, field, e) {
+        var value = e.target.value;
+        if (type === 'customer' && field === 'phone' && value.length > 44) return;
+        var target = _lodash2.default.cloneDeep(this.state[type]);
+        target[field] = value;
+        this.setState((0, _defineProperty3.default)({}, type, target));
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var customer = this.state.customer;
+        var _props = this.props,
+            showForm = _props.showForm,
+            close = _props.close,
+            type = _props.type;
+  
+        return _react2.default.createElement(
+          _reactBootstrap.Modal,
+          { show: showForm, onHide: close, dialogClassName: 'custom-modal' },
+          _react2.default.createElement(
+            _reactBootstrap.Modal.Header,
+            { closeButton: true },
+            _react2.default.createElement(
+              _reactBootstrap.Modal.Title,
+              null,
+              type === 'add' ? 'Tạo đơn hàng' : 'Sửa đơn hàng'
+            )
+          ),
+          _react2.default.createElement(
+            _reactBootstrap.Modal.Body,
+            null,
+            _react2.default.createElement(
+              _Panel2.default,
+              { header: _react2.default.createElement(
+                  'span',
+                  null,
+                  'Kh\xE1ch h\xE0ng '
+                ) },
+              _react2.default.createElement(
+                _reactBootstrap.FormGroup,
+                null,
+                _react2.default.createElement(
+                  _reactBootstrap.Col,
+                  { componentClass: _reactBootstrap.ControlLabel, sm: 4 },
+                  'Nh\u1EADp s\u1ED1 \u0111i\u1EC7n tho\u1EA1i'
+                ),
+                _react2.default.createElement(
+                  _reactBootstrap.Col,
+                  { sm: 4 },
+                  _react2.default.createElement(_reactBootstrap.FormControl, {
+                    type: 'text',
+                    value: customer.phone,
+                    onChange: this.onChange.bind(this, 'customer', 'phone')
+                  }),
+                  _react2.default.createElement('p', null)
+                ),
+                _react2.default.createElement(
+                  _reactBootstrap.Col,
+                  { sm: 4 },
+                  _react2.default.createElement(
+                    _reactBootstrap.Button,
+                    { bsStyle: 'success' },
+                    'Th\xEAm'
+                  )
+                )
+              )
+            )
+          )
+        );
+      }
+    }]);
+    return AddBill;
+  }(_react.Component);
+  
+  exports.default = (0, _withStyles2.default)(_AddBill2.default)((0, _reactRedux.connect)()(AddBill));
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  
+      var content = __webpack_require__(77);
+      var insertCss = __webpack_require__(21);
+  
+      if (typeof content === 'string') {
+        content = [[module.id, content, '']];
+      }
+  
+      module.exports = content.locals || {};
+      module.exports._getCss = function() { return content.toString(); };
+      module.exports._insertCss = function(options) { return insertCss(content, options) };
+    
+      // Hot Module Replacement
+      // https://webpack.github.io/docs/hot-module-replacement
+      // Only activated in browser context
+      if (false) {
+        var removeCss = function() {};
+        module.hot.accept("!!../../../../node_modules/css-loader/index.js?{\"sourceMap\":true,\"modules\":true,\"localIdentName\":\"[name]_[local]_[hash:base64:3]\",\"minimize\":false}!../../../../node_modules/postcss-loader/index.js?pack=default!./AddBill.css", function() {
+          content = require("!!../../../../node_modules/css-loader/index.js?{\"sourceMap\":true,\"modules\":true,\"localIdentName\":\"[name]_[local]_[hash:base64:3]\",\"minimize\":false}!../../../../node_modules/postcss-loader/index.js?pack=default!./AddBill.css");
+  
+          if (typeof content === 'string') {
+            content = [[module.id, content, '']];
+          }
+  
+          removeCss = insertCss(content, { replace: true });
+        });
+        module.hot.dispose(function() { removeCss(); });
+      }
+    
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  exports = module.exports = __webpack_require__(20)();
+  // imports
+  
+  
+  // module
+  exports.push([module.id, ".AddBill_custom-modal_2_G {\n  width: 90%;\n}\n", "", {"version":3,"sources":["/./routes/dashboardPages/bill/AddBill.css"],"names":[],"mappings":"AAAA;EACE,WAAW;CACZ","file":"AddBill.css","sourcesContent":[".custom-modal {\n  width: 90%;\n}\n"],"sourceRoot":"webpack://"}]);
+  
+  // exports
+  exports.locals = {
+  	"custom-modal": "AddBill_custom-modal_2_G"
+  };
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports) {
+
+  module.exports = require("./assets");
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  var _jsonwebtoken = __webpack_require__(80);
   
   var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
   
-  var _bcrypt = __webpack_require__(76);
+  var _bcrypt = __webpack_require__(81);
   
   var _bcrypt2 = _interopRequireDefault(_bcrypt);
   
-  var _expressJwt = __webpack_require__(77);
+  var _expressJwt = __webpack_require__(82);
   
   var _expressJwt2 = _interopRequireDefault(_expressJwt);
   
-  var _db = __webpack_require__(78);
+  var _db = __webpack_require__(83);
   
   var _db2 = _interopRequireDefault(_db);
   
-  var _user = __webpack_require__(80);
+  var _user = __webpack_require__(85);
   
   var _user2 = _interopRequireDefault(_user);
   
-  var _product = __webpack_require__(81);
+  var _product = __webpack_require__(86);
   
   var _product2 = _interopRequireDefault(_product);
+  
+  var _bill = __webpack_require__(87);
+  
+  var _bill2 = _interopRequireDefault(_bill);
+  
+  var _customer = __webpack_require__(88);
+  
+  var _customer2 = _interopRequireDefault(_customer);
   
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
   
@@ -3389,34 +4047,36 @@ module.exports =
   router.use('/auth', jwtCheck);
   router.use('/auth/user', requireScope(1), _user2.default);
   router.use('/auth/product', requireScope(2, 'GET'), _product2.default);
+  router.use('/auth/bill', requireScope(3), _bill2.default);
+  router.use('/auth/customer', requireScope(3), _customer2.default);
   
   module.exports = router;
 
 /***/ }),
-/* 75 */
+/* 80 */
 /***/ (function(module, exports) {
 
   module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 76 */
+/* 81 */
 /***/ (function(module, exports) {
 
   module.exports = require("bcrypt");
 
 /***/ }),
-/* 77 */
+/* 82 */
 /***/ (function(module, exports) {
 
   module.exports = require("express-jwt");
 
 /***/ }),
-/* 78 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _mysql = __webpack_require__(79);
+  var _mysql = __webpack_require__(84);
   
   var _mysql2 = _interopRequireDefault(_mysql);
   
@@ -3438,22 +4098,22 @@ module.exports =
   module.exports = pool;
 
 /***/ }),
-/* 79 */
+/* 84 */
 /***/ (function(module, exports) {
 
   module.exports = require("mysql");
 
 /***/ }),
-/* 80 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _bcrypt = __webpack_require__(76);
+  var _bcrypt = __webpack_require__(81);
   
   var _bcrypt2 = _interopRequireDefault(_bcrypt);
   
-  var _db = __webpack_require__(78);
+  var _db = __webpack_require__(83);
   
   var _db2 = _interopRequireDefault(_db);
   
@@ -3531,12 +4191,12 @@ module.exports =
   module.exports = router;
 
 /***/ }),
-/* 81 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
   'use strict';
   
-  var _db = __webpack_require__(78);
+  var _db = __webpack_require__(83);
   
   var _db2 = _interopRequireDefault(_db);
   
@@ -3608,6 +4268,139 @@ module.exports =
       });
     });
   });
+  
+  module.exports = router;
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  var _regenerator = __webpack_require__(1);
+  
+  var _regenerator2 = _interopRequireDefault(_regenerator);
+  
+  var _asyncToGenerator2 = __webpack_require__(4);
+  
+  var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+  
+  var _db = __webpack_require__(83);
+  
+  var _db2 = _interopRequireDefault(_db);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  var express = __webpack_require__(7);
+  
+  var router = express.Router();
+  
+  router.post('/', function () {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(req, res) {
+      var bill, bill_detail, con, insertBill;
+      return _regenerator2.default.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              bill = {
+                user_id: req.body.user_id,
+                customer_id: req.body.customer_id,
+                shipping: req.body.shipping,
+                note: req.body.note,
+                status_id: req.body.status_id,
+                pay: req.body.pay,
+                create_at: new Date().valueOf()
+              };
+              bill_detail = req.body.bill_detail;
+              _context.next = 4;
+              return _db2.default.getConnection;
+  
+            case 4:
+              con = _context.sent;
+              _context.next = 7;
+              return con.query('INSERT INTO bill (product_id) ?', bill);
+  
+            case 7:
+              insertBill = _context.sent;
+  
+              console.log(insertBill);
+              // const insertBillDetail = con.query('INSERT INTO bill_detail SET ?', bill);
+  
+            case 9:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, _callee, undefined);
+    }));
+  
+    return function (_x, _x2) {
+      return _ref.apply(this, arguments);
+    };
+  }());
+  
+  module.exports = router;
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+  'use strict';
+  
+  var _regenerator = __webpack_require__(1);
+  
+  var _regenerator2 = _interopRequireDefault(_regenerator);
+  
+  var _asyncToGenerator2 = __webpack_require__(4);
+  
+  var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+  
+  var _db = __webpack_require__(83);
+  
+  var _db2 = _interopRequireDefault(_db);
+  
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+  
+  var express = __webpack_require__(7);
+  
+  var router = express.Router();
+  
+  router.post('/', function () {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(req, res) {
+      var customer;
+      return _regenerator2.default.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              customer = {
+                phone: req.body.phone,
+                name: req.body.name,
+                facebook: req.body.facebook,
+                address: req.body.address
+              };
+  
+              _db2.default.getConnection(function (err, con) {
+                con.query('INSERT INTO customer SET ?', customer, function (error, result) {
+                  if (error) {
+                    res.status(400).send('Error');
+                  } else {
+                    res.status(200).send('Ok');
+                  }
+                });
+              });
+  
+            case 2:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, _callee, undefined);
+    }));
+  
+    return function (_x, _x2) {
+      return _ref.apply(this, arguments);
+    };
+  }());
   
   module.exports = router;
 

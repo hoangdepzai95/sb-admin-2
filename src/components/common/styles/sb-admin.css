@@ -11,6 +11,10 @@
   * https://twitter.com/jedwatson https://twitter.com/jossmackison https://twitter.com/keystonejs
   * MIT License: https://github.com/JedWatson/react-select
  */
+ .custom-modal {
+   width: 90%;
+ }
+
  .Select {
    position: relative;
  }

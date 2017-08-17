@@ -98,6 +98,13 @@ class Home extends Component {
     return (
       <div className="row ng-scope">
         <div className="">
+        <p></p>
+        <div className="text-right">
+        <Button bsStyle="success" active onClick={this.open.bind(this)}>
+          Thêm nhân viên
+        </Button>
+        </div>
+        <p></p>
           <Panel header={<span>Danh sách nhân viên </span>} >
             <div className="table-responsive">
               <table className="table table-striped table-bordered table-hover">
@@ -132,9 +139,6 @@ class Home extends Component {
               </table>
             </div>
           </Panel>
-          <Button bsStyle="success" bsSize="large" active onClick={this.open.bind(this)}>
-            Thêm nhân viên
-          </Button>
           <Modal show={showForm} onHide={this.close.bind(this)}>
           <Modal.Header closeButton>
             <Modal.Title>Thêm nhân viên</Modal.Title>

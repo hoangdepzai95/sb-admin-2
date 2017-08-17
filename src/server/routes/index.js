@@ -4,6 +4,8 @@ import xjwt from 'express-jwt';
 import pool from '../db';
 import user from './user';
 import product from './product';
+import bill from './bill';
+import customer from './customer';
 
 function genJti() {
   let jti = '';
@@ -87,5 +89,7 @@ router.post('/login', function(req, res) {
 router.use('/auth', jwtCheck);
 router.use('/auth/user', requireScope(1), user);
 router.use('/auth/product', requireScope(2, 'GET'), product);
+router.use('/auth/bill', requireScope(3), bill);
+router.use('/auth/customer', requireScope(3), customer);
 
 module.exports = router;

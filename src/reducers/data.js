@@ -12,6 +12,11 @@ const initialState = {
     loaded: false,
     data: [],
   },
+  bill: {
+    total: 0,
+    currentPage: 0,
+    data: [],
+  },
 };
 const data = (state = initialState, action) => {
   switch (action.type) {
