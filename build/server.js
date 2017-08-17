@@ -3835,7 +3835,10 @@ module.exports =
   
         var newcustomer = this.state.newcustomer;
   
-        if (!newcustomer.phone.length) alert('Số điện thoại rỗng');
+        if (!newcustomer.phone.length) {
+          alert('Số điện thoại rỗng');
+          return;
+        }
         _axios2.default.post('/auth/customer', {
           phone: newcustomer.phone,
           name: newcustomer.name,
@@ -3973,75 +3976,95 @@ module.exports =
                 'div',
                 null,
                 _react2.default.createElement(
-                  _reactBootstrap.FormGroup,
-                  null,
-                  _react2.default.createElement(
-                    _reactBootstrap.Col,
-                    { sm: 8 },
-                    _react2.default.createElement(_reactBootstrap.FormControl, {
-                      type: 'text',
-                      placeholder: 'S\u1ED1 \u0111i\u1EC7n tho\u1EA1i',
-                      value: customer.phone,
-                      onChange: onChange.bind(parent, 'customer', 'phone')
-                    }),
-                    _react2.default.createElement('p', null)
-                  ),
-                  _react2.default.createElement(
-                    _reactBootstrap.Col,
-                    { sm: 4 },
-                    _react2.default.createElement(
-                      _reactBootstrap.Button,
-                      { bsStyle: 'success', onClick: this.searchCustomer.bind(this) },
-                      'Th\xEAm'
-                    )
-                  )
-                ),
-                _react2.default.createElement('p', { className: 'clear-fix' }),
-                _react2.default.createElement(
                   _reactBootstrap.Form,
-                  { inline: true },
+                  { horizontal: true },
                   _react2.default.createElement(
                     _reactBootstrap.FormGroup,
-                    { controlId: 'formInlineName' },
+                    null,
                     _react2.default.createElement(
-                      _reactBootstrap.ControlLabel,
-                      null,
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'S\u1ED1  \u0111i\u1EC7n tho\u1EA1i'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'text',
+                        value: customer.phone,
+                        onChange: onChange.bind(parent, 'customer', 'phone')
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(_reactBootstrap.Col, { componentClass: _reactBootstrap.ControlLabel, sm: 2 }),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(
+                        _reactBootstrap.Button,
+                        { bsStyle: 'success', onClick: this.searchCustomer.bind(this) },
+                        'Th\xEAm kh\xE1ch \u0111\xE3 l\u01B0u'
+                      )
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
                       'T\xEAn'
                     ),
-                    ' ',
-                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'name'), value: newcustomer.name }),
-                    _react2.default.createElement('p', null)
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'name'), value: newcustomer.name })
+                    )
                   ),
-                  '\xA0 \xA0',
                   _react2.default.createElement(
                     _reactBootstrap.FormGroup,
-                    { controlId: 'formInlineEmail' },
+                    null,
                     _react2.default.createElement(
-                      _reactBootstrap.ControlLabel,
-                      null,
-                      'Sdt'
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'S\u1ED1  \u0111i\u1EC7n tho\u1EA1i'
                     ),
-                    ' ',
-                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'phone'), value: newcustomer.phone }),
-                    _react2.default.createElement('p', null)
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'phone'), value: newcustomer.phone })
+                    )
                   ),
-                  '\xA0 \xA0',
                   _react2.default.createElement(
                     _reactBootstrap.FormGroup,
-                    { controlId: 'formInlineEmail' },
+                    null,
                     _react2.default.createElement(
-                      _reactBootstrap.ControlLabel,
-                      null,
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
                       'Facebook'
                     ),
-                    ' ',
-                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'facebook'), value: newcustomer.facebook })
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'facebook'), value: newcustomer.facebook })
+                    )
                   ),
-                  '\xA0 \xA0',
                   _react2.default.createElement(
-                    _reactBootstrap.Button,
-                    { bsStyle: 'success', onClick: this.addCustomer.bind(this) },
-                    'Th\xEAm kh\xE1ch h\xE0ng m\u1EDBi'
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(_reactBootstrap.Col, { componentClass: _reactBootstrap.ControlLabel, sm: 2 }),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(
+                        _reactBootstrap.Button,
+                        { bsStyle: 'success', onClick: this.addCustomer.bind(this) },
+                        'Th\xEAm kh\xE1ch h\xE0ng m\u1EDBi'
+                      )
+                    )
                   )
                 )
               )

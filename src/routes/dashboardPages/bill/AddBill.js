@@ -47,7 +47,10 @@ class AddBill extends Component {
   }
   addCustomer() {
     const { newcustomer } = this.state;
-    if (!newcustomer.phone.length) alert('Số điện thoại rỗng');
+    if (!newcustomer.phone.length) {
+      alert('Số điện thoại rỗng');
+      return;
+    }
     axios.post('/auth/customer', {
       phone: newcustomer.phone,
       name: newcustomer.name,
@@ -106,47 +109,61 @@ class AddBill extends Component {
                 </div>
                 :
                 <div>
+                  <Form horizontal>
                     <FormGroup>
-                      <Col sm={8}>
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Số  điện thoại
+                      </Col>
+                      <Col sm={10}>
                         <FormControl
                         type="text"
-                        placeholder="Số điện thoại"
                         value={customer.phone}
                         onChange={onChange.bind(parent, 'customer', 'phone')}
                         />
-                        <p></p>
                       </Col>
-                      <Col sm={4}>
+                    </FormGroup>
+                    <FormGroup>
+                      <Col componentClass={ControlLabel} sm={2}>
+                      </Col>
+                      <Col sm={10}>
                         <Button bsStyle="success" onClick={this.searchCustomer.bind(this)}>
-                          Thêm
+                          Thêm khách đã lưu
                         </Button>
                       </Col>
                     </FormGroup>
-                    <p className="clear-fix"></p>
-                    <Form inline>
-                    <FormGroup controlId="formInlineName">
-                      <ControlLabel>Tên</ControlLabel>
-                      {' '}
-                      <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'name')} value={newcustomer.name}/>
-                      <p></p>
-                    </FormGroup>
-                    &nbsp; &nbsp;
-                    <FormGroup controlId="formInlineEmail">
-                      <ControlLabel>Sdt</ControlLabel>
-                      {' '}
-                      <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'phone')} value={newcustomer.phone}/>
-                      <p></p>
-                    </FormGroup>
-                    &nbsp; &nbsp;
-                    <FormGroup controlId="formInlineEmail">
-                      <ControlLabel>Facebook</ControlLabel>
-                      {' '}
-                      <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'facebook')} value={newcustomer.facebook}/>
-                    </FormGroup>
-                    &nbsp; &nbsp;
-                    <Button bsStyle="success" onClick={this.addCustomer.bind(this)}>
-                      Thêm khách hàng mới
-                    </Button>
+                   <FormGroup>
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Tên
+                     </Col>
+                     <Col sm={10}>
+                       <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'name')} value={newcustomer.name}/>
+                     </Col>
+                   </FormGroup>
+
+                   <FormGroup >
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Số  điện thoại
+                     </Col>
+                     <Col sm={10}>
+                       <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'phone')} value={newcustomer.phone}/>
+                     </Col>
+                   </FormGroup>
+                   <FormGroup >
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Facebook
+                     </Col>
+                     <Col sm={10}>
+                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'facebook')} value={newcustomer.facebook}/>
+                     </Col>
+                   </FormGroup>
+                   <FormGroup >
+                    <Col componentClass={ControlLabel} sm={2} />
+                    <Col sm={10}>
+                     <Button bsStyle="success" onClick={this.addCustomer.bind(this)}>
+                       Thêm khách hàng mới
+                     </Button>
+                     </Col>
+                   </FormGroup>
                   </Form>
                 </div>
               }
