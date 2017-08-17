@@ -65,12 +65,15 @@ router.post('/login', function(req, res) {
 
   var userScheme = getUserScheme(req);
   pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
     con.query(`SELECT * FROM user WHERE username='${userScheme.username}'`, function (error, results, fields) {
     if (error) {
       res.status(400).send('Error');
+      con.release();
     }else{
       if (!results.length) {
         res.status(400).send('Tài khoản không tồn tại');
+        con.release();
         return;
       }
       bcrypt.compare(userScheme.password, results[0].password, function(err, _res) {
@@ -81,6 +84,7 @@ router.post('/login', function(req, res) {
             });
           } else {
             res.status(400).send('Sai thông tin');
+            con.release();
             return;
           }
       });

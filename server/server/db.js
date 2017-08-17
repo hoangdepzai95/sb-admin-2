@@ -7,7 +7,7 @@ function createPool() {
     user     : 'bb3033653ece95',
     password : 'c6df4773',
     database : 'heroku_ee3ab49ef4f9427',
-    connectionLimit: 50,
+    connectionLimit: 100,
   });
   return pool;
 }

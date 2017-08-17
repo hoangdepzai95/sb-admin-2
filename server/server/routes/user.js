@@ -19,23 +19,25 @@ router.post('/create', function (req, res) {
     pool.getConnection(function(err, con) {
       con.query(`SELECT * FROM user WHERE username='${req.body.username}'`, function (error, results) {
       if (error) {
-        console.log(error);
         res.status(400).send('Error');
+        con.release();
       }else{
         if (results.length) {
           res.status(400).send('Tên tài khoản đã sử dụng');
+          con.release();
           return;
         }
         con.query('INSERT INTO user SET ?', user, function (error, results) {
         if (error) {
-          console.log(error);
           res.status(400).send('Error');
+          con.release();
         }else{
           con.query(`SELECT * FROM user WHERE username='${user.username}'`, function (error, results) {
           if (error) {
             res.status(400).send('Error');
           }else{
             res.status(200).json(results[0]);
+            con.release();
           }
           });
         }
@@ -50,8 +52,10 @@ router.get('/users', function(req, res) {
     con.query(`SELECT * FROM user`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
+      con.release();
     }else{
       res.status(200).json(results);
+      con.release();
     }
     });
   });
@@ -62,8 +66,10 @@ router.delete('/:id', (req, res) => {
     con.query(`DELETE FROM user WHERE id='${id}'`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
+      con.release();
     }else{
       res.status(200).send('Ok');
+      con.release();
     }
     });
   });

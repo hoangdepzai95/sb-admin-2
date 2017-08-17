@@ -9,18 +9,19 @@ router.post('/', (req, res) => {
   bill.create_at = (new Date()).valueOf();
   bill.status_id = 1;
   pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
     con.query('INSERT INTO bill SET ?', bill, function (error, results) {
     if (error) {
-      console.log(error);
       res.status(400).send('Error');
+      con.release();
     }else{
       res.status(200).json(results);
       con.query('INSERT INTO bill SET ?', bill, function (error, results) {
       if (error) {
-        console.log(error);
         res.status(400).send('Error');
       }else{
         res.status(200).json(results);
+        con.release();
       }
       });
     }
