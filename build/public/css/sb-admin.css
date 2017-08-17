@@ -14,7 +14,9 @@
  .custom-modal {
    width: 90%;
  }
-
+.clear-fix {
+  clear: both;
+}
  .Select {
    position: relative;
  }

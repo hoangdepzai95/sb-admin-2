@@ -3396,7 +3396,9 @@ module.exports =
   
       _this.state = {
         showForm: false,
-        customerInfo: {},
+        customer: {
+          phone: ''
+        },
         billInfo: {},
         products: [],
         type: ''
@@ -3453,10 +3455,12 @@ module.exports =
       }
     }, {
       key: 'onChange',
-      value: function onChange(type, e) {
+      value: function onChange(type, field, e) {
         var value = e.target.value;
-        if (value.length > 180) return;
-        this.setState((0, _defineProperty3.default)({}, type, value));
+        if (type === 'customer' && field === 'phone' && value.length > 44) return;
+        var target = _lodash2.default.cloneDeep(this.state[type]);
+        target[field] = value;
+        this.setState((0, _defineProperty3.default)({}, type, target));
       }
     }, {
       key: 'replaceProduct',
@@ -3545,15 +3549,8 @@ module.exports =
             user = _props.user;
         var _state2 = this.state,
             showForm = _state2.showForm,
-            name = _state2.name,
-            username = _state2.username,
-            password = _state2.password,
-            role = _state2.role,
             type = _state2.type,
-            size = _state2.size,
-            code = _state2.code,
-            quantity = _state2.quantity,
-            instock = _state2.instock;
+            customer = _state2.customer;
   
         var options = [{ value: 1, label: 'Còn hàng' }, { value: 0, label: 'Hết hàng' }];
         return _react2.default.createElement(
@@ -3571,7 +3568,14 @@ module.exports =
                 { onClick: this.open.bind(this, 'add'), bsStyle: 'success' },
                 'T\u1EA1o \u0111\u01A1n h\xE0ng'
               ),
-              _react2.default.createElement(_AddBill2.default, { showForm: showForm, close: this.close.bind(this), type: type })
+              _react2.default.createElement(_AddBill2.default, {
+                showForm: showForm,
+                close: this.close.bind(this),
+                type: type,
+                parent: this,
+                onChange: this.onChange,
+                customer: customer
+              })
             ),
             _react2.default.createElement('p', null),
             _react2.default.createElement(
@@ -3726,10 +3730,6 @@ module.exports =
     value: true
   });
   
-  var _defineProperty2 = __webpack_require__(60);
-  
-  var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-  
   var _getPrototypeOf = __webpack_require__(28);
   
   var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
@@ -3762,6 +3762,10 @@ module.exports =
   
   var _lodash2 = _interopRequireDefault(_lodash);
   
+  var _axios = __webpack_require__(51);
+  
+  var _axios2 = _interopRequireDefault(_axios);
+  
   var _Panel = __webpack_require__(52);
   
   var _Panel2 = _interopRequireDefault(_Panel);
@@ -3787,28 +3791,81 @@ module.exports =
       _this.state = {
         customer: {
           phone: ''
-        }
+        },
+        newcustomer: {
+          phone: '',
+          name: '',
+          facebook: ''
+        },
+        addedCustomer: null
       };
       return _this;
     }
   
     (0, _createClass3.default)(AddBill, [{
-      key: 'onChange',
-      value: function onChange(type, field, e) {
+      key: 'searchCustomer',
+      value: function searchCustomer() {
+        var _this2 = this;
+  
+        var customer = this.props.customer;
+  
+        _axios2.default.get('/auth/customer?phone=' + customer.phone).then(function (res) {
+          if (res.data.length) {
+            _this2.setState({ addedCustomer: res.data[0] });
+          } else {
+            alert('Khách hàng không tồn tại, hãy tạo khách hàng mới');
+          }
+        }, function (err) {
+          alert('Co loi xay ra');
+        });
+      }
+    }, {
+      key: 'onChangeNewCustomer',
+      value: function onChangeNewCustomer(field, e) {
         var value = e.target.value;
-        if (type === 'customer' && field === 'phone' && value.length > 44) return;
-        var target = _lodash2.default.cloneDeep(this.state[type]);
-        target[field] = value;
-        this.setState((0, _defineProperty3.default)({}, type, target));
+        if (value.length > 199) return;
+        var newcustomer = _lodash2.default.cloneDeep(this.state.newcustomer);
+        newcustomer[field] = value;
+        this.setState({ newcustomer: newcustomer });
+      }
+    }, {
+      key: 'addCustomer',
+      value: function addCustomer() {
+        var _this3 = this;
+  
+        var newcustomer = this.state.newcustomer;
+  
+        if (!newcustomer.phone.length) alert('Số điện thoại rỗng');
+        _axios2.default.post('/auth/customer', {
+          phone: newcustomer.phone,
+          name: newcustomer.name,
+          facebook: newcustomer.facebook
+        }).then(function (res) {
+          _this3.setState({ addedCustomer: res.data });
+        }, function (err) {
+          alert('Khách hàng đã tồn tại');
+        });
+      }
+    }, {
+      key: 'removeCustomer',
+      value: function removeCustomer() {
+        if (confirm('Bạn có chắc muốn xóa ?')) {
+          this.setState({ addedCustomer: null });
+        }
       }
     }, {
       key: 'render',
       value: function render() {
-        var customer = this.state.customer;
+        var _state = this.state,
+            newcustomer = _state.newcustomer,
+            addedCustomer = _state.addedCustomer;
         var _props = this.props,
             showForm = _props.showForm,
             close = _props.close,
-            type = _props.type;
+            type = _props.type,
+            onChange = _props.onChange,
+            parent = _props.parent,
+            customer = _props.customer;
   
         return _react2.default.createElement(
           _reactBootstrap.Modal,
@@ -3832,35 +3889,249 @@ module.exports =
                   null,
                   'Kh\xE1ch h\xE0ng '
                 ) },
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
+              addedCustomer ? _react2.default.createElement(
+                'div',
+                { className: 'table-responsive' },
+                _react2.default.createElement(
+                  'table',
+                  { className: 'table table-striped table-bordered table-hover' },
+                  _react2.default.createElement(
+                    'thead',
+                    null,
+                    _react2.default.createElement(
+                      'tr',
+                      null,
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'T\xEAn '
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Facebook'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        '\u0110i\u1EC7n tho\u1EA1i'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'S\u1ED1  \u0111\u01A1n h\xE0ng'
+                      ),
+                      _react2.default.createElement(
+                        'th',
+                        null,
+                        'Thao t\xE1c'
+                      )
+                    )
+                  ),
+                  _react2.default.createElement(
+                    'tbody',
+                    null,
+                    _react2.default.createElement(
+                      'tr',
+                      null,
+                      _react2.default.createElement(
+                        'td',
+                        null,
+                        addedCustomer.name,
+                        ' '
+                      ),
+                      _react2.default.createElement(
+                        'td',
+                        null,
+                        addedCustomer.facebook,
+                        ' '
+                      ),
+                      _react2.default.createElement(
+                        'td',
+                        null,
+                        addedCustomer.phone,
+                        ' '
+                      ),
+                      _react2.default.createElement(
+                        'td',
+                        null,
+                        '3 '
+                      ),
+                      _react2.default.createElement(
+                        'td',
+                        null,
+                        _react2.default.createElement(
+                          _reactBootstrap.Button,
+                          { bsStyle: 'danger', bsSize: 'xs', active: true, onClick: this.removeCustomer.bind(this) },
+                          'X\xF3a'
+                        )
+                      )
+                    )
+                  )
+                )
+              ) : _react2.default.createElement(
+                'div',
                 null,
                 _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { componentClass: _reactBootstrap.ControlLabel, sm: 4 },
-                  'Nh\u1EADp s\u1ED1 \u0111i\u1EC7n tho\u1EA1i'
+                  _reactBootstrap.FormGroup,
+                  null,
+                  _react2.default.createElement(
+                    _reactBootstrap.Col,
+                    { sm: 8 },
+                    _react2.default.createElement(_reactBootstrap.FormControl, {
+                      type: 'text',
+                      placeholder: 'S\u1ED1 \u0111i\u1EC7n tho\u1EA1i',
+                      value: customer.phone,
+                      onChange: onChange.bind(parent, 'customer', 'phone')
+                    }),
+                    _react2.default.createElement('p', null)
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.Col,
+                    { sm: 4 },
+                    _react2.default.createElement(
+                      _reactBootstrap.Button,
+                      { bsStyle: 'success', onClick: this.searchCustomer.bind(this) },
+                      'Th\xEAm'
+                    )
+                  )
                 ),
+                _react2.default.createElement('p', { className: 'clear-fix' }),
                 _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 4 },
-                  _react2.default.createElement(_reactBootstrap.FormControl, {
-                    type: 'text',
-                    value: customer.phone,
-                    onChange: this.onChange.bind(this, 'customer', 'phone')
-                  }),
-                  _react2.default.createElement('p', null)
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 4 },
+                  _reactBootstrap.Form,
+                  { inline: true },
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    { controlId: 'formInlineName' },
+                    _react2.default.createElement(
+                      _reactBootstrap.ControlLabel,
+                      null,
+                      'T\xEAn'
+                    ),
+                    ' ',
+                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'name'), value: newcustomer.name }),
+                    _react2.default.createElement('p', null)
+                  ),
+                  '\xA0 \xA0',
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    { controlId: 'formInlineEmail' },
+                    _react2.default.createElement(
+                      _reactBootstrap.ControlLabel,
+                      null,
+                      'Sdt'
+                    ),
+                    ' ',
+                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'phone'), value: newcustomer.phone }),
+                    _react2.default.createElement('p', null)
+                  ),
+                  '\xA0 \xA0',
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    { controlId: 'formInlineEmail' },
+                    _react2.default.createElement(
+                      _reactBootstrap.ControlLabel,
+                      null,
+                      'Facebook'
+                    ),
+                    ' ',
+                    _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', onChange: this.onChangeNewCustomer.bind(this, 'facebook'), value: newcustomer.facebook })
+                  ),
+                  '\xA0 \xA0',
                   _react2.default.createElement(
                     _reactBootstrap.Button,
-                    { bsStyle: 'success' },
-                    'Th\xEAm'
+                    { bsStyle: 'success', onClick: this.addCustomer.bind(this) },
+                    'Th\xEAm kh\xE1ch h\xE0ng m\u1EDBi'
                   )
                 )
               )
-            )
+            ),
+            addedCustomer ? _react2.default.createElement(
+              'div',
+              null,
+              _react2.default.createElement(
+                _Panel2.default,
+                { header: _react2.default.createElement(
+                    'span',
+                    null,
+                    'Th\xF4ng tin \u0111\u01A1n h\xE0ng'
+                  ) },
+                _react2.default.createElement(
+                  _reactBootstrap.Form,
+                  { horizontal: true },
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'Ph\xED ship'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'number'
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      '\u0110\u1ECBa ch\u1EC9 nh\u1EADn'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'text'
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'T\u1ED5ng thu'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        type: 'number'
+                      })
+                    )
+                  ),
+                  _react2.default.createElement(
+                    _reactBootstrap.FormGroup,
+                    null,
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                      'Ghi ch\xFA'
+                    ),
+                    _react2.default.createElement(
+                      _reactBootstrap.Col,
+                      { sm: 10 },
+                      _react2.default.createElement(_reactBootstrap.FormControl, {
+                        componentClass: 'textarea',
+                        type: 'text'
+                      })
+                    )
+                  )
+                )
+              ),
+              _react2.default.createElement(_Panel2.default, { header: _react2.default.createElement(
+                  'span',
+                  null,
+                  'S\u1EA3n ph\u1EA9m'
+                ) })
+            ) : null
           )
         );
       }
@@ -4365,6 +4636,19 @@ module.exports =
   
   var router = express.Router();
   
+  router.get('/', function (req, res) {
+    var phone = req.query.phone;
+    _db2.default.getConnection(function (err, con) {
+      con.query('SELECT * FROM customer WHERE phone=\'' + phone + '\'', function (error, result) {
+        if (error) {
+          res.status(400).send('Error');
+        } else {
+          res.status(200).json(result);
+        }
+      });
+    });
+  });
+  
   router.post('/', function () {
     var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(req, res) {
       var customer;
@@ -4375,8 +4659,7 @@ module.exports =
               customer = {
                 phone: req.body.phone,
                 name: req.body.name,
-                facebook: req.body.facebook,
-                address: req.body.address
+                facebook: req.body.facebook
               };
   
               _db2.default.getConnection(function (err, con) {
@@ -4384,7 +4667,13 @@ module.exports =
                   if (error) {
                     res.status(400).send('Error');
                   } else {
-                    res.status(200).send('Ok');
+                    con.query('SELECT * FROM customer WHERE phone=\'' + customer.phone + '\'', function (error, result) {
+                      if (error) {
+                        res.status(400).send('Error');
+                      } else {
+                        res.status(200).json(result[0]);
+                      }
+                    });
                   }
                 });
               });

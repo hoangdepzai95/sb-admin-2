@@ -14,7 +14,9 @@ class Home extends Component {
     super(props);
     this.state = {
       showForm: false,
-      customerInfo: {},
+      customer: {
+        phone: '',
+      },
       billInfo: {},
       products: [],
       type: '',
@@ -58,12 +60,12 @@ class Home extends Component {
       showForm: false,
     });
   }
-  onChange(type, e) {
+  onChange(type, field, e) {
     const value = e.target.value;
-    if (value.length > 180) return;
-    this.setState({
-      [type]: value,
-    });
+    if (type === 'customer' && field === 'phone' && value.length > 44) return;
+    const target = _.cloneDeep(this.state[type]);
+    target[field] = value;
+    this.setState({ [type]: target });
   }
   replaceProduct(products, target) {
     let clone = [...products];
@@ -134,7 +136,7 @@ class Home extends Component {
   }
   render() {
     const { products, user } = this.props;
-    const { showForm, name, username, password, role, type, size, code, quantity, instock } = this.state;
+    const { showForm, type, customer } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -147,7 +149,14 @@ class Home extends Component {
         <Button onClick={this.open.bind(this, 'add')} bsStyle="success">
           Tạo đơn hàng
         </Button>
-        <AddBill showForm={showForm} close={this.close.bind(this)} type={type} />
+        <AddBill
+          showForm={showForm}
+          close={this.close.bind(this)}
+          type={type}
+          parent={this}
+          onChange={this.onChange}
+          customer={customer}
+        />
         </div>
         <p></p>
           <Panel header={<span>Danh sách đơn hàng </span>} >
