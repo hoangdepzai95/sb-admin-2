@@ -5,6 +5,7 @@ import Login from './login';
 import Users from './users';
 import Product from './product';
 import Bill from './bill';
+import Blank from './Blank';
 
 import { isLogged } from './util';
 
@@ -37,6 +38,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 const router = () => {
   return (
     <div>
+      <Route path="/" component={Blank}/>
       <PrivateRoute path="/home" component={Main} />
       <Route path="/login" component={Login}/>
     </div>

@@ -16,7 +16,7 @@ const store = createStore(reducers,
 );
 const history = createBrowserHistory();
 listenToAjax();
-axios.defaults.baseURL = 'http://localhost:3001/api';
+axios.defaults.baseURL = `${window.location.origin}/api`;
 const Root = () => {
   return (
     <Provider

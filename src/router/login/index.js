@@ -26,7 +26,7 @@ class Login extends Component {
       if (res.data.access_token) {
         localStorage.setItem('access_token', res.data.access_token);
         getUser(this.props.dispatch);
-        this.props.history.push('/home');
+        this.props.history.push('/home/bill');
       }
     }, () => {
       alert('Sai thông tin');
