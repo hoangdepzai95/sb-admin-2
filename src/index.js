@@ -8,7 +8,6 @@ import reducers from './reducers';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
 import App from './router';
-import registerServiceWorker from './registerServiceWorker';
 import { listenToAjax } from './router/util';
 
 const store = createStore(reducers,
@@ -29,4 +28,3 @@ const Root = () => {
   )
 }
 ReactDOM.render(<Root />, document.getElementById('root'));
-registerServiceWorker();
