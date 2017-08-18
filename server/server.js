@@ -7,7 +7,7 @@ const api = require('./server/routes');
 const cors = require('cors')
 
 const app = express();
-app.use(express.static(path.resolve('./build')));
+app.use(express.static(path.resolve('../build')));
 
 app.use(cors());
 app.use(cookieParser());
@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use('/api', api);
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(path.resolve('./build/index.html')));
+  res.sendFile(path.join(path.resolve('../build/index.html')));
 });
 
 app.listen(port, () => {
