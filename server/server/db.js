@@ -3,10 +3,10 @@ const mysql = require('mysql');
 
 function createPool() {
   const pool = mysql.createPool({
-    host     : 'us-cdbr-iron-east-05.cleardb.net',
-    user     : 'bb3033653ece95',
-    password : 'c6df4773',
-    database : 'heroku_ee3ab49ef4f9427',
+    host     : '103.69.194.160',
+    user     : 'monty',
+    password : 'Kidvn95123@',
+    database : 'myapp',
     connectionLimit: 100,
   });
   return pool;
