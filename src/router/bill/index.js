@@ -50,7 +50,7 @@ class Home extends Component {
     }
   }
   open(type, id) {
-    const { bills } = this.props;
+    const bills = this.props.bills[this.state.page] || [];
     this.setState({
       showForm: true,
       type,
