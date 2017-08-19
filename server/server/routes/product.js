@@ -56,11 +56,13 @@ router.post('/', upload.single('file'), (req, res) => {
     if (err) return res.status(400).send('Error');
     con.query('INSERT INTO product SET ?', product, function (error, results) {
     if (error) {
+      console.log(error);
       res.status(400).send('Error');
       con.release();
     }else{
       con.query(`SELECT * FROM product WHERE id='${results.insertId}'`, function (error, results) {
       if (error) {
+        console.log(error);
         res.status(400).send('Error');
         con.release();
       }else{
