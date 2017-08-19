@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
+import shortid from 'shortid';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import axios from 'axios';
@@ -8,6 +9,7 @@ import Select from 'react-select';
 import './AddBill.css';
 import AddProduct from '../product';
 import { HOST } from '../../config';
+import { receiveTotalBill, receiveBill } from '../../actions/fetchData';
 
 class AddBill extends Component {
   constructor(props) {
@@ -21,12 +23,29 @@ class AddBill extends Component {
       addedCustomer: null,
       searchProducts: [],
       loadingProduct: false,
+      loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
   }
+  async componentDidUpdate(prevProps) {
+    const { type, billInfo, showForm, changeProduct } = this.props;
+    if (showForm && !prevProps.showForm && type === 'edit' ) {
+      await this.searchCustomer();
+      axios.get(`auth/bill/product/${billInfo.id}`)
+      .then(
+        (res) => {
+          changeProduct(res.data.map((product) => {
+            product.id2 = shortid.generate();
+            return product;
+          }));
+          this.setState({ loadedBillDetail: true });
+        }
+      );
+    }
+  }
   searchCustomer() {
     const { customer } = this.props;
-    axios.get(`/auth/customer?phone=${customer.phone}`)
+    return axios.get(`/auth/customer?phone=${customer.phone}`)
      .then(
        (res) => {
          if (res.data.length) {
@@ -102,7 +121,7 @@ class AddBill extends Component {
     if (qty) {
       const product = _.cloneDeep(e.product);
       product.quantity = qty;
-      product.id2 = products.length + 1;
+      product.id2 = shortid.generate();
       changeProduct([...products, product]);
     }
   }
@@ -112,33 +131,70 @@ class AddBill extends Component {
       changeProduct(products.filter(o => o.id2 !== id2));
     }
   }
-  createBill() {
-    const { products, user } = this.props;
-    const { addedCustomer } = this.state;
-    if (!products.length) {
-      window.alert('Không có sản phẩm');
-      return;
-    }
-    const billInfo = _.cloneDeep(this.props.billInfo);
-    billInfo.user_id = user.userId;
-    billInfo.customer_id = addedCustomer.id;
-    axios.post('/auth/bill', {
-      bill_info: billInfo,
-      products: products.map((product) => {
-        return { product_id: product.id, quantity: product.quantity };
-      }),
-    })
+  reloadBilld(page) {
+    axios.get(`auth/bill?per_page=50&page=${page}`)
       .then(
         (res) => {
-
+          this.props.dispatch(receiveBill(res.data, page));
         },
         (error) => {
 
         },
-      );
+      )
+  }
+  createBill() {
+    const { products, user, type, close, page } = this.props;
+    const { addedCustomer } = this.state;
+    const billInfo = _.cloneDeep(this.props.billInfo);
+    if (!products.length) {
+      window.alert('Không có sản phẩm');
+      return;
+    }
+    if (type === 'edit') {
+      axios.put('/auth/bill', {
+        bill_info: {
+          shipping: billInfo.shipping,
+          address: billInfo.address,
+          pay: billInfo.pay,
+          note: billInfo.note,
+          customer_id: addedCustomer.customer_id,
+          id: billInfo.id,
+        },
+        products: products.map((product) => {
+          return { product_id: product.id, quantity: product.quantity };
+        }),
+      })
+        .then(
+          (res) => {
+            this.reloadBilld(page);
+            close();
+          },
+          (error) => {
+
+          },
+        );
+    } else {
+      billInfo.user_id = user.userId;
+      billInfo.customer_id = addedCustomer.id;
+      axios.post('/auth/bill', {
+        bill_info: billInfo,
+        products: products.map((product) => {
+          return { product_id: product.id, quantity: product.quantity };
+        }),
+      })
+        .then(
+          (res) => {
+            this.reloadBilld(page);
+            close();
+          },
+          (error) => {
+
+          },
+        );
+    }
   }
   render() {
-    const { newcustomer, addedCustomer, searchProducts, loadingProduct } = this.state;
+    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
     return (
           <Modal show={showForm} onHide={close} dialogClassName="custom-modal">
@@ -148,7 +204,7 @@ class AddBill extends Component {
           <Modal.Body>
             <Panel header={<span>Khách hàng </span>}  >
               {
-                addedCustomer ?
+                addedCustomer  && !(type === 'edit' && !loadedBillDetail) ?
                 <div className="table-responsive">
                   <table className="table table-striped table-bordered table-hover">
                     <thead>
@@ -177,67 +233,73 @@ class AddBill extends Component {
                 </div>
                 :
                 <div>
-                  <Form horizontal>
-                    <FormGroup>
-                      <Col componentClass={ControlLabel} sm={2}>
-                        Số  điện thoại
-                      </Col>
-                      <Col sm={10}>
-                        <FormControl
-                        type="text"
-                        value={customer.phone}
-                        onChange={onChange.bind(parent, 'customer', 'phone')}
-                        />
-                      </Col>
-                    </FormGroup>
-                    <FormGroup>
-                      <Col componentClass={ControlLabel} sm={2}>
-                      </Col>
-                      <Col sm={10}>
-                        <Button bsStyle="success" onClick={this.searchCustomer.bind(this)}>
-                          Thêm khách đã lưu
-                        </Button>
-                      </Col>
-                    </FormGroup>
-                   <FormGroup>
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Tên
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'name')} value={newcustomer.name}/>
-                     </Col>
-                   </FormGroup>
+                  {
+                    type === 'edit' && !loadedBillDetail ?
+                    <div className="text-center"><i className="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    :
+                    <Form horizontal>
+                      <FormGroup>
+                        <Col componentClass={ControlLabel} sm={2}>
+                          Số  điện thoại
+                        </Col>
+                        <Col sm={10}>
+                          <FormControl
+                          type="text"
+                          value={customer.phone}
+                          onChange={onChange.bind(parent, 'customer', 'phone')}
+                          />
+                        </Col>
+                      </FormGroup>
+                      <FormGroup>
+                        <Col componentClass={ControlLabel} sm={2}>
+                        </Col>
+                        <Col sm={10}>
+                          <Button bsStyle="success" onClick={this.searchCustomer.bind(this)}>
+                            Thêm khách đã lưu
+                          </Button>
+                        </Col>
+                      </FormGroup>
+                     <FormGroup>
+                       <Col componentClass={ControlLabel} sm={2}>
+                         Tên
+                       </Col>
+                       <Col sm={10}>
+                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'name')} value={newcustomer.name}/>
+                       </Col>
+                     </FormGroup>
 
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Số  điện thoại
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'phone')} value={newcustomer.phone}/>
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Facebook
-                     </Col>
-                     <Col sm={10}>
-                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'facebook')} value={newcustomer.facebook}/>
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                    <Col componentClass={ControlLabel} sm={2} />
-                    <Col sm={10}>
-                     <Button bsStyle="success" onClick={this.addCustomer.bind(this)}>
-                       Thêm khách hàng mới
-                     </Button>
-                     </Col>
-                   </FormGroup>
-                  </Form>
+                     <FormGroup >
+                       <Col componentClass={ControlLabel} sm={2}>
+                         Số  điện thoại
+                       </Col>
+                       <Col sm={10}>
+                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'phone')} value={newcustomer.phone}/>
+                       </Col>
+                     </FormGroup>
+                     <FormGroup >
+                       <Col componentClass={ControlLabel} sm={2}>
+                         Facebook
+                       </Col>
+                       <Col sm={10}>
+                           <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'facebook')} value={newcustomer.facebook}/>
+                       </Col>
+                     </FormGroup>
+                     <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2} />
+                      <Col sm={10}>
+                       <Button bsStyle="success" onClick={this.addCustomer.bind(this)}>
+                         Thêm khách hàng mới
+                       </Button>
+                       </Col>
+                     </FormGroup>
+                    </Form>
+                  }
+
                 </div>
               }
             </Panel>
             {
-              addedCustomer ?
+              addedCustomer && !(type === 'edit' && !loadedBillDetail) ?
               <div>
               <Panel header={<span>Sản phẩm</span>} >
               <div>
@@ -268,7 +330,7 @@ class AddBill extends Component {
                     {
                       products.map((product) => {
                         return (
-                          <tr key={product.id2}>
+                          <tr key={shortid.generate()}>
                             <td>
                             {
                               product.image ?
@@ -354,7 +416,7 @@ class AddBill extends Component {
                     Tạo đơn hàng
                   </Button>
                   :
-                  <Button bsStyle="success" active >
+                  <Button bsStyle="success" active onClick={this.createBill.bind(this)}>
                     Sửa đơn hàng
                   </Button>
                 }

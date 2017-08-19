@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import Select from 'react-select';
 import AddBill from './AddBill';
 
-import { receiveProduct } from '../../actions/fetchData';
+import { receiveTotalBill, receiveBill } from '../../actions/fetchData';
 
 class Home extends Component {
   constructor(props) {
@@ -27,32 +27,42 @@ class Home extends Component {
       },
       products: [],
       type: '',
+      page: 1,
     };
   }
   componentDidMount() {
-    const { loaded } = this.props;
+    const { loaded, currentPage } = this.props;
     if (!loaded) {
-      axios.get('/auth/product', ).then(
+      axios.get('/auth/bill/total', ).then(
         (res) => {
-          this.props.dispatch(receiveProduct(res.data));
+          this.props.dispatch(receiveTotalBill(res.data.quantity));
         }
       )
+      axios.get(`auth/bill?per_page=50&page=${currentPage + 1}`)
+        .then(
+          (res) => {
+            this.props.dispatch(receiveBill(res.data, currentPage + 1));
+          },
+          (error) => {
+
+          },
+        )
     }
   }
   open(type, id) {
+    const { bills } = this.props;
     this.setState({
       showForm: true,
       type,
     });
-    if ( type === 'edit') {
-      const product = this.props.products.find(product => product.id === id);
+    if (type === 'edit') {
+      const bill = bills.find(o => o.id === id);
       this.setState({
-        name: product.name,
-        code: product.code,
-        quantity: product.quantity,
-        size: product.size,
-        id: product.id,
-        instock: product.instock,
+        billInfo: bill,
+        customer: {
+          phone: bill.phone,
+        },
+        products: [],
       });
     } else {
       this.setState({
@@ -84,60 +94,6 @@ class Home extends Component {
     });
     return clone;
   }
-  addProduct(e) {
-    e.preventDefault();
-    const { name, size, code, quantity, type, id, instock } = this.state;
-    if (name.length < 1) return;
-    if (type === 'edit') {
-      axios.put('/auth/product', {
-        name,
-        size,
-        code,
-        quantity: quantity || 0,
-        id,
-        instock,
-      })
-        .then(
-          (res) => {
-            this.close();
-            this.props.dispatch(receiveProduct(this.replaceProduct(this.props.products, res.data)));
-          },
-          (err) => {
-            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
-          }
-        )
-    } else {
-      axios.post('/auth/product', {
-        name,
-        size,
-        code,
-        quantity: quantity || 0,
-        instock,
-      })
-        .then(
-          (res) => {
-            this.close();
-            this.props.dispatch(receiveProduct([...this.props.products, res.data]));
-          },
-          (err) => {
-            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
-          }
-        )
-    }
-  }
-  removeProduct(id) {
-    if (window.confirm('Bạn có chắc chắn ?')) {
-      axios.delete(`/auth/product/${id}`)
-      .then(
-        (res) => {
-           this.props.dispatch(receiveProduct(this.props.products.filter(product => product.id != id)));
-        },
-        (err) => {
-          alert('Co loi xay ra');
-        }
-      )
-    }
-  }
   logChange(v) {
     this.setState({ instock: v.value });
   }
@@ -146,7 +102,8 @@ class Home extends Component {
   }
   render() {
     const { user } = this.props;
-    const { showForm, type, customer, billInfo, products } = this.state;
+    const { showForm, type, customer, billInfo, products, page } = this.state;
+    const bills = this.props.bills[page] || [];
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -169,6 +126,7 @@ class Home extends Component {
           billInfo={billInfo}
           products={products}
           changeProduct={this.changeProduct.bind(this)}
+          page={page}
         />
         </div>
         <p></p>
@@ -177,50 +135,39 @@ class Home extends Component {
               <table className="table table-striped table-bordered table-hover">
                 <thead>
                   <tr>
-                    <th># </th>
-                    <th>Tên </th>
                     <th>Mã</th>
-                    <th>Size</th>
-                    <th>Số lượng </th>
                     <th>Trạng thái</th>
-                    {
-                      user.role < 3 ?
-                      <th>Thao tác</th>
-                      : null
-                    }
+                    <th>Tên khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Facebook</th>
+                    <th>Sản phẩm</th>
+                    <th>Địa chỉ</th>
+                    <th>Tổng thu</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {
-                    products.map((product, index) => {
+                    bills.map((bill, index) => {
                       return (
-                        <tr key={product.id}>
-                          <td>{index} </td>
-                          <td>{product.name} </td>
-                          <td>{product.code} </td>
-                          <td>{product.size} </td>
-                          <td>{product.quantity} </td>
+                        <tr key={bill.id}>
+                          <td>{bill.id} </td>
+                          <td>{bill.status} </td>
+                          <td>{bill.customer_name} </td>
+                          <td>{bill.phone} </td>
+                          <td>{bill.facebook} </td>
                           <td>
-                            {
-                              product.instock == 1 ?
-                                <Button bsStyle="success" bsSize="xs"> Còn hàng</Button>
-                                :
-                                <Button bsStyle="danger" bsSize="xs"> Hết hàng</Button>
-                            }
+                            {bill.products_info}
                           </td>
-                          {
-                            user.role < 3 ?
+                          <td>{bill.address}</td>
+                          <td>{bill.pay}</td>
+                          <td>{bill.note}</td>
                             <td>
-                              <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id)}>
-                                Xóa
-                              </Button>
-                              &nbsp;
-                              <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', product.id)}>
+                              <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
                                 Chỉnh sửa
                               </Button>
                             </td>
-                            : null
-                          }
                         </tr>
                       );
                     })
@@ -236,8 +183,9 @@ class Home extends Component {
 }
 export default connect((state) => {
   return {
-    loaded: state.data.product.loaded,
-    products: state.data.product.data,
+    currentPage: state.data.bill.currentPage,
+    bills: state.data.bill.data,
+    total: state.data.bill.total,
     user: state.data.user,
   };
 })(Home);
