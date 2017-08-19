@@ -1,4 +1,5 @@
 const path = require('path');
+const getRootPath = require('../util');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -7,7 +8,8 @@ const api = require('./server/routes');
 const cors = require('cors')
 
 const app = express();
-app.use(express.static(path.resolve('../build')));
+const rootPath = getRootPath();
+app.use(express.static(`${rootPath}/build`));
 
 app.use(cors());
 app.use(cookieParser());
@@ -18,7 +20,7 @@ app.use(bodyParser.json());
 app.use('/api', api);
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(path.resolve('../build/index.html')));
+  res.sendFile(`${rootPath}/build/index.html`);
 });
 
 app.listen(port, () => {

@@ -7,6 +7,7 @@ import createBrowserHistory from 'history/createBrowserHistory'
 import reducers from './reducers';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
+import { API_ENDPOINT } from './config';
 import App from './router';
 import { listenToAjax } from './router/util';
 
@@ -15,7 +16,7 @@ const store = createStore(reducers,
 );
 const history = createBrowserHistory();
 listenToAjax();
-axios.defaults.baseURL = `${window.location.origin}/api`;
+axios.defaults.baseURL = API_ENDPOINT;
 const Root = () => {
   return (
     <Provider

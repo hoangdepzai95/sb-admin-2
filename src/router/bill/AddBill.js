@@ -7,6 +7,7 @@ import Panel from 'react-bootstrap/lib/Panel';
 import Select from 'react-select';
 import './AddBill.css';
 import AddProduct from '../product';
+import { HOST } from '../../config';
 
 class AddBill extends Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class AddBill extends Component {
       searchProducts: [],
       loadingProduct: false,
     };
-    this.searchProduct = _.debounce(this.searchProduct, 2000);
+    this.searchProduct = _.debounce(this.searchProduct, 1000);
   }
   searchCustomer() {
     const { customer } = this.props;
@@ -268,7 +269,14 @@ class AddBill extends Component {
                       products.map((product) => {
                         return (
                           <tr key={product.id2}>
-                            <td>{product.name}</td>
+                            <td>
+                            {
+                              product.image ?
+                              <img src={`${HOST}/static/images/${product.image}`} className="product-image" />
+                              : null
+                            }
+                            {product.name}
+                            </td>
                             <td>{product.code}</td>
                             <td>{product.size}</td>
                             <td>{product.quantity}</td>

@@ -1,9 +1,25 @@
 const pool = require('../db');
+const multer  = require('multer');
+const fs = require('fs');
+const crypto = require('crypto');
+const mime = require('mime');
+const getRootPath = require('../../../util');
 
 const express = require('express');
 
 const router = express.Router();
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, `${getRootPath()}/build/static/images`)
+  },
+  filename: function (req, file, cb) {
+    crypto.pseudoRandomBytes(16, function (err, raw) {
+      cb(null, raw.toString('hex') + Date.now() + '.' + mime.extension(file.mimetype));
+    });
+  }
+});
+const upload = multer({ storage: storage });
 router.get('/', (req, res) => {
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
@@ -20,7 +36,6 @@ router.get('/', (req, res) => {
 })
 router.get('/search', (req, res) => {
   const keyword = req.query.q;
-  console.log(keyword);
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query(`SELECT * FROM product WHERE name LIKE '%${keyword}%' OR code LIKE '%${keyword}%'` , function (error, results) {
@@ -34,8 +49,9 @@ router.get('/search', (req, res) => {
     });
   });
 })
-router.post('/', (req, res) => {
-  const product = req.body;
+router.post('/', upload.single('file'), (req, res) => {
+  const product = JSON.parse(req.body.product);
+  if (req.file) product.image = req.file.filename;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query('INSERT INTO product SET ?', product, function (error, results) {
@@ -57,8 +73,9 @@ router.post('/', (req, res) => {
   });
 });
 
-router.put('/', (req, res) => {
-  const product = req.body;
+router.put('/', upload.single('file'), (req, res) => {
+  const product = JSON.parse(req.body.product);
+  if (req.file) product.image = req.file.filename;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query('UPDATE product SET ? WHERE ?', [product, { id: product.id }], function (error, results) {

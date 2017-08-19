@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
-import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
+import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, FieldGroup } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import Select from 'react-select';
+import className from 'classnames';
 
+import './style.css';
 import { receiveProduct } from '../../actions/fetchData';
+import { HOST } from '../../config';
 
 class Home extends Component {
   constructor(props) {
@@ -19,6 +22,7 @@ class Home extends Component {
       type: '',
       id: '',
       instock: 1,
+      file: null,
     };
   }
   componentDidMount() {
@@ -69,6 +73,14 @@ class Home extends Component {
       [type]: value,
     });
   }
+  onChangeFile(type, e) {
+    const file = e.target.files[0];
+    if (file && file.size > 21959 * 10) {
+      window.alert('Kich thuoc toi da la 200Kb');
+      return;
+    }
+    this.setState({ file });
+  }
   replaceProduct(products, target) {
     let clone = [...products];
     clone = clone.map((product) => {
@@ -81,34 +93,33 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, size, code, quantity, type, id, instock } = this.state;
+    const { name, size, code, quantity, type, id, instock, file } = this.state;
     if (name.length < 1) return;
+    const product = {
+      name,
+      size,
+      code,
+      quantity: quantity || 0,
+      instock,
+    };
+    if (type === 'edit') product.id = id;
+    const formData = new FormData();
+    formData.append('product', JSON.stringify(product));
+    if (file) formData.append('file', file);
+
     if (type === 'edit') {
-      axios.put('/auth/product', {
-        name,
-        size,
-        code,
-        quantity: quantity || 0,
-        id,
-        instock,
-      })
+      axios.put('/auth/product', formData)
         .then(
           (res) => {
             this.close();
             this.props.dispatch(receiveProduct(this.replaceProduct(this.props.products, res.data)));
           },
           (err) => {
-            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+            alert('Có lỗi xảy ra hoặn tên sản phẩm được sử dụng');
           }
         )
     } else {
-      axios.post('/auth/product', {
-        name,
-        size,
-        code,
-        quantity: quantity || 0,
-        instock,
-      })
+      axios.post('/auth/product', formData)
         .then(
           (res) => {
             this.close();
@@ -185,7 +196,14 @@ class Home extends Component {
                          return (
                            <tr key={product.id}>
                              <td>{index} </td>
-                             <td>{product.name} </td>
+                             <td>
+                              {
+                                product.image ?
+                                <img src={`${HOST}/static/images/${product.image}`} className="product-image" />
+                                : null
+                              }
+                              {product.name}
+                             </td>
                              <td>{product.code} </td>
                              <td>{product.size} </td>
                              <td>{product.quantity} </td>
@@ -271,6 +289,18 @@ class Home extends Component {
                type="number"
                onChange={this.onChange.bind(this, 'quantity')}
                value={quantity}
+               />
+             </Col>
+           </FormGroup>
+           <FormGroup >
+             <Col componentClass={ControlLabel} sm={2}>
+               Ảnh
+             </Col>
+             <Col sm={10}>
+               <FormControl
+                 type="file"
+                 accept="image/*"
+                 onChange={this.onChangeFile.bind(this, 'file')}
                />
              </Col>
            </FormGroup>

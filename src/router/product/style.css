@@ -1,0 +1,10 @@
+.product-image {
+  height: 20px;
+  width: 20px;
+  margin-right: 10px;
+}
+.product-image:hover {
+  width: 160px;
+  height: 160px;
+  position: absolute;
+}
