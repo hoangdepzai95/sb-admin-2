@@ -3,6 +3,7 @@ export const RECEIVE_USER = 'RECEIVE_USER';
 export const RECEIVE_PRODUCT = 'RECEIVE_PRODUCT';
 export const RECEIVE_TOTAL_BILL = 'RECEIVE_TOTAL_BILL';
 export const RECEIVE_BILL = 'RECEIVE_BILL';
+export const RECEIVE_STATUS = 'RECEIVE_STATUS';
 
 export function receiveUsers(users) {
   return {
@@ -35,5 +36,12 @@ export function receiveBill(bills, page) {
     type: RECEIVE_BILL,
     bills,
     page,
+  };
+}
+
+export function receiveStatus(data) {
+  return {
+    type: RECEIVE_STATUS,
+    data,
   };
 }

@@ -2,12 +2,15 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import _ from 'lodash';
 import Panel from 'react-bootstrap/lib/Panel';
-import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
+import formatCurrency from 'format-currency';
+import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, Pagination, InputGroup, Checkbox } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import Select from 'react-select';
 import AddBill from './AddBill';
+import FileSaver from 'file-saver';
 
-import { receiveTotalBill, receiveBill } from '../../actions/fetchData';
+import { receiveTotalBill, receiveBill, receiveStatus } from '../../actions/fetchData';
+import { HOST, PER_PAGE } from '../../config';
 
 class Home extends Component {
   constructor(props) {
@@ -24,30 +27,48 @@ class Home extends Component {
         address: '',
         pay: 0,
         note: '',
+        decrease: 0,
+        code: '',
       },
       products: [],
       type: '',
       page: 1,
+      mode: 'normal',
+      keyword: '',
+      idFilterStatus: null,
+      selectedBills: [],
     };
+    this.onSearchBill = _.debounce(this.onSearchBill, 1000);
   }
   componentDidMount() {
-    const { loaded, currentPage } = this.props;
+    const { loaded, currentPage,status } = this.props;
     if (!loaded) {
-      axios.get('/auth/bill/total', ).then(
-        (res) => {
-          this.props.dispatch(receiveTotalBill(res.data.quantity));
-        }
-      )
-      axios.get(`auth/bill?per_page=50&page=${currentPage + 1}`)
-        .then(
-          (res) => {
-            this.props.dispatch(receiveBill(res.data, currentPage + 1));
-          },
-          (error) => {
-
-          },
-        )
+      this.getTotal();
+      this.getBills(1);
     }
+    if (!status.length) {
+      this.getStatus();
+    }
+  }
+  getBills(page, idFilterStatus) {
+    const { mode } = this.state;
+    return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus}`)
+      .then(
+        (res) => {
+          this.props.dispatch(receiveBill(res.data, page));
+        },
+        (error) => {
+
+        },
+      )
+  }
+  getTotal(idFilterStatus) {
+    const { mode } = this.state;
+    return axios.get(`/auth/bill/total?mode=${mode}&idStatus=${idFilterStatus}`, ).then(
+      (res) => {
+        this.props.dispatch(receiveTotalBill(res.data.quantity));
+      }
+    )
   }
   open(type, id) {
     const bills = this.props.bills[this.state.page] || [];
@@ -100,9 +121,130 @@ class Home extends Component {
   changeProduct(products) {
     this.setState({ products });
   }
+  handleSelectPage(page) {
+    const { bills } = this.props;
+    this.setState({ page: page });
+    if (!bills[page]) {
+      this.getBills(page);
+    }
+  }
+  getStatus() {
+    axios.get('auth/bill/status')
+      .then(
+        (res) => {
+          this.props.dispatch(receiveStatus(res.data));
+        },
+        (error) => {
+        },
+      )
+  }
+  getStatusOptions() {
+    return this.props.status.map((status) => {
+      status.value = status.id;
+      status.label = status.name;
+      return status
+    });
+  }
+  async onSelectStatus(item) {
+    const { mode } = this.state;
+    this.setState({
+      mode: 'filterByStatus',
+      idFilterStatus: item.value,
+      page: 1,
+    }, () => {
+      this.getTotal(item.value);
+      this.getBills(1, item.value);
+    });
+  }
+  clearAll() {
+    this.setState({
+      mode: 'normal',
+      page: 1,
+      idFilterStatus: null,
+    }, () => {
+      this.getTotal();
+      this.getBills(1);
+    });
+  }
+  onChangeSearchBill(e) {
+    const keyword = e.target.value;
+    if (keyword.length < 3) return ;
+    this.onSearchBill(keyword);
+  }
+  onSearchBill(keyword) {
+    this.setState({
+      mode: 'search',
+      page: 1,
+      idFilterStatus: null,
+      keyword,
+    });
+    axios.get(`/auth/bill/search?q=${keyword}`)
+      .then(
+        (res) => {
+          this.props.dispatch(receiveBill(res.data, 1));
+        },
+        (error) => {
+
+        },
+      )
+  }
+  reloadBilld(page) {
+    const { keyword, mode } = this.state;
+    if (mode === 'search') {
+      this.onSearchBill(keyword);
+    } else {
+      axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}`)
+        .then(
+          (res) => {
+            this.props.dispatch(receiveBill(res.data, page));
+          },
+          (error) => {
+
+          },
+        )
+    }
+  }
+  selectBill(bill) {
+    const { selectedBills } = this.state;
+    if (selectedBills.find(o => o.id === bill.id)) {
+      this.setState({ selectedBills: selectedBills.filter(o => o.id !== bill.id) });
+    } else {
+      this.setState({ selectedBills: [...this.state.selectedBills, bill] });
+    }
+  }
+  unSelectAllBills() {
+    this.setState({ selectedBills: [] });
+  }
+  selectAllBills() {
+    const bills = this.props.bills[this.state.page] || [];
+    this.setState({ selectedBills: _.uniqBy([...this.state.selectedBills, ...bills], 'id') });
+  }
+  exportToEXcel() {
+    const { selectedBills } = this.state;
+    if (!selectedBills.length) {
+      window.alert('Không có hóa đơn được chọn');
+      return;
+    }
+    const header = ['ID', 'Mã', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
+    const bills = selectedBills.map((bill) => {
+      return [bill.id, bill.code, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, bill.address, bill.pay || 0, bill.note];
+    });
+    if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
+      axios.post('/auth/bill/excel', {
+        bills: [header, ...bills],
+      }, { responseType: 'blob' }).then(
+        (res) => {
+          FileSaver.saveAs(res.data, "Don-Hang.xlsx");
+        },
+        (error) => {
+          alert('Lỗi mịa nó rùi :(');
+        }
+      )
+    }
+  }
   render() {
-    const { user } = this.props;
-    const { showForm, type, customer, billInfo, products, page } = this.state;
+    const { user, total } = this.props;
+    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills } = this.state;
     const bills = this.props.bills[page] || [];
     var options = [
   { value: 1 , label: 'Còn hàng' },
@@ -112,34 +254,87 @@ class Home extends Component {
       <div className="row ng-scope">
         <div className="">
         <p></p>
-        <div className="text-right">
-        <Button onClick={this.open.bind(this, 'add')} bsStyle="success">
-          Tạo đơn hàng
-        </Button>
-        <AddBill
-          showForm={showForm}
-          close={this.close.bind(this)}
-          type={type}
-          parent={this}
-          onChange={this.onChange}
-          customer={customer}
-          billInfo={billInfo}
-          products={products}
-          changeProduct={this.changeProduct.bind(this)}
-          page={page}
-        />
+        <div>
+          <Col md={3}>
+          <Select
+            name="form-field-name"
+            options={this.getStatusOptions()}
+            placeholder="Lọc theo trạng thái"
+            searchable= {false}
+            clearable={false}
+            onChange={this.onSelectStatus.bind(this)}
+            value={idFilterStatus}
+          />
+          <p></p>
+          </Col>
+          <Col md={3}>
+            <FormControl
+            type="text"
+            placeholder="Tìm kiếm"
+            onChange={this.onChangeSearchBill.bind(this)}
+            />
+            <p></p>
+          </Col>
+          <Col md={3}>
+            <Button bsStyle="warning" onClick={this.clearAll.bind(this)}>
+              Bỏ lọc và tìm kiếm
+            </Button>
+          </Col>
+          <Col md={3}>
+            <div className="text-right">
+              <Button onClick={this.open.bind(this, 'add')} bsStyle="success">
+                Tạo đơn hàng
+              </Button>
+              <AddBill
+                showForm={showForm}
+                close={this.close.bind(this)}
+                type={type}
+                parent={this}
+                onChange={this.onChange}
+                customer={customer}
+                billInfo={billInfo}
+                products={products}
+                changeProduct={this.changeProduct.bind(this)}
+                page={page}
+                mode={mode}
+                reloadBilld={this.reloadBilld.bind(this)}
+              />
+            </div>
+          </Col>
+          <p className="clear-fix"></p>
         </div>
+        <p className="clear-fix"></p>
         <p></p>
           <Panel header={<span>Danh sách đơn hàng </span>} >
             <div className="table-responsive">
+            <div>
+              <Button onClick={this.selectAllBills.bind(this)} bsStyle="success">
+                Chọn tất cả ({selectedBills.length})
+              </Button>
+              &nbsp;
+              <Button onClick={this.unSelectAllBills.bind(this)} bsStyle="danger">
+                Bỏ chọn tất cả
+              </Button>
+              &nbsp;
+              <Button onClick={this.exportToEXcel.bind(this)} bsStyle="primary">
+                Xuất ra file excel
+              </Button>
+              &nbsp;
+              <Button  bsStyle="primary">
+                Cập nhật bằng file excel
+              </Button>
+              <p></p>
+            </div>
               <table className="table table-striped table-bordered table-hover">
                 <thead>
                   <tr>
+                    <th>Chọn</th>
+                    <th>#</th>
                     <th>Mã</th>
                     <th>Trạng thái</th>
+                    <th>Facebook</th>
                     <th>Tên khách hàng</th>
                     <th>Số điện thoại</th>
-                    <th>Facebook</th>
                     <th>Sản phẩm</th>
                     <th>Địa chỉ</th>
                     <th>Tổng thu</th>
@@ -152,16 +347,21 @@ class Home extends Component {
                     bills.map((bill, index) => {
                       return (
                         <tr key={bill.id}>
+                          <td className="pointer" onClick={this.selectBill.bind(this, bill)}>
+                            <Checkbox checked={selectedBills.find(o => o.id === bill.id)}>
+                            </Checkbox>
+                          </td>
                           <td>{bill.id} </td>
+                          <td>{bill.code} </td>
                           <td>{bill.status} </td>
+                          <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>
                           <td>{bill.phone} </td>
-                          <td>{bill.facebook} </td>
                           <td>
                             {bill.products_info}
                           </td>
                           <td>{bill.address}</td>
-                          <td>{bill.pay}</td>
+                          <td>{formatCurrency(bill.pay)}</td>
                           <td>{bill.note}</td>
                             <td>
                               <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
@@ -174,6 +374,25 @@ class Home extends Component {
                   }
                 </tbody>
               </table>
+              <div className="text-center">
+               {
+                 mode === 'search' ?
+                 null
+                 :
+                 <Pagination
+                    prev
+                    next
+                    first
+                    last
+                    ellipsis
+                    boundaryLinks
+                    items={Math.ceil(total / PER_PAGE)}
+                    maxButtons={5}
+                    activePage={page}
+                    onSelect={this.handleSelectPage.bind(this)}
+                  />
+               }
+              </div>
             </div>
           </Panel>
         </div>
@@ -187,5 +406,6 @@ export default connect((state) => {
     bills: state.data.bill.data,
     total: state.data.bill.total,
     user: state.data.user,
+    status: state.data.status,
   };
 })(Home);

@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
 import shortid from 'shortid';
 import { connect } from 'react-redux';
+import formatCurrency from 'format-currency';
 import _ from 'lodash';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
 import Select from 'react-select';
 import './AddBill.css';
 import AddProduct from '../product';
-import { HOST } from '../../config';
 import { receiveTotalBill, receiveBill } from '../../actions/fetchData';
+import { HOST, PER_PAGE } from '../../config';
 
 class AddBill extends Component {
   constructor(props) {
@@ -131,17 +132,6 @@ class AddBill extends Component {
       changeProduct(products.filter(o => o.id2 !== id2));
     }
   }
-  reloadBilld(page) {
-    axios.get(`auth/bill?per_page=50&page=${page}`)
-      .then(
-        (res) => {
-          this.props.dispatch(receiveBill(res.data, page));
-        },
-        (error) => {
-
-        },
-      )
-  }
   createBill() {
     const { products, user, type, close, page } = this.props;
     const { addedCustomer } = this.state;
@@ -155,9 +145,11 @@ class AddBill extends Component {
         bill_info: {
           shipping: billInfo.shipping,
           address: billInfo.address,
-          pay: billInfo.pay,
+          pay: this.getTotalProductCost(),
           note: billInfo.note,
           customer_id: addedCustomer.id,
+          code: billInfo.code,
+          decrease: billInfo.decrease || 0,
           id: billInfo.id,
         },
         products: products.map((product) => {
@@ -166,7 +158,7 @@ class AddBill extends Component {
       })
         .then(
           (res) => {
-            this.reloadBilld(page);
+            this.props.reloadBilld(page);
             close();
           },
           (error) => {
@@ -176,6 +168,8 @@ class AddBill extends Component {
     } else {
       billInfo.user_id = user.userId;
       billInfo.customer_id = addedCustomer.id;
+      billInfo.pay = this.getTotalProductCost();
+      billInfo.decrease = billInfo.decrease || 0;
       axios.post('/auth/bill', {
         bill_info: billInfo,
         products: products.map((product) => {
@@ -184,7 +178,7 @@ class AddBill extends Component {
       })
         .then(
           (res) => {
-            this.reloadBilld(page);
+            this.props.reloadBilld(1);
             close();
           },
           (error) => {
@@ -192,6 +186,12 @@ class AddBill extends Component {
           },
         );
     }
+  }
+  getTotalProductCost() {
+    const { products, billInfo } = this.props;
+    return products.reduce((sum, product) => {
+      return sum + product.price * product.quantity;
+    }, 0) - billInfo.decrease;
   }
   render() {
     const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail } = this.state;
@@ -323,6 +323,7 @@ class AddBill extends Component {
                       <th>Mã</th>
                       <th>Size</th>
                       <th>Số lượng</th>
+                      <th>Gía</th>
                       <th>Thao tác</th>
                     </tr>
                   </thead>
@@ -342,6 +343,7 @@ class AddBill extends Component {
                             <td>{product.code}</td>
                             <td>{product.size}</td>
                             <td>{product.quantity}</td>
+                            <td>{formatCurrency(product.price)}</td>
                             <td>
                               <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id2)}>
                                 Xóa
@@ -357,6 +359,18 @@ class AddBill extends Component {
               </Panel>
                 <Panel header={<span>Thông tin đơn hàng</span>} >
                   <Form horizontal>
+                    <FormGroup>
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Mã đơn
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="text"
+                        onChange={onChange.bind(parent, 'billInfo', 'code')}
+                        value={billInfo.code}
+                        />
+                      </Col>
+                    </FormGroup>
                    <FormGroup>
                      <Col componentClass={ControlLabel} sm={2}>
                        Phí ship
@@ -369,7 +383,18 @@ class AddBill extends Component {
                        />
                      </Col>
                    </FormGroup>
-
+                   <FormGroup>
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Giảm giá
+                     </Col>
+                     <Col sm={10}>
+                       <FormControl
+                       type="number"
+                       onChange={onChange.bind(parent, 'billInfo', 'decrease')}
+                       value={billInfo.decrease}
+                       />
+                     </Col>
+                   </FormGroup>
                    <FormGroup >
                      <Col componentClass={ControlLabel} sm={2}>
                        Địa chỉ nhận
@@ -388,9 +413,9 @@ class AddBill extends Component {
                      </Col>
                      <Col sm={10}>
                        <FormControl
-                       type="number"
-                       onChange={onChange.bind(parent, 'billInfo', 'pay')}
-                       value={billInfo.pay}
+                       type="text"
+                       value={formatCurrency(this.getTotalProductCost())}
+                       disabled
                        />
                      </Col>
                    </FormGroup>
@@ -403,7 +428,7 @@ class AddBill extends Component {
                        componentClass="textarea"
                        type="text"
                        onChange={onChange.bind(parent, 'billInfo', 'note')}
-                       value={billInfo.note}
+                       value={billInfo.note || ''}
                        />
                      </Col>
                    </FormGroup>

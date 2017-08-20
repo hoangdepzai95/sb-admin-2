@@ -11,7 +11,7 @@ import { isLogged } from './util';
 
 const Main = () => {
   return (
-    <div>
+    <div className="full-height">
       <Route path="/home" component={Header} />
       <div id="page-wrapper" className="page-wrapper">
         <Route path="/home/users" component={Users} />

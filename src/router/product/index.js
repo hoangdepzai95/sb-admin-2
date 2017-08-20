@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
+import formatCurrency from 'format-currency';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, FieldGroup } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import Select from 'react-select';
@@ -8,7 +9,7 @@ import className from 'classnames';
 
 import './style.css';
 import { receiveProduct } from '../../actions/fetchData';
-import { HOST } from '../../config';
+import { HOST, PER_PAGE } from '../../config';
 
 class Home extends Component {
   constructor(props) {
@@ -23,6 +24,7 @@ class Home extends Component {
       id: '',
       instock: 1,
       file: null,
+      price: '',
     };
   }
   componentDidMount() {
@@ -49,6 +51,7 @@ class Home extends Component {
         size: product.size,
         id: product.id,
         instock: product.instock,
+        price: product.price,
       });
     } else {
       this.setState({
@@ -58,6 +61,7 @@ class Home extends Component {
         size: '',
         id: '',
         instock: 1,
+        price: '',
       });
     }
   }
@@ -93,14 +97,18 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, size, code, quantity, type, id, instock, file } = this.state;
-    if (name.length < 1) return;
+    const { name, size, code, quantity, type, id, instock, file, price } = this.state;
+    if (name.length < 1 || !price) {
+      window.alert('Tên và giá sản phẩm không được bỏ trống');
+      return;
+    };
     const product = {
       name,
       size,
       code,
       quantity: quantity || 0,
       instock,
+      price,
     };
     if (type === 'edit') product.id = id;
     const formData = new FormData();
@@ -149,7 +157,7 @@ class Home extends Component {
   }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, size, code, quantity, instock } = this.state;
+    const { showForm, name, username, password, role, type, size, code, quantity, instock, price } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -182,6 +190,7 @@ class Home extends Component {
                        <th>Mã</th>
                        <th>Size</th>
                        <th>Số lượng </th>
+                       <th>Giá </th>
                        <th>Trạng thái</th>
                        {
                          user.role < 3 ?
@@ -207,6 +216,7 @@ class Home extends Component {
                              <td>{product.code} </td>
                              <td>{product.size} </td>
                              <td>{product.quantity} </td>
+                             <td>{formatCurrency(product.price)}</td>
                              <td>
                                {
                                  product.instock == 1 ?
@@ -294,6 +304,18 @@ class Home extends Component {
            </FormGroup>
            <FormGroup >
              <Col componentClass={ControlLabel} sm={2}>
+               Giá
+             </Col>
+             <Col sm={10}>
+               <FormControl
+               type="number"
+               onChange={this.onChange.bind(this, 'price')}
+               value={price}
+               />
+             </Col>
+           </FormGroup>
+           <FormGroup >
+             <Col componentClass={ControlLabel} sm={2}>
                Ảnh
              </Col>
              <Col sm={10}>
@@ -316,6 +338,7 @@ class Home extends Component {
                options={options}
                onChange={this.logChange.bind(this)}
                clearable={false}
+               searchable= {false}
                />
              </Col>
            </FormGroup>

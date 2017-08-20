@@ -3,6 +3,12 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+html ,body, #page-wrapper, .full-height {
+  height: 100%;
+}
+table td {
+  max-width: 150px !important;
+}
 /*!
  * Start Bootstrap - SB Admin 2 Bootstrap Admin Theme (http://startbootstrap.com)
  * Code licensed under the Apache License v2.0.
@@ -1011,4 +1017,7 @@ table.dataTable thead .sorting:after {
 @keyframes nprogress-spinner {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+.pointer {
+  cursor: pointer;
 }

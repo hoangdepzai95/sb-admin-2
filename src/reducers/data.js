@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { RECEIVE_USERS, RECEIVE_USER, RECEIVE_PRODUCT, RECEIVE_TOTAL_BILL, RECEIVE_BILL } from '../actions/fetchData';
+import { RECEIVE_USERS, RECEIVE_USER, RECEIVE_PRODUCT, RECEIVE_TOTAL_BILL, RECEIVE_BILL, RECEIVE_STATUS } from '../actions/fetchData';
 
 const initialState = {
   home: {
@@ -19,6 +19,7 @@ const initialState = {
     loaded: false,
     hasMore: true,
   },
+  status: [],
 };
 const data = (state = initialState, action) => {
   switch (action.type) {
@@ -40,6 +41,8 @@ const data = (state = initialState, action) => {
       bill.currentPage = action.page;
       return _.assign({}, state, { bill });
     }
+    case RECEIVE_STATUS:
+      return _.assign({}, state, { status: action.data });
     default:
       return state;
   }
