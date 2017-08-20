@@ -157,7 +157,7 @@ class AddBill extends Component {
           address: billInfo.address,
           pay: billInfo.pay,
           note: billInfo.note,
-          customer_id: addedCustomer.customer_id,
+          customer_id: addedCustomer.id,
           id: billInfo.id,
         },
         products: products.map((product) => {
