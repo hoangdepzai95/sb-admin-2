@@ -199,7 +199,7 @@ class Home extends Component {
                              <td>
                               {
                                 product.image ?
-                                <img src={`${HOST}/static/images/${product.image}`} className="product-image" />
+                                <img src={`${HOST}/images/${product.image}`} className="product-image" />
                                 : null
                               }
                               {product.name}
