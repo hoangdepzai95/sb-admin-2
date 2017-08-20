@@ -10,6 +10,7 @@ const cors = require('cors')
 const app = express();
 const rootPath = getRootPath();
 app.use(express.static(`${rootPath}/build`));
+app.use(express.static(`${rootPath}/uploads`));
 
 app.use(cors());
 app.use(cookieParser());

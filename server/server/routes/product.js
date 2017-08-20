@@ -11,7 +11,7 @@ const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, `${getRootPath()}/build/static/images`)
+    cb(null, `${getRootPath()}/uploads/images`)
   },
   filename: function (req, file, cb) {
     crypto.pseudoRandomBytes(16, function (err, raw) {
