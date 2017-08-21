@@ -23,7 +23,7 @@ const upload = multer({ storage: storage });
 router.get('/', (req, res) => {
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT * FROM product`, function (error, results) {
+    con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
       con.release();
@@ -38,8 +38,9 @@ router.get('/search', (req, res) => {
   const keyword = req.query.q;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT * FROM product WHERE name LIKE '%${keyword}%' OR code LIKE '%${keyword}%'` , function (error, results) {
+    con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id WHERE name LIKE '%${keyword}%' OR code LIKE '%${keyword}%'` , function (error, results) {
     if (error) {
+      console.log(error);
       res.status(400).send('Error');
       con.release();
     }else{
@@ -60,7 +61,7 @@ router.post('/', upload.single('file'), (req, res) => {
       res.status(400).send('Error');
       con.release();
     }else{
-      con.query(`SELECT * FROM product WHERE id='${results.insertId}'`, function (error, results) {
+      con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id WHERE product.id='${results.insertId}'`, function (error, results) {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -85,8 +86,9 @@ router.put('/', upload.single('file'), (req, res) => {
       res.status(400).send('Error');
       con.release();
     }else{
-      con.query(`SELECT * FROM product WHERE id='${product.id}'`, function (error, results) {
+      con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id WHERE product.id='${product.id}'`, function (error, results) {
       if (error) {
+        console.log(error);
         res.status(400).send('Error');
         con.release();
       }else{

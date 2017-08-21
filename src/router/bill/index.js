@@ -30,6 +30,7 @@ class Home extends Component {
         note: '',
         decrease: 0,
         code: '',
+        status_id: null,
       },
       products: [],
       type: '',
@@ -226,9 +227,13 @@ class Home extends Component {
       window.alert('Không có hóa đơn được chọn');
       return;
     }
-    const header = ['ID', 'Mã', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
+    const header = ['ID', 'Mã', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
     const bills = selectedBills.map((bill) => {
-      return [bill.id, bill.code, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, bill.address, bill.pay || 0, bill.note];
+      const categories = _.uniq(bill.products.map(product => product.category)).join('+');
+      const quantity = bill.products.reduce((sum, product) => {
+                                        return sum + product.quantity;
+                                      }, 0);
+      return [bill.id, bill.code, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
     });
     if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
       axios.post('/auth/bill/excel', {
@@ -394,9 +399,13 @@ class Home extends Component {
                           <td>{formatCurrency(bill.pay)}</td>
                           <td>{bill.note}</td>
                             <td>
-                              <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
-                                Chỉnh sửa
-                              </Button>
+                              {
+                                bill.status_id !== 2 ?
+                                <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
+                                  Chỉnh sửa
+                                </Button>
+                                : null
+                              }
                             </td>
                         </tr>
                       );

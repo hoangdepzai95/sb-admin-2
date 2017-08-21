@@ -8,7 +8,7 @@ import Select from 'react-select';
 import className from 'classnames';
 
 import './style.css';
-import { receiveProduct } from '../../actions/fetchData';
+import { receiveProduct, receiveCategory } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
 
 class Home extends Component {
@@ -25,10 +25,11 @@ class Home extends Component {
       instock: 1,
       file: null,
       price: '',
+      id_category: null,
     };
   }
   componentDidMount() {
-    const { loaded } = this.props;
+    const { loaded, category } = this.props;
     if (!loaded) {
       axios.get('/auth/product', ).then(
         (res) => {
@@ -36,6 +37,19 @@ class Home extends Component {
         }
       )
     }
+    if (!category.length) {
+      this.getCategory();
+    }
+  }
+  getCategory() {
+    axios.get('auth/bill/category')
+      .then(
+        (res) => {
+          this.props.dispatch(receiveCategory(res.data));
+        },
+        (error) => {
+        },
+      )
   }
   open(type, id) {
     this.setState({
@@ -52,6 +66,7 @@ class Home extends Component {
         id: product.id,
         instock: product.instock,
         price: product.price,
+        id_category: product.id_category,
       });
     } else {
       this.setState({
@@ -62,6 +77,7 @@ class Home extends Component {
         id: '',
         instock: 1,
         price: '',
+        id_category: null,
       });
     }
   }
@@ -97,11 +113,15 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, size, code, quantity, type, id, instock, file, price } = this.state;
+    const { name, size, code, quantity, type, id, instock, file, price, id_category } = this.state;
     if (name.length < 1 || !price) {
       window.alert('Tên và giá sản phẩm không được bỏ trống');
       return;
     };
+    if (!id_category) {
+      window.alert('Chưa chọn nhóm hàng');
+      return;
+    }
     const product = {
       name,
       size,
@@ -109,6 +129,7 @@ class Home extends Component {
       quantity: quantity || 0,
       instock,
       price,
+      id_category,
     };
     if (type === 'edit') product.id = id;
     const formData = new FormData();
@@ -155,9 +176,19 @@ class Home extends Component {
   logChange(v) {
     this.setState({ instock: v.value });
   }
+  onChangeCategory(v) {
+    this.setState({ id_category: v.value });
+  }
+  getCategoryOptions() {
+    return this.props.category.map((item) => {
+      item.value = item.id;
+      item.label = item.category;
+      return item
+    });
+  }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, size, code, quantity, instock, price } = this.state;
+    const { showForm, name, username, password, role, type, size, code, quantity, instock, price, id_category } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -191,6 +222,7 @@ class Home extends Component {
                        <th>Size</th>
                        <th>Số lượng </th>
                        <th>Giá </th>
+                       <th>Nhóm </th>
                        <th>Trạng thái</th>
                        {
                          user.role < 3 ?
@@ -204,7 +236,7 @@ class Home extends Component {
                        products.map((product, index) => {
                          return (
                            <tr key={product.id}>
-                             <td>{index} </td>
+                             <td>{index + 1} </td>
                              <td>
                               {
                                 product.image ?
@@ -217,6 +249,7 @@ class Home extends Component {
                              <td>{product.size} </td>
                              <td>{product.quantity} </td>
                              <td>{formatCurrency(product.price)}</td>
+                             <td>{product.category}</td>
                              <td>
                                {
                                  product.instock == 1 ?
@@ -275,6 +308,22 @@ class Home extends Component {
                type="text"
                onChange={this.onChange.bind(this, 'code')}
                value={code}
+               />
+             </Col>
+           </FormGroup>
+           <FormGroup >
+             <Col componentClass={ControlLabel} sm={2}>
+               Nhóm sản phẩm
+             </Col>
+             <Col sm={10}>
+               <Select
+               name="form-field-name"
+               value={id_category}
+               placeholder="Trạng thái"
+               options={this.getCategoryOptions()}
+               onChange={this.onChangeCategory.bind(this)}
+               clearable={false}
+               searchable= {false}
                />
              </Col>
            </FormGroup>
@@ -362,5 +411,6 @@ export default connect((state) => {
     loaded: state.data.product.loaded,
     products: state.data.product.data,
     user: state.data.user,
+    category: state.data.category,
   };
 })(Home);

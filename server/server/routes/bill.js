@@ -20,11 +20,11 @@ router.get('/', (req, res) => {
       if (err) return res.status(400).send('Error');
       con.query(`
             SELECT b.*, product.name AS product_name, bill_detail.quantity,
-            customer.name as customer_name, customer.phone, customer.facebook, status.name as status
+            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
-            INNER JOIN (bill_detail INNER JOIN product ON bill_detail.product_id = product.id) ON b.id = bill_detail.bill_id
+            INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON b.id = bill_detail.bill_id
             `, (error, result) => {
       if (error) {
         res.status(400).send('Error');
@@ -35,7 +35,7 @@ router.get('/', (req, res) => {
         for ( let billId in billGroup) {
           const bill = billGroup[billId][0];
           bill.products = billGroup[billId].map((o) => {
-            return { name: o.product_name, quantity: o.quantity };
+            return { name: o.product_name, quantity: o.quantity, category: o.category };
           });
           bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
           rs.unshift(bill);
@@ -72,11 +72,11 @@ router.get('/search', (req, res) => {
     `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   const sql = `
     SELECT bill.*, product.name AS product_name, bill_detail.quantity,
-    customer.name as customer_name, customer.phone, customer.facebook, status.name as status
+    customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
     FROM bill
     INNER JOIN customer ON bill.customer_id = customer.id
     INNER JOIN status ON bill.status_id = status.id
-    INNER JOIN (bill_detail INNER JOIN product ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
+    INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
     ${condition};
   `;
   pool.getConnection((err, con) => {
@@ -91,7 +91,7 @@ router.get('/search', (req, res) => {
           for ( let billId in billGroup) {
             const bill = billGroup[billId][0];
             bill.products = billGroup[billId].map((o) => {
-              return { name: o.product_name, quantity: o.quantity };
+              return { name: o.product_name, quantity: o.quantity, category: o.category };
             });
             bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
             rs.unshift(bill);
@@ -108,9 +108,9 @@ router.get('/product/:billId', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-        SELECT product.*, bill_detail.quantity
+        SELECT product.*, bill_detail.quantity, product_category.category
         FROM bill
-        INNER JOIN (bill_detail INNER JOIN product ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
+        INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
         WHERE bill.id='${req.params.billId}'
         `, (error, result) => {
       if (error) {
@@ -158,9 +158,13 @@ router.post('/status', (req, res) => {
 })
 
 router.delete('/status/:id', (req, res) => {
+  const id = req.params.id;
+  if (id == 1 || id == 2) {
+    return res.status(400).send('Error');
+  }
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('DELETE FROM status WHERE ?', { id: req.params.id } , (error, result) => {
+      con.query('DELETE FROM status WHERE ?', { id } , (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -176,7 +180,6 @@ router.delete('/status/:id', (req, res) => {
 router.post('/', (req, res) => {
   const bill = req.body.bill_info;
   bill.create_at = (new Date()).valueOf();
-  bill.status_id = 1;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query('INSERT INTO bill SET ?', bill, function (error, result) {
@@ -277,6 +280,55 @@ router.put('/', (req, res) => {
       }
       });
     }
+    });
+  });
+});
+
+router.get('/category', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('SELECT * FROM product_category', (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).json(result);
+        con.release();
+      }
+    });
+  });
+})
+
+router.post('/category', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('INSERT INTO product_category SET ?', { category: req.body.category }, (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).json({ id: result.insertId, category: req.body.category });
+        con.release();
+      }
+    });
+  });
+})
+
+router.delete('/category/:id', (req, res) => {
+  const id = req.params.id;
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('DELETE FROM product_category WHERE ?', { id } , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
     });
   });
 });

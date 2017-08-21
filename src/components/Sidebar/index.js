@@ -41,6 +41,16 @@ class Sidebar extends Component {
               :
               null
             }
+            {
+              user.role == 1 ?
+              <li>
+                <Link to="/home/category">
+                  <i className="fa fa-object-group" /> &nbsp;Quản lí nhóm hàng
+                </Link>
+              </li>
+              :
+              null
+            }
             <li>
               <Link to="/home/product">
                 <i className="fa fa-table fa-fw" /> &nbsp;Kho hàng

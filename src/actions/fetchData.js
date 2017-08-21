@@ -4,6 +4,7 @@ export const RECEIVE_PRODUCT = 'RECEIVE_PRODUCT';
 export const RECEIVE_TOTAL_BILL = 'RECEIVE_TOTAL_BILL';
 export const RECEIVE_BILL = 'RECEIVE_BILL';
 export const RECEIVE_STATUS = 'RECEIVE_STATUS';
+export const RECEIVE_CATEGORY = 'RECEIVE_CATEGORY';
 
 export function receiveUsers(users) {
   return {
@@ -42,6 +43,13 @@ export function receiveBill(bills, page) {
 export function receiveStatus(data) {
   return {
     type: RECEIVE_STATUS,
+    data,
+  };
+}
+
+export function receiveCategory(data) {
+  return {
+    type: RECEIVE_CATEGORY,
     data,
   };
 }

@@ -5,6 +5,7 @@ import Login from './login';
 import Users from './users';
 import Status from './status';
 import Product from './product';
+import Category from './category';
 import Bill from './bill';
 import Blank from './Blank';
 
@@ -17,6 +18,7 @@ const Main = () => {
       <div id="page-wrapper" className="page-wrapper">
         <Route path="/home/users" component={Users} />
         <Route path="/home/status" component={Status} />
+        <Route path="/home/category" component={Category} />
         <Route path="/home/product" component={Product} />
         <Route path="/home/bill" component={Bill} />
       </div>

@@ -140,6 +140,10 @@ class AddBill extends Component {
       window.alert('Không có sản phẩm');
       return;
     }
+    if (!billInfo.status_id) {
+      window.alert('Chưa chọn trạng thái');
+      return;
+    }
     if (type === 'edit') {
       axios.put('/auth/bill', {
         bill_info: {
@@ -151,6 +155,7 @@ class AddBill extends Component {
           code: billInfo.code,
           decrease: billInfo.decrease || 0,
           id: billInfo.id,
+          status_id: billInfo.status_id,
         },
         products: products.map((product) => {
           return { product_id: product.id, quantity: product.quantity };
@@ -192,6 +197,16 @@ class AddBill extends Component {
     return products.reduce((sum, product) => {
       return sum + product.price * product.quantity;
     }, 0) - billInfo.decrease;
+  }
+  getStatusOptions() {
+    return this.props.status.map((status) => {
+      status.value = status.id;
+      status.label = status.name;
+      return status
+    });
+  }
+  onSelectStatus(item) {
+    this.props.onChange.call(this.props.parent, 'billInfo', 'status_id', { target: { value: item.value } });
   }
   render() {
     const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail } = this.state;
@@ -371,6 +386,22 @@ class AddBill extends Component {
                         />
                       </Col>
                     </FormGroup>
+                    <FormGroup>
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Trạng thái
+                      </Col>
+                      <Col sm={10}>
+                      <Select
+                        name="form-field-name"
+                        options={this.getStatusOptions()}
+                        placeholder="Trạng thái"
+                        searchable= {false}
+                        clearable={false}
+                        onChange={this.onSelectStatus.bind(this)}
+                        value={billInfo.status_id}
+                      />
+                      </Col>
+                    </FormGroup>
                    <FormGroup>
                      <Col componentClass={ControlLabel} sm={2}>
                        Phí ship
@@ -458,5 +489,6 @@ class AddBill extends Component {
 export default connect((state) => {
   return {
     user: state.data.user,
+    status: state.data.status,
   };
 })(AddBill);
