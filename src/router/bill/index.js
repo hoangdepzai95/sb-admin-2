@@ -227,13 +227,13 @@ class Home extends Component {
       window.alert('Không có hóa đơn được chọn');
       return;
     }
-    const header = ['ID', 'Mã', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
+    const header = ['ID', 'Mã', 'Nhân viên', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
     const bills = selectedBills.map((bill) => {
       const categories = _.uniq(bill.products.map(product => product.category)).join('+');
       const quantity = bill.products.reduce((sum, product) => {
                                         return sum + product.quantity;
                                       }, 0);
-      return [bill.id, bill.code, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
+      return [bill.id, bill.code, bill.user_name, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
     });
     if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
       axios.post('/auth/bill/excel', {
@@ -340,7 +340,7 @@ class Home extends Component {
         <p className="clear-fix"></p>
         <p></p>
           <Panel header={<span>Danh sách đơn hàng </span>} >
-            <div className="table-responsive">
+            <div className="table-responsive bill-table">
             <div>
               <Button onClick={this.selectAllBills.bind(this)} bsStyle="success">
                 Chọn tất cả ({selectedBills.length})
@@ -364,8 +364,8 @@ class Home extends Component {
                 <thead>
                   <tr>
                     <th>Chọn</th>
-                    <th>#</th>
                     <th>Mã</th>
+                    <th>Nhân viên</th>
                     <th>Trạng thái</th>
                     <th>Facebook</th>
                     <th>Tên khách hàng</th>
@@ -374,7 +374,6 @@ class Home extends Component {
                     <th>Địa chỉ</th>
                     <th>Tổng thu</th>
                     <th>Ghi chú</th>
-                    <th>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,11 +382,19 @@ class Home extends Component {
                       return (
                         <tr key={bill.id}>
                           <td className="pointer" onClick={this.selectBill.bind(this, bill)}>
-                            <Checkbox checked={selectedBills.find(o => o.id === bill.id)}>
+                            <Checkbox checked={selectedBills.find(o => o.id === bill.id)} >
+                              <span>#{bill.id}</span>
                             </Checkbox>
+                            {
+                              bill.status_id !== 2 ?
+                              <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
+                                Chỉnh sửa
+                              </Button>
+                              : null
+                            }
                           </td>
-                          <td>{bill.id} </td>
                           <td>{bill.code} </td>
+                          <td>{bill.user_name} </td>
                           <td>{bill.status} </td>
                           <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>
@@ -398,15 +405,6 @@ class Home extends Component {
                           <td>{bill.address}</td>
                           <td>{formatCurrency(bill.pay)}</td>
                           <td>{bill.note}</td>
-                            <td>
-                              {
-                                bill.status_id !== 2 ?
-                                <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
-                                  Chỉnh sửa
-                                </Button>
-                                : null
-                              }
-                            </td>
                         </tr>
                       );
                     })

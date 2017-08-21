@@ -23,9 +23,9 @@ class Sidebar extends Component {
           <ul className="nav in" id="side-menu">
             {
               user.role == 1 ?
-              <li>
+              <li title="Quản lí nhân viên">
                 <Link to="/home/users">
-                  <i className="fa fa-users" /> &nbsp;Quản lí nhân viên
+                  <i className="fa fa-users" />
                 </Link>
               </li>
               :
@@ -33,9 +33,9 @@ class Sidebar extends Component {
             }
             {
               user.role == 1 ?
-              <li>
+              <li title="Trạng thái đơn hàng">
                 <Link to="/home/status">
-                  <i className="fa fa-yelp" /> &nbsp;Trạng thái đơn hàng
+                  <i className="fa fa-yelp" />
                 </Link>
               </li>
               :
@@ -43,34 +43,34 @@ class Sidebar extends Component {
             }
             {
               user.role == 1 ?
-              <li>
+              <li title="Quản lí nhóm hàng">
                 <Link to="/home/category">
-                  <i className="fa fa-object-group" /> &nbsp;Quản lí nhóm hàng
+                  <i className="fa fa-object-group" />
                 </Link>
               </li>
               :
               null
             }
-            <li>
+            <li title="Kho hàng">
               <Link to="/home/product">
-                <i className="fa fa-table fa-fw" /> &nbsp;Kho hàng
+                <i className="fa fa-table fa-fw" />
               </Link>
             </li>
 
-            <li>
+            <li title="Đơn hàng">
               <Link to="/home/bill">
-                <i className="fa fa-sticky-note-o" /> &nbsp;Đơn hàng
+                <i className="fa fa-sticky-note-o" />
               </Link>
             </li>
 
-            <li>
+            <li title="Khách hàng">
               <Link to="/home/customer">
-                <i className="fa fa-address-book-o" /> &nbsp;Khách hàng
+                <i className="fa fa-address-book-o" />
               </Link>
             </li>
-            <li>
+            <li title="Thống kê">
               <Link to="/home/chart">
-                <i className="fa fa-bar-chart" /> &nbsp;Thống kê
+                <i className="fa fa-bar-chart" />
               </Link>
             </li>
           </ul>

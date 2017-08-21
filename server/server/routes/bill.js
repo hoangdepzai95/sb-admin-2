@@ -19,11 +19,12 @@ router.get('/', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-            SELECT b.*, product.name AS product_name, bill_detail.quantity,
+            SELECT b.*, product.name AS product_name, bill_detail.quantity, user.full_name AS user_name,
             customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
+            INNER JOIN user ON b.user_id = user.id
             INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON b.id = bill_detail.bill_id
             `, (error, result) => {
       if (error) {

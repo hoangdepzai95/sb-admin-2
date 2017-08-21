@@ -9,6 +9,9 @@ html ,body, #page-wrapper, .full-height {
 table td {
   max-width: 150px !important;
 }
+.bill-table td {
+  font-size: 13px;
+}
 /*!
  * Start Bootstrap - SB Admin 2 Bootstrap Admin Theme (http://startbootstrap.com)
  * Code licensed under the Apache License v2.0.
@@ -416,7 +419,7 @@ body {
 @media(min-width:768px) {
     #page-wrapper {
         position: inherit;
-        margin: 0 0 0 250px;
+        margin: 0 0 0 60px;
         padding: 0 30px;
         border-left: 1px solid #e7e7e7;
     }
@@ -532,7 +535,7 @@ body {
     .sidebar {
         z-index: 1;
         position: absolute;
-        width: 250px;
+        width: 60px;
         margin-top: 51px;
     }
 

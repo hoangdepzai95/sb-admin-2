@@ -194,9 +194,10 @@ class AddBill extends Component {
   }
   getTotalProductCost() {
     const { products, billInfo } = this.props;
+    console.log(this.props.products);
     return products.reduce((sum, product) => {
       return sum + product.price * product.quantity;
-    }, 0) - billInfo.decrease;
+    }, 0) - (billInfo.decrease || 0) ;
   }
   getStatusOptions() {
     return this.props.status.map((status) => {
