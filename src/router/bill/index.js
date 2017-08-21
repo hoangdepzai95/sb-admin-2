@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import _ from 'lodash';
+import fileExtension from 'file-extension';
 import Panel from 'react-bootstrap/lib/Panel';
 import formatCurrency from 'format-currency';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, Pagination, InputGroup, Checkbox } from 'react-bootstrap';
@@ -242,6 +243,34 @@ class Home extends Component {
       )
     }
   }
+  onFileChange(e) {
+    e.persist();
+    const file = e.target.files[0];
+    if (file) {
+      if (fileExtension(file.name) === 'xlsx') {
+        if (!window.confirm('Tác vụ tốn thời gian, đủ kiên nhẫn đợi không ?')) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        axios.post('/auth/bill/excel/upload', formData)
+        .then(
+          (res) => {
+            window.alert(res.data.message);
+            e.target.value = null;
+          },
+          (res) => {
+            window.alert('Có lỗi xảy ra');
+            e.target.value = null;
+          },
+        )
+      } else {
+        window.alert('Không phải file excel');
+      }
+    }
+  }
+  updateByExcel() {
+    const el = document.getElementById('excel-up');
+    if (el) el.click();
+  }
   render() {
     const { user, total } = this.props;
     const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills } = this.state;
@@ -320,9 +349,10 @@ class Home extends Component {
                 Xuất ra file excel
               </Button>
               &nbsp;
-              <Button  bsStyle="primary">
+              <Button  bsStyle="primary" onClick={this.updateByExcel.bind(this)}>
                 Cập nhật bằng file excel
               </Button>
+              <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
               <p></p>
             </div>
               <table className="table table-striped table-bordered table-hover">

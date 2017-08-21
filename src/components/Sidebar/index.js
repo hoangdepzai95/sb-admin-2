@@ -31,6 +31,16 @@ class Sidebar extends Component {
               :
               null
             }
+            {
+              user.role == 1 ?
+              <li>
+                <Link to="/home/status">
+                  <i className="fa fa-yelp" /> &nbsp;Trạng thái đơn hàng
+                </Link>
+              </li>
+              :
+              null
+            }
             <li>
               <Link to="/home/product">
                 <i className="fa fa-table fa-fw" /> &nbsp;Kho hàng

@@ -1,10 +1,13 @@
 const pool = require('../db');
 const _ = require('lodash');
+const multer  = require('multer');
 const express = require('express');
 const xlsx =  require('node-xlsx');
 const getRootPath = require('../../../util');
 
 const router = express.Router();
+
+const upload  = multer({ storage: multer.memoryStorage() });
 
 router.get('/', (req, res) => {
   const page = req.query.page;
@@ -63,7 +66,10 @@ router.get('/total', (req, res) => {
 })
 
 router.get('/search', (req, res) => {
-  const keyword = req.query.q;
+  const keywords = req.query.q.split(',').map(o => o.trim()).join('|');
+  const multiKeyword = req.query.q.split(',').length > 1 ;
+  const condition = multiKeyword ? `WHERE bill.code REGEXP '${keywords}'` :
+    `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   const sql = `
     SELECT bill.*, product.name AS product_name, bill_detail.quantity,
     customer.name as customer_name, customer.phone, customer.facebook, status.name as status
@@ -71,7 +77,7 @@ router.get('/search', (req, res) => {
     INNER JOIN customer ON bill.customer_id = customer.id
     INNER JOIN status ON bill.status_id = status.id
     INNER JOIN (bill_detail INNER JOIN product ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
-    WHERE customer.phone LIKE '%${keyword}%' OR customer.facebook LIKE '%${keyword}%' OR bill.code LIKE '%${keyword}%';
+    ${condition};
   `;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
@@ -99,7 +105,6 @@ router.get('/search', (req, res) => {
 
 
 router.get('/product/:billId', (req, res) => {
-  console.log(req.params.billId);
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
@@ -136,6 +141,38 @@ router.get('/status', (req, res) => {
   });
 })
 
+router.post('/status', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('INSERT INTO status SET ?', {name: req.body.name}, (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).json({ id: result.insertId, name: req.body.name });
+        con.release();
+      }
+    });
+  });
+})
+
+router.delete('/status/:id', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('DELETE FROM status WHERE ?', { id: req.params.id } , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
+    });
+  });
+});
+
 router.post('/', (req, res) => {
   const bill = req.body.bill_info;
   bill.create_at = (new Date()).valueOf();
@@ -169,6 +206,45 @@ router.post('/excel', (req, res) => {
   const bills = req.body.bills;
   const buffer = xlsx.build([{name: "mySheetName", data: bills}]);
   res.end(buffer);
+});
+
+router.post('/excel/upload', upload.single('file'), (req, res) => {
+  const workSheetsFromBuffer = xlsx.parse(req.file.buffer);
+  const bills = workSheetsFromBuffer[0].data;
+  bills.shift();
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('SELECT * FROM status', (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        const status = result;
+        const updated = [];
+        bills.forEach((bill) => {
+          let stop = false;
+          if (stop) return;
+          const billStatus = status.find(o => o.name === bill[2].trim());
+          const statusId = billStatus ? billStatus.id : null;
+          const value = [ { status_id: statusId, code: bill[1] }, { id: bill[0] }];
+          con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
+          if (error) {
+            console.log(error);
+            res.status(200).josn({ message: `Có lỗi xảy ra, ${updated.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có ID ${bill.id}` });
+            con.release();
+            stop = true;
+          } else {
+            updated.push(bill);
+            if (updated.length === bills.length) {
+              res.status(200).json({ message: `Cập nhật thành công, ${updated.length} hóa đơn đã được cập nhật` });
+            }
+          }
+        });
+      });
+      }
+    });
+  });
 });
 
 router.put('/', (req, res) => {

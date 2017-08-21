@@ -17,6 +17,7 @@ router.post('/create', function (req, res) {
       role: req.body.role,
     };
     pool.getConnection(function(err, con) {
+      if (err) return res.status(400).send('Error');
       con.query(`SELECT * FROM user WHERE username='${req.body.username}'`, function (error, results) {
       if (error) {
         res.status(400).send('Error');
@@ -49,6 +50,7 @@ router.post('/create', function (req, res) {
 });
 router.get('/users', function(req, res) {
   pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
     con.query(`SELECT * FROM user`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
@@ -63,6 +65,7 @@ router.get('/users', function(req, res) {
 router.delete('/:id', (req, res) => {
   const id = req.params.id;
   pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
     con.query(`DELETE FROM user WHERE id='${id}'`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
