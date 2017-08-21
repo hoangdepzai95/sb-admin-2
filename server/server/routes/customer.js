@@ -25,6 +25,7 @@ router.post('/', (req, res) => {
     phone: req.body.phone,
     name: req.body.name,
     facebook: req.body.facebook,
+    create_at: (new Date()).valueOf(),
   };
   pool.getConnection((err, con) => {
     if (err) return res.status(400).send('Error');

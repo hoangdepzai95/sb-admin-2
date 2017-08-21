@@ -395,7 +395,9 @@ class Home extends Component {
                           </td>
                           <td>{bill.code} </td>
                           <td>{bill.user_name} </td>
-                          <td>{bill.status} </td>
+                          <td>
+                          <span style={{color: bill.color}}>{bill.status}</span> 
+                          </td>
                           <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>
                           <td>{bill.phone} </td>

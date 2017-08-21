@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
       if (err) return res.status(400).send('Error');
       con.query(`
             SELECT b.*, product.name AS product_name, bill_detail.quantity, user.full_name AS user_name,
-            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
+            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category, status.color
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
@@ -152,6 +152,22 @@ router.post('/status', (req, res) => {
         con.release();
       } else {
         res.status(200).json({ id: result.insertId, name: req.body.name });
+        con.release();
+      }
+    });
+  });
+})
+
+router.put('/status', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('UPDATE status SET ? WHERE ?', [{color: req.body.color}, { id: req.body.id }], (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
         con.release();
       }
     });
@@ -330,6 +346,48 @@ router.delete('/category/:id', (req, res) => {
         res.status(200).send('Ok');
         con.release();
       }
+    });
+  });
+});
+
+router.get('/statistic/userbills', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query(`
+        SELECT user.full_name FROM bill
+        INNER JOIN user ON bill.user_id = user.id
+        WHERE bill.create_at >= ${req.query.start} AND bill.create_at <= ${req.query.end}`,
+      (error, result) => {
+        if (error) {
+          console.log(error);
+          res.status(400).send('Error');
+          con.release();
+        } else {
+          const users = _.uniqBy(result, 'full_name');
+          const data = users.map((user) => {
+            return { name: user.full_name, quantity: result.filter(o => o.full_name === user.full_name).length };
+          })
+          res.status(200).json(_.sortBy(data, 'quantity'));
+          con.release();
+        }
+    });
+  });
+});
+router.get('/statistic/newcustomer', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query(`
+        SELECT * FROM customer
+        WHERE customer.create_at >= ${req.query.start} AND customer.create_at <= ${req.query.end}`,
+      (error, result) => {
+        if (error) {
+          console.log(error);
+          res.status(400).send('Error');
+          con.release();
+        } else {
+          res.status(200).json(result);
+          con.release();
+        }
     });
   });
 });

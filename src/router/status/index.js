@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
 import { Button, Modal, FormControl } from 'react-bootstrap';
+import 'rc-color-picker/assets/index.css';
 import { connect } from 'react-redux';
 import Select from 'react-select';
+import ColorPicker from 'rc-color-picker';
+import _ from 'lodash';
 
 import { receiveUsers, receiveStatus } from '../../actions/fetchData';
 
@@ -14,6 +17,7 @@ class Status extends Component {
       showForm: false,
       name: '',
     };
+    this.onChangeColor = _.debounce(this.onChangeColor, 500);
   }
   componentDidMount() {
     const { status} = this.props;
@@ -78,6 +82,20 @@ class Status extends Component {
       )
     }
   }
+  onChangeColor(id, v) {
+    axios.put('/auth/bill/status', {
+      color: v.color,
+      id
+    })
+    .then(
+      (res) => {
+        this.props.status.forEach((item) => {
+          if (item.id === id) item.color = v.color;
+        });
+        this.props.dispatch(receiveStatus(this.props.status));
+      }
+    );
+  }
   render() {
     const { status, user } = this.props;
     const { showForm, name  } = this.state;
@@ -99,6 +117,7 @@ class Status extends Component {
                   <tr>
                     <th># </th>
                     <th>Tên Trạng thái </th>
+                    <th>Màu sắc</th>
                     <th>Thao tác </th>
                   </tr>
                 </thead>
@@ -109,6 +128,13 @@ class Status extends Component {
                         <tr key={item.id}>
                           <td>{index} </td>
                           <td>{item.name} </td>
+                          <td>
+                            <ColorPicker
+                              animation="slide-up"
+                              color={item.color || '#FFF'}
+                              onChange={this.onChangeColor.bind(this, item.id)}
+                            />
+                          </td>
                           <td>
                             <Button bsStyle="danger" bsSize="xs" active onClick={this.removeStatus.bind(this, item.id)}>
                               Xóa

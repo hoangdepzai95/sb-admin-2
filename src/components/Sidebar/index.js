@@ -62,14 +62,8 @@ class Sidebar extends Component {
                 <i className="fa fa-sticky-note-o" />
               </Link>
             </li>
-
-            <li title="Khách hàng">
-              <Link to="/home/customer">
-                <i className="fa fa-address-book-o" />
-              </Link>
-            </li>
             <li title="Thống kê">
-              <Link to="/home/chart">
+              <Link to="/home/statistic">
                 <i className="fa fa-bar-chart" />
               </Link>
             </li>

@@ -8,6 +8,7 @@ import Product from './product';
 import Category from './category';
 import Bill from './bill';
 import Blank from './Blank';
+import Statistic from './statistic';
 
 import { isLogged } from './util';
 
@@ -19,6 +20,7 @@ const Main = () => {
         <Route path="/home/users" component={Users} />
         <Route path="/home/status" component={Status} />
         <Route path="/home/category" component={Category} />
+        <Route path="/home/statistic" component={Statistic} />
         <Route path="/home/product" component={Product} />
         <Route path="/home/bill" component={Bill} />
       </div>

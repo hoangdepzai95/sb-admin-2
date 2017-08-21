@@ -198,13 +198,9 @@ class Home extends Component {
         <div className="">
         <p></p>
         <div className="text-right">
-        {
-          user.role < 3 ?
           <Button bsStyle="success" active onClick={this.open.bind(this, 'add')}>
             Thêm sản phẩm
           </Button>
-          : null
-        }
         </div>
         <p></p>
           {

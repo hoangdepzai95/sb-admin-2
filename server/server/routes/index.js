@@ -48,7 +48,7 @@ const jwtCheck = xjwt({
 function requireScope(role, ingore) {
   return function (req, res, next) {
     var has_scopes = req.user.role <= role;
-    if (req.method === ingore) has_scopes = true;
+    if (ingore && ingore.find(o => o === req.method)) has_scopes = true;
     if (!has_scopes) {
         res.sendStatus(401);
         return;
@@ -94,7 +94,7 @@ router.post('/login', function(req, res) {
 });
 router.use('/auth', jwtCheck);
 router.use('/auth/user', requireScope(1), user);
-router.use('/auth/product', requireScope(2, 'GET'), product);
+router.use('/auth/product', requireScope(2, ['GET', 'POST']), product);
 router.use('/auth/bill', requireScope(3), bill);
 router.use('/auth/customer', requireScope(3), customer);
 router.use('/auth/file', requireScope(3), file);
