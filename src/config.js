@@ -1,3 +1,3 @@
-export const HOST = 'http://localhost:3001';
+export const HOST = window.location.origin;
 export const API_ENDPOINT = `${HOST}/api`;
 export const PER_PAGE = 5;

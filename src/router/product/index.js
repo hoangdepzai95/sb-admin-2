@@ -319,7 +319,7 @@ class Home extends Component {
                <Select
                name="form-field-name"
                value={id_category}
-               placeholder="Trạng thái"
+               placeholder="Nhóm"
                options={this.getCategoryOptions()}
                onChange={this.onChangeCategory.bind(this)}
                clearable={false}
