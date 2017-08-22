@@ -373,23 +373,30 @@ router.get('/statistic/userbills', (req, res) => {
     });
   });
 });
-router.get('/statistic/newcustomer', (req, res) => {
+
+router.get('/statistic/customerbills', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-        SELECT * FROM customer
-        WHERE customer.create_at >= ${req.query.start} AND customer.create_at <= ${req.query.end}`,
+        SELECT customer.name, customer.phone, customer.facebook FROM bill
+        INNER JOIN customer ON bill.customer_id = customer.id
+        WHERE bill.create_at >= ${req.query.start} AND bill.create_at <= ${req.query.end}`,
       (error, result) => {
         if (error) {
           console.log(error);
           res.status(400).send('Error');
           con.release();
         } else {
-          res.status(200).json(result);
+          const bills = _.uniqBy(result, 'phone');
+          const data = bills.map((bill) => {
+            return { name: bill.name, facebook: bill.facebook, phone: bill.phone, quantity: result.filter(o => o.phone === bill.phone).length };
+          })
+          res.status(200).json(_.sortBy(data, 'quantity'));
           con.release();
         }
     });
   });
 });
+
 
 module.exports = router;

@@ -9,7 +9,7 @@ export default class Picker extends Component {
     return (
       <div>
         <Col md={2} >
-        Từ ngày
+        Từ 0 giờ sáng ngày:
         </Col>
         <Col md={2}>
           <DatePicker
@@ -21,7 +21,7 @@ export default class Picker extends Component {
           />
       </Col>
       <Col md={2} >
-      Đến ngày
+      Đến 0 giờ sáng ngày:
       </Col>
       <Col md={2}>
         <DatePicker

@@ -1,5 +1,6 @@
 const pool = require('../db');
-
+const moment = require('moment');
+const _ = require('lodash');
 const express = require('express');
 
 const router = express.Router();
@@ -19,6 +20,37 @@ router.get('/', (req, res) => {
     });
   });
 })
+
+router.get('/statistic', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query(`
+        SELECT * FROM customer
+        WHERE customer.create_at >= ${req.query.start} AND customer.create_at <= ${req.query.end}`,
+      (error, result) => {
+        if (error) {
+          console.log(error);
+          res.status(400).send('Error');
+          con.release();
+        } else {
+          const by = req.query.by || 'day';
+          let customers = result.map((customer) => {
+            const createAt = moment(customer.create_at, 'x');
+            customer.day = createAt.startOf('days').format('X');
+            customer.week = createAt.startOf('weeks').format('X');
+            customer.month = createAt.startOf('months').format('X');
+            return customer;
+          })
+          customers = _.groupBy(customers, by);
+          for (let key in customers) {
+            customers[key] = customers[key].length;
+          }
+          res.status(200).json(customers);
+          con.release();
+        }
+    });
+  });
+});
 
 router.post('/', (req, res) => {
   const customer = {
