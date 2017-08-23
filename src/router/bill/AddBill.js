@@ -133,8 +133,9 @@ class AddBill extends Component {
     }
   }
   createBill() {
-    const { products, user, type, close, page } = this.props;
+    const { products, user, type, close, page, originBill, status } = this.props;
     const { addedCustomer } = this.state;
+    const originStatus = status.find(o => o.id == originBill.status_id);
     const billInfo = _.cloneDeep(this.props.billInfo);
     if (!products.length) {
       window.alert('Không có sản phẩm');
@@ -158,8 +159,11 @@ class AddBill extends Component {
           status_id: billInfo.status_id,
         },
         products: products.map((product) => {
-          return { product_id: product.id, quantity: product.quantity };
+          return { product_id: product.id, quantity: product.quantity, name: product.name };
         }),
+        origin_bill: originBill,
+        user_full_name: user.full_name,
+        write_log: originStatus.show_notify ? 1 : 0,
       })
         .then(
           (res) => {
@@ -237,7 +241,13 @@ class AddBill extends Component {
                         <td>{addedCustomer.name} </td>
                         <td>{addedCustomer.facebook} </td>
                         <td>{addedCustomer.phone} </td>
-                        <td>3 </td>
+                        <td>
+                        <a target="_blank" href={`${window.location.origin}/home/bill?phone=${addedCustomer.phone}`}>
+                        <Button bsStyle="info" bsSize="xs" active>
+                          Xem {addedCustomer.bills} đơn
+                        </Button>
+                        </a>
+                        </td>
                         <td>
                           <Button bsStyle="danger" bsSize="xs" active onClick={this.removeCustomer.bind(this)}>
                             Xóa

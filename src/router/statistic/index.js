@@ -119,6 +119,7 @@ class Statistic extends Component {
   }
   render() {
     const { customerbills, newcustomer, userbills  } = this.state;
+    if (this.props.user.role > 2) return null;
     const newCusotmerOptions = [
       { value: 'day', label: '7 ngày gần nhất' },
       { value: 'week', label: '7 tuần gần nhất' },

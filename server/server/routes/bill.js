@@ -4,7 +4,6 @@ const multer  = require('multer');
 const express = require('express');
 const xlsx =  require('node-xlsx');
 const getRootPath = require('../../../util');
-
 const router = express.Router();
 
 const upload  = multer({ storage: multer.memoryStorage() });
@@ -69,8 +68,15 @@ router.get('/total', (req, res) => {
 router.get('/search', (req, res) => {
   const keywords = req.query.q.split(',').map(o => o.trim()).join('|');
   const multiKeyword = req.query.q.split(',').length > 1 ;
-  const condition = multiKeyword ? `WHERE bill.code REGEXP '${keywords}'` :
-    `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
+  const type = req.query.type;
+  let condition;
+  if (multiKeyword) {
+    condition = `WHERE bill.code REGEXP '${keywords}'`
+  } else if (type === 'phone') {
+    condition = `WHERE customer.phone = '${keywords}'`;
+  } else {
+    condition = `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
+  }
   const sql = `
     SELECT bill.*, product.name AS product_name, bill_detail.quantity,
     customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
@@ -174,6 +180,43 @@ router.put('/status', (req, res) => {
   });
 })
 
+router.put('/status/show_notify', (req, res) => {
+  const id = req.query.id;
+  const show_notify = req.query.show;
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('UPDATE status SET ? WHERE ?', [{ show_notify }, { id }], (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
+    });
+  });
+});
+
+router.put('/change_status', (req, res) => {
+  const status_id = req.body.status_id;
+  const bill_ids = req.body.bill_ids;
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      const condition = bill_ids.map(id => `id = '${id}' `).join('OR ');
+      con.query(`UPDATE bill SET ? WHERE ${condition}`, { status_id } , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
+    });
+  });
+});
+
 router.delete('/status/:id', (req, res) => {
   const id = req.params.id;
   if (id == 1 || id == 2) {
@@ -269,6 +312,17 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
 
 router.put('/', (req, res) => {
   const bill = req.body.bill_info;
+  const originBill = req.body.origin_bill;
+  const changes = { user: req.body.user_full_name, data: [] };
+  const newProductInfo = req.body.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+  for (let field in bill) {
+    if ((bill[field] !== originBill[field]) && field !== 'products'){
+      changes.data.push({ field, origin: originBill[field], changeto: bill[field] });
+    }
+  }
+  if (originBill.products_info !== newProductInfo) {
+    changes.data.push({ field: 'products_info', origin: originBill.products_info, changeto: newProductInfo});
+  }
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query('UPDATE bill SET ? WHERE ?', [bill, { id: bill.id }], function (error, result) {
@@ -280,6 +334,7 @@ router.put('/', (req, res) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
+        con.release();
       }else{
         let products = req.body.products;
         products = products.map((product) => {
@@ -289,14 +344,49 @@ router.put('/', (req, res) => {
         if (error) {
           console.log(error);
           res.status(400).send('Error');
+          con.release();
         }else{
           res.status(200).json(results);
-          con.release();
+          // write log
+          if (req.body.write_log != 1) return;
+          con.query('INSERT INTO bill_changelog SET ?', { bill_id: bill.id, create_at: (new Date()).valueOf(), content: JSON.stringify(changes) }, (error, result) => {
+            if (error) {
+              console.log(error);
+              con.release();
+            }else{
+            }
+          })
+          //--------------
         }
         });
       }
       });
     }
+    });
+  });
+});
+
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('DELETE FROM bill_detail WHERE ?', { bill_id: id }, (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        con.query('DELETE FROM bill WHERE ?', { id }, (error, result) => {
+        if (error) {
+          console.log(error);
+          res.status(400).send('Error');
+          con.release();
+        } else {
+          res.status(200).send('Ok');
+          con.release();
+        }
+      });
+      }
     });
   });
 });
@@ -394,6 +484,23 @@ router.get('/statistic/customerbills', (req, res) => {
           res.status(200).json(_.sortBy(data, 'quantity'));
           con.release();
         }
+    });
+  });
+});
+
+router.get('/changelog', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 20 OFFSET 0' , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        console.log(result);
+        res.status(200).json(result);
+        con.release();
+      }
     });
   });
 });

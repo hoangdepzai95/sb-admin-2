@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import Navbar, {Brand} from 'react-bootstrap/lib/Navbar';
 import $ from "jquery";
 import Sidebar from '../Sidebar';
+import moment from 'moment';
 import { getUser } from '../../router/util';
 
 
@@ -27,6 +28,7 @@ class Header extends Component {
     this.props.history.push('/login');
   }
   render() {
+    const { notify } = this.props;
     return (
       <div id="wrapper" className="content">
         <Navbar fluid={true}  style={ {margin: 0} }>
@@ -42,7 +44,20 @@ class Header extends Component {
               </span>
             </Brand>
             <ul className="nav navbar-top-links navbar-right">
-
+            <NavDropdown title={<i className="fa fa-bell fa-fw"></i>} id = 'navDropdown3'>
+                  {
+                    notify.map((item) => {
+                      return (
+                        <div key={item.id}>
+                          <MenuItem eventKey="1" style={ {width: 300} }>
+                            {item.content.user} đã thay đổi đơn hàng #{item.bill_id}
+                          </MenuItem>
+                          <MenuItem divider />
+                        </div>
+                      )
+                    })
+                  }
+                </NavDropdown>
              <NavDropdown title={<i className="fa fa-user fa-fw"></i> } id = 'navDropdown4'>
                     <MenuItem eventKey = "4" onClick = {this.logOut}>
                       <span> <i className = "fa fa-sign-out fa-fw" /> Đăng xuất </span>
@@ -57,4 +72,8 @@ class Header extends Component {
   }
 }
 
-export default connect()(Header);
+export default connect((state) => {
+  return {
+    notify: state.data.notify,
+  };
+})(Header);

@@ -39,11 +39,21 @@ class Home extends Component {
       keyword: '',
       idFilterStatus: null,
       selectedBills: [],
+      showChangeStatus: false,
+      originBill: null,
     };
     this.onSearchBill = _.debounce(this.onSearchBill, 1000);
   }
+  componentWillMount() {
+    const phone = this.getQueryStringValue('phone');
+    if (phone) {
+      this.onSearchBill(phone, 'phone');
+    }
+  }
   componentDidMount() {
     const { loaded, currentPage,status } = this.props;
+    const phone = this.getQueryStringValue('phone');
+    if (phone) return;
     if (!loaded) {
       this.getTotal();
       this.getBills(1);
@@ -51,6 +61,9 @@ class Home extends Component {
     if (!status.length) {
       this.getStatus();
     }
+  }
+  getQueryStringValue (key) {
+    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
   getBills(page, idFilterStatus) {
     const { mode } = this.state;
@@ -72,16 +85,18 @@ class Home extends Component {
       }
     )
   }
-  open(type, id) {
+  open(type, id, e) {
     const bills = this.props.bills[this.state.page] || [];
     this.setState({
       showForm: true,
       type,
     });
     if (type === 'edit') {
+      e.stopPropagation();
       const bill = bills.find(o => o.id === id);
       this.setState({
         billInfo: bill,
+        originBill: bill,
         customer: {
           phone: bill.phone,
         },
@@ -173,14 +188,14 @@ class Home extends Component {
     if (keyword.length < 3) return ;
     this.onSearchBill(keyword);
   }
-  onSearchBill(keyword) {
+  onSearchBill(keyword, type = '') {
     this.setState({
       mode: 'search',
       page: 1,
       idFilterStatus: null,
       keyword,
     });
-    axios.get(`/auth/bill/search?q=${keyword}`)
+    axios.get(`/auth/bill/search?q=${keyword}&type=${type}`)
       .then(
         (res) => {
           this.props.dispatch(receiveBill(res.data, 1));
@@ -276,9 +291,54 @@ class Home extends Component {
     const el = document.getElementById('excel-up');
     if (el) el.click();
   }
+  deleteBill(id, e) {
+    e.stopPropagation();
+    if (window.confirm('Bạn có chắc muốn xóa ?')) {
+      axios.delete(`/auth/bill/${id}`)
+        .then(
+          (res) => {
+            this.reloadBilld(this.state.page);
+          },
+          (error) => {
+            window.alert('Có lỗi xảy ra');
+          },
+        )
+    }
+  }
+  openChangeStatus() {
+    this.setState({ showChangeStatus: true });
+  }
+  getStatusOptions() {
+    return this.props.status.map((status) => {
+      status.value = status.id;
+      status.label = status.name;
+      return status
+    });
+  }
+  closeChangeStatus() {
+    this.setState({ showChangeStatus: false });
+  }
+  onChangeChangeStatus(item) {
+    if (window.confirm(`Thay đổi các đơn đã chọn sang trang thái ${item.label} ?`)) {
+      axios.put('auth/bill/change_status', {
+        status_id: item.id,
+        bill_ids: this.state.selectedBills.map(bill => bill.id),
+      })
+      .then(
+        (res) => {
+          this.reloadBilld(this.state.page);
+          this.closeChangeStatus();
+        },
+        (error) => {
+          window.alert('Có lỗi xảy ra');
+          this.closeChangeStatus();
+        },
+      )
+    }
+  }
   render() {
     const { user, total } = this.props;
-    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills } = this.state;
+    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills, showChangeStatus, originBill } = this.state;
     const bills = this.props.bills[page] || [];
     var options = [
   { value: 1 , label: 'Còn hàng' },
@@ -332,6 +392,7 @@ class Home extends Component {
                 page={page}
                 mode={mode}
                 reloadBilld={this.reloadBilld.bind(this)}
+                originBill={originBill}
               />
             </div>
           </Col>
@@ -350,13 +411,25 @@ class Home extends Component {
                 Bỏ chọn tất cả
               </Button>
               &nbsp;
-              <Button onClick={this.exportToEXcel.bind(this)} bsStyle="primary">
-                Xuất ra file excel
+              <Button onClick={this.openChangeStatus.bind(this)} bsStyle="primary">
+                Đổi trạng thái đơn đã chọn
               </Button>
               &nbsp;
-              <Button  bsStyle="primary" onClick={this.updateByExcel.bind(this)}>
-                Cập nhật bằng file excel
-              </Button>
+              {
+                user.role < 3 ?
+                <Button onClick={this.exportToEXcel.bind(this)} bsStyle="primary">
+                  Xuất ra file excel
+                </Button>
+                : null
+              }
+              {
+                user.role < 3 ?
+                <Button  bsStyle="primary" onClick={this.updateByExcel.bind(this)}>
+                  Cập nhật bằng file excel
+                </Button>
+                : null
+              }
+              &nbsp;
               <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
               <p></p>
             </div>
@@ -382,7 +455,7 @@ class Home extends Component {
                       return (
                         <tr key={bill.id}>
                           <td className="pointer" onClick={this.selectBill.bind(this, bill)}>
-                            <Checkbox checked={selectedBills.find(o => o.id === bill.id)} >
+                            <Checkbox checked={!!selectedBills.find(o => o.id === bill.id)} >
                               <span>#{bill.id}</span>
                             </Checkbox>
                             {
@@ -392,11 +465,19 @@ class Home extends Component {
                               </Button>
                               : null
                             }
+                            &nbsp;
+                            {
+                              user.role == 1 || user.role == 2 ?
+                              <Button bsStyle="danger" bsSize="xs" active onClick={this.deleteBill.bind(this, bill.id)}>
+                                Xóa
+                              </Button>
+                              : null
+                            }
                           </td>
                           <td>{bill.code} </td>
                           <td>{bill.user_name} </td>
                           <td>
-                          <span style={{color: bill.color}}>{bill.status}</span> 
+                          <span style={{color: bill.color}}>{bill.status}</span>
                           </td>
                           <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>
@@ -435,6 +516,21 @@ class Home extends Component {
             </div>
           </Panel>
         </div>
+        <Modal show={showChangeStatus} onHide={this.closeChangeStatus.bind(this)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Đổi trạng thái</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Select
+              name="form-field-name"
+              options={this.getStatusOptions()}
+              placeholder="Trạng thái"
+              searchable= {false}
+              clearable={false}
+              onChange={this.onChangeChangeStatus.bind(this)}
+            />
+          </Modal.Body>
+      </Modal>
       </div>
     );
   }

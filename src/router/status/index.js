@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
-import { Button, Modal, FormControl } from 'react-bootstrap';
+import { Button, Modal, FormControl, Checkbox } from 'react-bootstrap';
 import 'rc-color-picker/assets/index.css';
 import { connect } from 'react-redux';
 import Select from 'react-select';
@@ -89,12 +89,29 @@ class Status extends Component {
     })
     .then(
       (res) => {
-        this.props.status.forEach((item) => {
+        const status = this.props.status.map((item) => {
           if (item.id === id) item.color = v.color;
+          return item;
         });
-        this.props.dispatch(receiveStatus(this.props.status));
+        this.props.dispatch(receiveStatus(status));
       }
     );
+  }
+  showNotify(item) {
+    const showNotify = item.show_notify == 1 ? 0 : 1;
+    axios.put(`/auth/bill/status/show_notify?id=${item.id}&show=${showNotify}`)
+     .then(
+       (res) => {
+         const status = this.props.status.map((o) => {
+           if (o.id == item.id) o.show_notify = showNotify;
+           return o;
+         });
+         this.props.dispatch(receiveStatus(status));
+       },
+       (error) => {
+         window.alert('Co loi xay ra');
+       },
+     )
   }
   render() {
     const { status, user } = this.props;
@@ -118,6 +135,7 @@ class Status extends Component {
                     <th># </th>
                     <th>Tên Trạng thái </th>
                     <th>Màu sắc</th>
+                    <th>Hiện thông báo</th>
                     <th>Thao tác </th>
                   </tr>
                 </thead>
@@ -134,6 +152,10 @@ class Status extends Component {
                               color={item.color || '#FFF'}
                               onChange={this.onChangeColor.bind(this, item.id)}
                             />
+                          </td>
+                          <td>
+                            <Checkbox checked={item.show_notify == 1} onChange={this.showNotify.bind(this, item)} >
+                            </Checkbox>
                           </td>
                           <td>
                             <Button bsStyle="danger" bsSize="xs" active onClick={this.removeStatus.bind(this, item.id)}>

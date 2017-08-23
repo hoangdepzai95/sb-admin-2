@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
   const phone = req.query.phone;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query(`SELECT * FROM customer WHERE phone='${phone}'`, (error, result) => {
+      con.query(`SELECT customer.*, COUNT(bill.id) AS bills FROM customer INNER JOIN bill ON bill.customer_id = customer.id WHERE phone='${phone}'`, (error, result) => {
       if (error) {
         res.status(400).send('Error');
         con.release();

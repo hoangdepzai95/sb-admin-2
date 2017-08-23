@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, Switch } from 'react-router-dom';
 import Header from '../components/Header';
 import Login from './login';
 import Users from './users';
@@ -7,8 +7,8 @@ import Status from './status';
 import Product from './product';
 import Category from './category';
 import Bill from './bill';
-import Blank from './Blank';
 import Statistic from './statistic';
+import Changelog from './changelog';
 
 import { isLogged } from './util';
 
@@ -23,6 +23,7 @@ const Main = () => {
         <Route path="/home/statistic" component={Statistic} />
         <Route path="/home/product" component={Product} />
         <Route path="/home/bill" component={Bill} />
+        <Route path="/home/changelog" component={Changelog} />
       </div>
     </div>
   );
@@ -44,9 +45,11 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 const router = () => {
   return (
     <div>
-      <Route path="/" component={Blank}/>
-      <PrivateRoute path="/home" component={Main} />
-      <Route path="/login" component={Login}/>
+      <Switch>
+        <PrivateRoute path="/home" component={Main} />
+        <Route path="/login" component={Login}/>
+        <Redirect to="/home/bill" />
+      </Switch>
     </div>
   );
 }

@@ -17,13 +17,14 @@ function genJti() {
   return jti;
 }
 
-function createAccessToken(username, role, userId) {
+function createAccessToken(username, full_name, role, userId) {
   return jwt.sign({
     iss: 'hoang',
     aud: 'nguyen',
     exp: Math.floor(Date.now() / 1000) + (60 * 600000000),
     username,
     userId,
+    full_name,
     role,
     sub: "lalaland|gonto",
     jti: genJti(), // unique identifier for the token
@@ -79,7 +80,7 @@ router.post('/login', function(req, res) {
       bcrypt.compare(userScheme.password, results[0].password, function(err, _res) {
           if (_res === true) {
             res.status(201).send({
-              access_token: createAccessToken(results[0].username, results[0].role, results[0].id),
+              access_token: createAccessToken(results[0].username, results[0].full_name, results[0].role, results[0].id),
               user: results[0],
             });
           } else {

@@ -17,7 +17,8 @@ export function isLogged() {
 }
 const IGNORE_ENDPOINT = [
   'threads?view=count&in=',
-  'api/delta/'
+  'api/delta/',
+  '/auth/bill/changelog'
 ];
 
 function isIgnoreEndpoint(url) {

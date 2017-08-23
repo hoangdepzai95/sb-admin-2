@@ -1,6 +1,17 @@
 import _ from 'lodash';
 
-import { RECEIVE_USERS, RECEIVE_USER, RECEIVE_PRODUCT, RECEIVE_TOTAL_BILL, RECEIVE_BILL, RECEIVE_STATUS, RECEIVE_CATEGORY } from '../actions/fetchData';
+import {
+  RECEIVE_USERS,
+  RECEIVE_USER,
+  RECEIVE_PRODUCT,
+  RECEIVE_TOTAL_BILL,
+  RECEIVE_BILL,
+  RECEIVE_STATUS,
+  RECEIVE_CATEGORY,
+  RECEIVE_CHANGELOG,
+  ADD_NOTIFY,
+  CHECK_NOTIFY,
+} from '../actions/fetchData';
 
 const initialState = {
   home: {
@@ -21,6 +32,9 @@ const initialState = {
   },
   status: [],
   category: [],
+  changelog: [],
+  notify: [],
+  checkedNotify: [],
 };
 const data = (state = initialState, action) => {
   switch (action.type) {
@@ -46,6 +60,12 @@ const data = (state = initialState, action) => {
       return _.assign({}, state, { status: action.data });
     case RECEIVE_CATEGORY:
       return _.assign({}, state, { category: action.data });
+    case RECEIVE_CHANGELOG:
+      return _.assign({}, state, { changelog: action.data });
+    case ADD_NOTIFY:
+      return _.assign({}, state, { notify: [...state.notify, ...action.data] });
+    case CHECK_NOTIFY:
+      return _.assign({}, state, { checkedNotify: [...state.checkedNotify, action.id] });
     default:
       return state;
   }

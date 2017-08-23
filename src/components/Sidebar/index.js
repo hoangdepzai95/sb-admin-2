@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import _ from 'lodash';
+import moment from 'moment';
+import { HOST, PER_PAGE } from '../../config';
+import { receiveChangelog, addNotify } from '../../actions/fetchData';
 
 class Sidebar extends Component {
 
@@ -14,7 +19,66 @@ class Sidebar extends Component {
       samplePagesCollapsed: true,
     };
   }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.user.userId && !this.props.user.userId) {
+      this.getChangelog();
+      setInterval(this.getChangelog.bind(this), 10000);
+    }
+  }
+  getChangelog() {
+    axios.get('/auth/bill/changelog')
+     .then(
+       (res) => {
+         const changes = this.compareChangelog(res.data, this.props.changelog);
+         if (changes.length) {
+           this.props.dispatch(receiveChangelog(res.data));
+           this.props.dispatch(addNotify(this.parseChangelog(changes)));
+         }
+       },
+       (error) => {
 
+       },
+     );
+  }
+  compareChangelog(newChangelog, changelog) {
+    return newChangelog.filter(o => _.every(changelog, e => e.id != o.id));
+  }
+  parseChangelog(changelog) {
+    const clone = _.cloneDeep(changelog);
+    return clone.map((log) => {
+      log.create_at = moment(log.create_at, 'x').format('HH:mm DD/MM/YYYY');
+      log.content = JSON.parse(log.content);
+      log.content.data = log.content.data.map((item) => {
+        item.name = this.formatChange(item.field);
+        return item;
+      }).filter(o => o.name);
+      return log;
+    })
+  }
+  formatChange(field) {
+    switch (field) {
+      case 'code':
+        return 'Mã';
+      case 'status_id':
+        return 'Trạng thái';
+      case 'customer_id':
+        return 'Khách hàng';
+      case 'products_info':
+        return 'Sản phẩm';
+      case 'address':
+        return 'Địa chỉ';
+      case 'note':
+        return 'Ghi chú';
+      case 'pay':
+        return 'Tổng thu';
+      case 'shipping':
+        return 'Phí ship';
+      case 'decrease':
+        return 'Giảm giá';
+      default:
+        return null;
+    }
+  }
   render() {
     const { user } = this.props;
     return (
@@ -62,9 +126,18 @@ class Sidebar extends Component {
                 <i className="fa fa-sticky-note-o" />
               </Link>
             </li>
-            <li title="Thống kê">
-              <Link to="/home/statistic">
-                <i className="fa fa-bar-chart" />
+            {
+              user.role < 3 ?
+              <li title="Thống kê">
+                <Link to="/home/statistic">
+                  <i className="fa fa-bar-chart" />
+                </Link>
+              </li>
+              : null
+            }
+            <li title="Lịch sử thay đổi">
+              <Link to="/home/changelog">
+                <i className="fa fa-sticky-note-o" />
               </Link>
             </li>
           </ul>
@@ -78,5 +151,6 @@ class Sidebar extends Component {
 export default connect((state) => {
   return {
     user: state.data.user,
+    changelog: state.data.changelog,
   };
 })(Sidebar);
