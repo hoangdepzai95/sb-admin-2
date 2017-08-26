@@ -135,17 +135,13 @@ class AddBill extends Component {
   createBill() {
     const { products, user, type, close, page, originBill, status } = this.props;
     const { addedCustomer } = this.state;
-    const originStatus = status.find(o => o.id == originBill.status_id);
     const billInfo = _.cloneDeep(this.props.billInfo);
-    if (!products.length) {
-      window.alert('Không có sản phẩm');
-      return;
-    }
     if (!billInfo.status_id) {
       window.alert('Chưa chọn trạng thái');
       return;
     }
     if (type === 'edit') {
+      const originStatus = status.find(o => o.id == originBill.status_id);
       axios.put('/auth/bill', {
         bill_info: {
           shipping: billInfo.shipping,
@@ -163,6 +159,8 @@ class AddBill extends Component {
         }),
         origin_bill: originBill,
         user_full_name: user.full_name,
+        user_id: user.userId,
+        origin_status_id: originBill.status_id,
         write_log: originStatus.show_notify ? 1 : 0,
       })
         .then(
@@ -171,7 +169,7 @@ class AddBill extends Component {
             close();
           },
           (error) => {
-
+            window.alert('Có lỗi xảy ra');
           },
         );
     } else {
@@ -191,17 +189,16 @@ class AddBill extends Component {
             close();
           },
           (error) => {
-
+            window.alert('Có lỗi xảy ra');
           },
         );
     }
   }
   getTotalProductCost() {
     const { products, billInfo } = this.props;
-    console.log(this.props.products);
     return products.reduce((sum, product) => {
       return sum + product.price * product.quantity;
-    }, 0) - (billInfo.decrease || 0) ;
+    }, 0) - (+billInfo.decrease || 0) + (+billInfo.shipping || 0) ;
   }
   getStatusOptions() {
     return this.props.status.map((status) => {

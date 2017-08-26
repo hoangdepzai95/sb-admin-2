@@ -10,38 +10,51 @@ const upload  = multer({ storage: multer.memoryStorage() });
 
 router.get('/', (req, res) => {
   const page = req.query.page;
-  const perPage = req.query.per_page;
+  const perPage = +req.query.per_page;
   const offset = (page - 1) * perPage;
   const mode = req.query.mode;
   const statusId = req.query.idStatus;
-  const whereSql = mode === 'filterByStatus' ? `WHERE status_id='${statusId}'` : '';
+  const whereSql = mode === 'filterByStatus' ? `WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')}` : '';
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-            SELECT b.*, product.name AS product_name, bill_detail.quantity, user.full_name AS user_name,
-            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category, status.color
+            SELECT b.*, user.full_name AS user_name,
+            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, status.color
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
             INNER JOIN user ON b.user_id = user.id
-            INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON b.id = bill_detail.bill_id
-            `, (error, result) => {
+            `, (error, bills) => {
       if (error) {
+        console.log(error);
         res.status(400).send('Error');
         con.release();
       } else {
-        const billGroup = _.groupBy(result, 'id');
-        let rs = [];
-        for ( let billId in billGroup) {
-          const bill = billGroup[billId][0];
-          bill.products = billGroup[billId].map((o) => {
-            return { name: o.product_name, quantity: o.quantity, category: o.category };
-          });
-          bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
-          rs.unshift(bill);
+        if (!bills.length) {
+          res.status(200).json([]);
+          con.release();
+          return;
         }
-        res.status(200).json(rs);
-        con.release();
+        con.query(
+          `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
+           INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
+           WHERE bill_detail.bill_id IN (?)`
+        ,[bills.map(o => o.id)], (error, products) => {
+          if (error) {
+            console.log(error);
+            res.status(400).send('Error');
+            con.release();
+          } else {
+            const groupProduct = _.groupBy(products, 'bill_id');
+            for (let bill of bills) {
+              const billProducts = groupProduct[bill.id] || [];
+              bill.products = billProducts || [];
+              bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+            }
+            res.status(200).json(_.sortBy(bills, 'id').reverse());
+            con.release();
+          }
+        })
       }
     });
   });
@@ -50,7 +63,7 @@ router.get('/', (req, res) => {
 router.get('/total', (req, res) => {
   const mode = req.query.mode;
   const statusId = req.query.idStatus;
-  const sql = mode === 'filterByStatus' ? `SELECT COUNT(*) FROM bill WHERE status_id=${statusId}` : 'SELECT COUNT(*) FROM bill';
+  const sql = mode === 'filterByStatus' ? `SELECT COUNT(*) FROM bill WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')}` : 'SELECT COUNT(*) FROM bill';
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(sql, (error, result) => {
@@ -78,33 +91,46 @@ router.get('/search', (req, res) => {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   }
   const sql = `
-    SELECT bill.*, product.name AS product_name, bill_detail.quantity,
-    customer.name as customer_name, customer.phone, customer.facebook, status.name as status, product_category.category
+    SELECT bill.*, user.full_name AS user_name, customer.name AS customer_name, customer.phone, customer.facebook, status.name AS status
     FROM bill
     INNER JOIN customer ON bill.customer_id = customer.id
     INNER JOIN status ON bill.status_id = status.id
-    INNER JOIN (bill_detail INNER JOIN (product INNER JOIN product_category ON product.id_category = product_category.id) ON bill_detail.product_id = product.id) ON bill.id = bill_detail.bill_id
+    INNER JOIN user ON bill.user_id = user.id
     ${condition};
   `;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query(sql, (error, result) => {
-        if (error) {
-          res.status(400).send('Error');
+      con.query(sql, (error, bills) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        if (!bills.length) {
+          res.status(200).json([]);
           con.release();
-        } else {
-          const billGroup = _.groupBy(result, 'id');
-          let rs = [];
-          for ( let billId in billGroup) {
-            const bill = billGroup[billId][0];
-            bill.products = billGroup[billId].map((o) => {
-              return { name: o.product_name, quantity: o.quantity, category: o.category };
-            });
-            bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
-            rs.unshift(bill);
+          return;
+        }
+        con.query(
+          `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
+           INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
+           WHERE bill_detail.bill_id IN (?)`
+        ,[bills.map(o => o.id)], (error, products) => {
+          if (error) {
+            console.log(error);
+            res.status(400).send('Error');
+            con.release();
+          } else {
+            const groupProduct = _.groupBy(products, 'bill_id');
+            for (let bill of bills) {
+              const billProducts = groupProduct[bill.id] || [];
+              bill.products = billProducts || [];
+              bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+            }
+            res.status(200).json(bills);
+            con.release();
           }
-          res.status(200).json(rs);
-          con.release();
+        })
       }
     });
   });
@@ -200,18 +226,31 @@ router.put('/status/show_notify', (req, res) => {
 
 router.put('/change_status', (req, res) => {
   const status_id = req.body.status_id;
-  const bill_ids = req.body.bill_ids;
+  const bills = req.body.bills;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      const condition = bill_ids.map(id => `id = '${id}' `).join('OR ');
-      con.query(`UPDATE bill SET ? WHERE ${condition}`, { status_id } , (error, result) => {
+      con.query(`UPDATE bill SET ? WHERE id IN (?)`, [{ status_id }, bills.map(o => o.id) ] , (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
         con.release();
       } else {
-        res.status(200).send('Ok');
-        con.release();
+        const temp = bills.filter(o => o.status_id == 11);
+        if (status_id != 11 && temp.length) {
+            con.query(`UPDATE bill SET ? WHERE id IN (?)`, [{ user_id: req.body.user_id }, temp.map(o => o.id) ] , (error, result) => {
+            if (error) {
+              console.log(error);
+              res.status(400).send('Error');
+              con.release();
+            } else {
+              res.status(200).send('Ok');
+              con.release();
+            }
+          });
+        } else {
+          res.status(200).send('Ok');
+          con.release();
+        }
       }
     });
   });
@@ -244,6 +283,7 @@ router.post('/', (req, res) => {
     if (err) return res.status(400).send('Error');
     con.query('INSERT INTO bill SET ?', bill, function (error, result) {
     if (error) {
+      console.log(error);
       res.status(400).send('Error');
       con.release();
     }else{
@@ -251,6 +291,11 @@ router.post('/', (req, res) => {
       products = products.map((product) => {
         return [product.product_id, product.quantity, result.insertId];
       })
+      if (!products.length) {
+        res.status(200).send('Ok');
+        con.release();
+        return;
+      }
       con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
       if (error) {
         console.log(error);
@@ -294,7 +339,50 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
           con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
           if (error) {
             console.log(error);
-            res.status(200).josn({ message: `Có lỗi xảy ra, ${updated.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có ID ${bill.id}` });
+            res.status(200).josn({ message: `Có lỗi xảy ra, ${updated.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có ID ${bill[0]}` });
+            con.release();
+            stop = true;
+          } else {
+            updated.push(bill);
+            if (updated.length === bills.length) {
+              res.status(200).json({ message: `Cập nhật thành công, ${updated.length} hóa đơn đã được cập nhật` });
+            }
+          }
+        });
+      });
+      }
+    });
+  });
+});
+
+router.post('/excel/upload_status', upload.single('file'), (req, res) => {
+  const workSheetsFromBuffer = xlsx.parse(req.file.buffer);
+  const bills = workSheetsFromBuffer[0].data;
+  bills.shift();
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('SELECT * FROM status', (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        const status = result;
+        const updated = [];
+        let current_status_id;
+        bills.forEach((bill) => {
+          let stop = false;
+          if (stop) return;
+          const billStatus = status.find(o => o.name === _.trim(bill[1]));
+          const statusId = billStatus ? billStatus.id : null;
+          if (statusId) {
+            current_status_id = statusId
+          };
+          const value = [ { status_id: current_status_id }, { code: String(bill[0]) }];
+          con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
+          if (error) {
+            console.log(error);
+            res.status(200).json({ message: `Có lỗi xảy ra, ${updated.length}/${bills.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có mã ${bill[0]}` });
             con.release();
             stop = true;
           } else {
@@ -322,6 +410,9 @@ router.put('/', (req, res) => {
   }
   if (originBill.products_info !== newProductInfo) {
     changes.data.push({ field: 'products_info', origin: originBill.products_info, changeto: newProductInfo});
+  }
+  if (req.body.origin_status_id == 11 && bill.status_id != 11) {
+    bill.user_id = req.body.user_id;
   }
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
@@ -446,7 +537,7 @@ router.get('/statistic/userbills', (req, res) => {
       con.query(`
         SELECT user.full_name FROM bill
         INNER JOIN user ON bill.user_id = user.id
-        WHERE bill.create_at >= ${req.query.start} AND bill.create_at <= ${req.query.end}`,
+        WHERE bill.create_at >= ${req.query.start} AND bill.create_at <= ${req.query.end} AND status_id != 11`,
       (error, result) => {
         if (error) {
           console.log(error);
@@ -497,7 +588,6 @@ router.get('/changelog', (req, res) => {
         res.status(400).send('Error');
         con.release();
       } else {
-        console.log(result);
         res.status(200).json(result);
         con.release();
       }

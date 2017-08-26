@@ -4,11 +4,14 @@ import {
   MenuItem,
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import Navbar, {Brand} from 'react-bootstrap/lib/Navbar';
 import $ from "jquery";
 import Sidebar from '../Sidebar';
 import moment from 'moment';
+import className from 'classnames';
 import { getUser } from '../../router/util';
+import { checkNotify } from '../../actions/fetchData';
 
 
 class Header extends Component {
@@ -26,6 +29,10 @@ class Header extends Component {
   logOut = () => {
     localStorage.removeItem('access_token');
     this.props.history.push('/login');
+  }
+  openChangelog(id) {
+    this.props.dispatch(checkNotify(id));
+    window.open('/home/changelog');
   }
   render() {
     const { notify } = this.props;
@@ -46,11 +53,11 @@ class Header extends Component {
             <ul className="nav navbar-top-links navbar-right">
             <NavDropdown title={<i className="fa fa-bell fa-fw"></i>} id = 'navDropdown3'>
                   {
-                    notify.map((item) => {
+                    notify.reverse().map((item, index) => {
                       return (
-                        <div key={item.id}>
+                        <div key={index} onClick={this.openChangelog.bind(this, item.id)} className={className({checked: true })} >
                           <MenuItem eventKey="1" style={ {width: 300} }>
-                            {item.content.user} đã thay đổi đơn hàng #{item.bill_id}
+                              {item.content.user} sửa đơn #{item.bill_id} lúc {item.create_at.split(' ')[0]}
                           </MenuItem>
                           <MenuItem divider />
                         </div>

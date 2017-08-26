@@ -37,7 +37,7 @@ class Home extends Component {
       page: 1,
       mode: 'normal',
       keyword: '',
-      idFilterStatus: null,
+      idFilterStatus: [],
       selectedBills: [],
       showChangeStatus: false,
       originBill: null,
@@ -56,7 +56,7 @@ class Home extends Component {
     if (phone) return;
     if (!loaded) {
       this.getTotal();
-      this.getBills(1);
+      this.getBills();
     }
     if (!status.length) {
       this.getStatus();
@@ -65,9 +65,10 @@ class Home extends Component {
   getQueryStringValue (key) {
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
-  getBills(page, idFilterStatus) {
+  getBills() {
+    const { page, idFilterStatus } = this.state;
     const { mode } = this.state;
-    return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus}`)
+    return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus.join(',')}`)
       .then(
         (res) => {
           this.props.dispatch(receiveBill(res.data, page));
@@ -77,9 +78,9 @@ class Home extends Component {
         },
       )
   }
-  getTotal(idFilterStatus) {
-    const { mode } = this.state;
-    return axios.get(`/auth/bill/total?mode=${mode}&idStatus=${idFilterStatus}`, ).then(
+  getTotal() {
+    const { mode, idFilterStatus } = this.state;
+    return axios.get(`/auth/bill/total?mode=${mode}&idStatus=${idFilterStatus.join(',')}`, ).then(
       (res) => {
         this.props.dispatch(receiveTotalBill(res.data.quantity));
       }
@@ -140,10 +141,11 @@ class Home extends Component {
   }
   handleSelectPage(page) {
     const { bills } = this.props;
-    this.setState({ page: page });
-    if (!bills[page]) {
-      this.getBills(page);
-    }
+    this.setState({ page: page }, () => {
+      if (!bills[page]) {
+        this.getBills();
+      }
+    });
   }
   getStatus() {
     axios.get('auth/bill/status')
@@ -162,25 +164,30 @@ class Home extends Component {
       return status
     });
   }
-  async onSelectStatus(item) {
+  async onSelectStatus(value) {
+    if (!value) {
+      this.clearAll();
+      return;
+    }
+    value = value.split(',').map(o => +o);
     const { mode } = this.state;
     this.setState({
       mode: 'filterByStatus',
-      idFilterStatus: item.value,
+      idFilterStatus: value,
       page: 1,
     }, () => {
-      this.getTotal(item.value);
-      this.getBills(1, item.value);
+      this.getTotal();
+      this.getBills();
     });
   }
   clearAll() {
     this.setState({
       mode: 'normal',
       page: 1,
-      idFilterStatus: null,
+      idFilterStatus: [],
     }, () => {
       this.getTotal();
-      this.getBills(1);
+      this.getBills();
     });
   }
   onChangeSearchBill(e) {
@@ -291,6 +298,34 @@ class Home extends Component {
     const el = document.getElementById('excel-up');
     if (el) el.click();
   }
+  onFileSatusChange(e) {
+    e.persist();
+    const file = e.target.files[0];
+    if (file) {
+      if (fileExtension(file.name) === 'xlsx') {
+        if (!window.confirm('Tác vụ tốn thời gian, đủ kiên nhẫn đợi không ?')) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        axios.post('/auth/bill/excel/upload_status', formData)
+        .then(
+          (res) => {
+            window.alert(res.data.message);
+            e.target.value = null;
+          },
+          (res) => {
+            window.alert('Có lỗi xảy ra');
+            e.target.value = null;
+          },
+        )
+      } else {
+        window.alert('Không phải file excel');
+      }
+    }
+  }
+  updateStatusByExcel() {
+    const el = document.getElementById('excel-up-status');
+    if (el) el.click();
+  }
   deleteBill(id, e) {
     e.stopPropagation();
     if (window.confirm('Bạn có chắc muốn xóa ?')) {
@@ -322,7 +357,10 @@ class Home extends Component {
     if (window.confirm(`Thay đổi các đơn đã chọn sang trang thái ${item.label} ?`)) {
       axios.put('auth/bill/change_status', {
         status_id: item.id,
-        bill_ids: this.state.selectedBills.map(bill => bill.id),
+        bills: this.state.selectedBills.map((bill) => {
+          return { id: bill.id, status_id: bill.status_id };
+        }),
+        user_id: this.props.user.userId,
       })
       .then(
         (res) => {
@@ -355,7 +393,8 @@ class Home extends Component {
             options={this.getStatusOptions()}
             placeholder="Lọc theo trạng thái"
             searchable= {false}
-            clearable={false}
+            multi
+            simpleValue
             onChange={this.onSelectStatus.bind(this)}
             value={idFilterStatus}
           />
@@ -402,7 +441,7 @@ class Home extends Component {
         <p></p>
           <Panel header={<span>Danh sách đơn hàng </span>} >
             <div className="table-responsive bill-table">
-            <div>
+            <div className="bill-tool">
               <Button onClick={this.selectAllBills.bind(this)} bsStyle="success">
                 Chọn tất cả ({selectedBills.length})
               </Button>
@@ -422,6 +461,7 @@ class Home extends Component {
                 </Button>
                 : null
               }
+              &nbsp;
               {
                 user.role < 3 ?
                 <Button  bsStyle="primary" onClick={this.updateByExcel.bind(this)}>
@@ -431,6 +471,15 @@ class Home extends Component {
               }
               &nbsp;
               <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
+              {
+                user.role < 3 ?
+                <Button  bsStyle="primary" onClick={this.updateStatusByExcel.bind(this)}>
+                  Cập nhật trạng thái bằng file excel
+                </Button>
+                : null
+              }
+              &nbsp;
+              <input type="file" className="hide" id="excel-up-status" onChange={this.onFileSatusChange.bind(this)} />
               <p></p>
             </div>
               <table className="table table-striped table-bordered table-hover">
