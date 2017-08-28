@@ -11,6 +11,7 @@ import {
   RECEIVE_CHANGELOG,
   ADD_NOTIFY,
   CHECK_NOTIFY,
+  RECEIVE_NOTIFY,
 } from '../actions/fetchData';
 
 const initialState = {
@@ -62,8 +63,10 @@ const data = (state = initialState, action) => {
       return _.assign({}, state, { category: action.data });
     case RECEIVE_CHANGELOG:
       return _.assign({}, state, { changelog: action.data });
+    case RECEIVE_NOTIFY:
+      return _.assign({}, state, { notify: action.data });
     case ADD_NOTIFY:
-      return _.assign({}, state, { notify: [...state.notify, ...action.data] });
+      return _.assign({}, state, { notify: [...action.data, ...state.notify] });
     case CHECK_NOTIFY:
       return _.assign({}, state, { checkedNotify: [...state.checkedNotify, action.id] });
     default:

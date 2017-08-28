@@ -16,20 +16,45 @@ table td {
   margin-bottom: 5x;
   margin-top: 5px;
 }
+.duplicate {
+  color: red;
+  cursor: pointer;
+}
 #wrapper {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 99999;
+  z-index: 99;
   left: 0;
 }
 #page-wrapper {
   padding-top: 52px !important;
 }
-.dropdown-menu {
+.notify .dropdown-menu {
   max-height: 300px;
   overflow: auto;
   width: 400px;
+}
+.notify .notify-qty {
+  display: inline-block;
+  background-color: green;
+  padding: 1px 5px 0px 5px;
+  border-radius: 15px;
+  color: #FFF;
+  position: relative;
+  z-index: 999;
+  font-size: 12px;
+}
+#navDropdown3 {
+}
+.notify .checked a {
+  color: #333;
+}
+.changelog tr {
+  cursor: pointer;
+}
+.changelog .selected, .changelog .selected:hover {
+  background-color: #bce8f1 !important;
 }
 /*!
  * Start Bootstrap - SB Admin 2 Bootstrap Admin Theme (http://startbootstrap.com)

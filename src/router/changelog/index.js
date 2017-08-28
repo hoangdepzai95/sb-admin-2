@@ -3,6 +3,7 @@ import Panel from 'react-bootstrap/lib/Panel';
 import { Button, Modal, FormControl, Checkbox } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import moment from 'moment';
+import className from 'classnames';
 import _ from 'lodash';
 
 
@@ -18,6 +19,9 @@ class Changelog extends Component {
       }).filter(o => o.name);
       return log;
     })
+  }
+  getQueryStringValue (key) {
+    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
   formatChange(field) {
     switch (field) {
@@ -43,14 +47,18 @@ class Changelog extends Component {
         return null;
     }
   }
+  openBill(id) {
+    window.open(`/home/bill?id=${id}`);
+  }
   render() {
     const { changelog } = this.props;
+    const selected = this.getQueryStringValue('id');
     return (
       <div className="row ng-scope">
         <div className="">
         <p></p>
           <Panel header={<span>Lịch sử thay đổi</span>} >
-            <div className="table-responsive">
+            <div className="table-responsive changelog">
               <table className="table table-striped table-bordered table-hover">
                 <thead>
                   <tr>
@@ -64,7 +72,7 @@ class Changelog extends Component {
                   {
                     this.parseChangelog(changelog).map((item, index) => {
                       return (
-                        <tr key={item.id}>
+                        <tr key={item.id} onClick={this.openBill.bind(this, item.bill_id)} className={className({selected: item.id == selected})}>
                           <td>{item.create_at} </td>
                           <td>#{item.bill_id}</td>
                           <td>{item.content.user}</td>

@@ -8,7 +8,7 @@ import Select from 'react-select';
 import ColorPicker from 'rc-color-picker';
 import _ from 'lodash';
 
-import { receiveUsers, receiveStatus } from '../../actions/fetchData';
+import { receiveStatus } from '../../actions/fetchData';
 
 class Status extends Component {
   constructor(props) {
@@ -18,12 +18,6 @@ class Status extends Component {
       name: '',
     };
     this.onChangeColor = _.debounce(this.onChangeColor, 500);
-  }
-  componentDidMount() {
-    const { status} = this.props;
-    if (!status.length) {
-      this.getStatus();
-    }
   }
   getStatus() {
     axios.get('auth/bill/status')
@@ -132,7 +126,7 @@ class Status extends Component {
               <table className="table table-striped table-bordered table-hover">
                 <thead>
                   <tr>
-                    <th># </th>
+                    <th>ID </th>
                     <th>Tên Trạng thái </th>
                     <th>Màu sắc</th>
                     <th>Hiện thông báo</th>
@@ -144,7 +138,7 @@ class Status extends Component {
                     status.map((item, index) => {
                       return (
                         <tr key={item.id}>
-                          <td>{index} </td>
+                          <td>{item.id} </td>
                           <td>{item.name} </td>
                           <td>
                             <ColorPicker

@@ -8,6 +8,7 @@ export const RECEIVE_CATEGORY = 'RECEIVE_CATEGORY';
 export const RECEIVE_CHANGELOG = 'RECEIVE_CHANGELOG';
 export const ADD_NOTIFY = 'ADD_NOTIFY';
 export const CHECK_NOTIFY = 'CHECK_NOTIFY';
+export const RECEIVE_NOTIFY = 'RECEIVE_NOTIFY';
 
 export function receiveUsers(users) {
   return {
@@ -75,5 +76,12 @@ export function checkNotify(id) {
   return {
     type: CHECK_NOTIFY,
     id,
+  };
+}
+
+export function receiveNotify(data) {
+  return {
+    type: RECEIVE_NOTIFY,
+    data,
   };
 }

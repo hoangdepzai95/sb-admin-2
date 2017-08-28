@@ -9,14 +9,31 @@ import Navbar, {Brand} from 'react-bootstrap/lib/Navbar';
 import $ from "jquery";
 import Sidebar from '../Sidebar';
 import moment from 'moment';
+import axios from 'axios';
 import className from 'classnames';
 import { getUser } from '../../router/util';
-import { checkNotify } from '../../actions/fetchData';
+import { checkNotify, receiveNotify, receiveStatus } from '../../actions/fetchData';
 
 
 class Header extends Component {
   componentDidMount() {
+    const { status} = this.props;
+
     getUser(this.props.dispatch);
+
+    if (!status.length) {
+     this.getStatus();
+    }
+  }
+  getStatus() {
+    axios.get('auth/bill/status')
+      .then(
+        (res) => {
+          this.props.dispatch(receiveStatus(res.data));
+        },
+        (error) => {
+        },
+      )
   }
   toggleMenu = () => {
       if($(".navbar-collapse").hasClass('collapse')){
@@ -31,11 +48,40 @@ class Header extends Component {
     this.props.history.push('/login');
   }
   openChangelog(id) {
+    const { user, notify } = this.props;
     this.props.dispatch(checkNotify(id));
-    window.open('/home/changelog');
+    window.open(`/home/changelog?id=${id}`);
+    axios.put('/auth/bill/check_changelog', {
+      user_id: user.userId,
+      id,
+    })
+     .then(
+       (res) => {
+         const data = notify.map((o) => {
+           if (o.id == id) {
+             o.checked = res.data.checked;
+           }
+           return o;
+         })
+         this.props.dispatch(receiveNotify(data));
+       },
+       (error) => {
+
+       },
+     )
+  }
+  isChecked(user_id, item) {
+    return !!(item.checked || '').split(',').find(o => o == user_id);
+  }
+  formatNotify(notify, user_id) {
+    return notify.map((o) => {
+      o.isChecked = this.isChecked(user_id, o);
+      return o;
+    });
   }
   render() {
-    const { notify } = this.props;
+    const { user } = this.props;
+    const notify = this.formatNotify(this.props.notify, user.userId);
     return (
       <div id="wrapper" className="content">
         <Navbar fluid={true}  style={ {margin: 0} }>
@@ -51,20 +97,23 @@ class Header extends Component {
               </span>
             </Brand>
             <ul className="nav navbar-top-links navbar-right">
-            <NavDropdown title={<i className="fa fa-bell fa-fw"></i>} id = 'navDropdown3'>
-                  {
-                    notify.reverse().map((item, index) => {
-                      return (
-                        <div key={index} onClick={this.openChangelog.bind(this, item.id)} className={className({checked: true })} >
-                          <MenuItem eventKey="1" style={ {width: 300} }>
-                              {item.content.user} sửa đơn #{item.bill_id} lúc {item.create_at.split(' ')[0]}
-                          </MenuItem>
-                          <MenuItem divider />
-                        </div>
-                      )
-                    })
-                  }
+            <span className="notify">
+              <NavDropdown title={<i className="fa fa-bell fa-fw"></i>} id = 'navDropdown3' noCaret>
+                    {
+                      notify.map((item, index) => {
+                        return (
+                          <div key={index} onClick={this.openChangelog.bind(this, item.id)} className={className({checked: item.isChecked })} >
+                            <MenuItem eventKey="1" style={ {width: 300} }>
+                                {item.content.user} sửa đơn #{item.bill_id} lúc {item.create_at.split(' ')[0]}
+                            </MenuItem>
+                            <MenuItem divider />
+                          </div>
+                        )
+                      })
+                    }
                 </NavDropdown>
+                <span className="notify-qty">{notify.filter(o => !o.isChecked).length}</span>
+              </span>
              <NavDropdown title={<i className="fa fa-user fa-fw"></i> } id = 'navDropdown4'>
                     <MenuItem eventKey = "4" onClick = {this.logOut}>
                       <span> <i className = "fa fa-sign-out fa-fw" /> Đăng xuất </span>
@@ -82,5 +131,7 @@ class Header extends Component {
 export default connect((state) => {
   return {
     notify: state.data.notify,
+    user: state.data.user,
+    status: state.data.status,
   };
 })(Header);

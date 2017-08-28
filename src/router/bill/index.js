@@ -37,6 +37,7 @@ class Home extends Component {
       page: 1,
       mode: 'normal',
       keyword: '',
+      searchType: '',
       idFilterStatus: [],
       selectedBills: [],
       showChangeStatus: false,
@@ -46,14 +47,18 @@ class Home extends Component {
   }
   componentWillMount() {
     const phone = this.getQueryStringValue('phone');
+    const id = this.getQueryStringValue('id');
     if (phone) {
       this.onSearchBill(phone, 'phone');
+    } else if (id) {
+      this.onSearchBill(id, 'id');
     }
   }
   componentDidMount() {
     const { loaded, currentPage,status } = this.props;
     const phone = this.getQueryStringValue('phone');
-    if (phone) return;
+    const id = this.getQueryStringValue('id');
+    if (phone || id) return;
     if (!loaded) {
       this.getTotal();
       this.getBills();
@@ -200,6 +205,7 @@ class Home extends Component {
       mode: 'search',
       page: 1,
       idFilterStatus: null,
+      searchType: type,
       keyword,
     });
     axios.get(`/auth/bill/search?q=${keyword}&type=${type}`)
@@ -213,9 +219,9 @@ class Home extends Component {
       )
   }
   reloadBilld(page) {
-    const { keyword, mode } = this.state;
+    const { keyword, mode, searchType } = this.state;
     if (mode === 'search') {
-      this.onSearchBill(keyword);
+      this.onSearchBill(keyword, searchType);
     } else {
       axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}`)
         .then(
@@ -374,6 +380,22 @@ class Home extends Component {
       )
     }
   }
+  notDuplicate(id) {
+    if (window.confirm(`Xác nhận đơn không trùng`)) {
+      axios.put(`auth/bill/not_duplicate/${id}`)
+      .then(
+        (res) => {
+          this.reloadBilld(this.state.page);
+        },
+        (error) => {
+          window.alert('Có lỗi xảy ra');
+        },
+      )
+    }
+  }
+  filterDuplicate() {
+    this.onSearchBill('', 'duplicate');
+  }
   render() {
     const { user, total } = this.props;
     const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills, showChangeStatus, originBill } = this.state;
@@ -409,6 +431,10 @@ class Home extends Component {
             <p></p>
           </Col>
           <Col md={3}>
+            <Button bsStyle="primary" onClick={this.filterDuplicate.bind(this)}>
+              Lọc đơn trùng
+            </Button>
+            &nbsp;
             <Button bsStyle="warning" onClick={this.clearAll.bind(this)}>
               Bỏ lọc và tìm kiếm
             </Button>
@@ -507,13 +533,9 @@ class Home extends Component {
                             <Checkbox checked={!!selectedBills.find(o => o.id === bill.id)} >
                               <span>#{bill.id}</span>
                             </Checkbox>
-                            {
-                              bill.status_id !== 2 ?
-                              <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
-                                Chỉnh sửa
-                              </Button>
-                              : null
-                            }
+                            <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>
+                              Chỉnh sửa
+                            </Button>
                             &nbsp;
                             {
                               user.role == 1 || user.role == 2 ?
@@ -527,6 +549,11 @@ class Home extends Component {
                           <td>{bill.user_name} </td>
                           <td>
                           <span style={{color: bill.color}}>{bill.status}</span>
+                          {
+                            bill.duplicate == 2 ?
+                            <p className="duplicate" onClick={this.notDuplicate.bind(this, bill.id)}>trùng ({bill.phone})</p>
+                            : null
+                          }
                           </td>
                           <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>

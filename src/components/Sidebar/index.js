@@ -137,7 +137,7 @@ class Sidebar extends Component {
             }
             <li title="Lịch sử thay đổi">
               <Link to="/home/changelog">
-                <i className="fa fa-sticky-note-o" />
+                <i className="fa fa-history" />
               </Link>
             </li>
           </ul>

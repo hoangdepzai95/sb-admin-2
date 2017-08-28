@@ -87,6 +87,10 @@ router.get('/search', (req, res) => {
     condition = `WHERE bill.code REGEXP '${keywords}'`
   } else if (type === 'phone') {
     condition = `WHERE customer.phone = '${keywords}'`;
+  } else if (type === 'id') {
+    condition = `WHERE bill.id = '${keywords}'`;
+  } else if (type === 'duplicate') {
+    condition = `WHERE bill.duplicate = '2'`;
   } else {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   }
@@ -276,37 +280,101 @@ router.delete('/status/:id', (req, res) => {
   });
 });
 
+router.put('/not_duplicate/:id', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('UPDATE bill SET ? WHERE ?', [{ duplicate: 1 }, { id: req.params.id }] , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
+    });
+  });
+})
+
 router.post('/', (req, res) => {
   const bill = req.body.bill_info;
   bill.create_at = (new Date()).valueOf();
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query('INSERT INTO bill SET ?', bill, function (error, result) {
-    if (error) {
-      console.log(error);
-      res.status(400).send('Error');
-      con.release();
-    }else{
-      let products = req.body.products;
-      products = products.map((product) => {
-        return [product.product_id, product.quantity, result.insertId];
-      })
-      if (!products.length) {
-        res.status(200).send('Ok');
-        con.release();
-        return;
-      }
-      con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
+    con.query(`SELECT * FROM bill WHERE user_id = '${bill.user_id}' AND duplicate != '1'`, (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
-      }else{
-        res.status(200).json(results);
         con.release();
+      }else{
+        if (result.length) {
+          const bill_ids = result.map(o => o.id);
+          con.query('UPDATE bill SET ? WHERE id IN (?)', [{ duplicate: 2 }, bill_ids], (error, result) => {
+            if (error) {
+              console.log(error);
+              res.status(400).send('Error');
+              con.release();
+            }else{
+              bill.duplicate = 2;
+              con.query('INSERT INTO bill SET ?', bill, function (error, result) {
+              if (error) {
+                console.log(error);
+                res.status(400).send('Error');
+                con.release();
+              }else{
+                let products = req.body.products;
+                products = products.map((product) => {
+                  return [product.product_id, product.quantity, result.insertId];
+                })
+                if (!products.length) {
+                  res.status(200).send('Ok');
+                  con.release();
+                  return;
+                }
+                con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
+                if (error) {
+                  console.log(error);
+                  res.status(400).send('Error');
+                }else{
+                  res.status(200).json(results);
+                  con.release();
+                }
+                });
+              }
+              });
+            }
+          })
+        } else {
+          bill.duplicate = 0;
+          con.query('INSERT INTO bill SET ?', bill, function (error, result) {
+          if (error) {
+            console.log(error);
+            res.status(400).send('Error');
+            con.release();
+          }else{
+            let products = req.body.products;
+            products = products.map((product) => {
+              return [product.product_id, product.quantity, result.insertId];
+            })
+            if (!products.length) {
+              res.status(200).send('Ok');
+              con.release();
+              return;
+            }
+            con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
+            if (error) {
+              console.log(error);
+              res.status(400).send('Error');
+            }else{
+              res.status(200).json(results);
+              con.release();
+            }
+            });
+          }
+          });
+        }
       }
-      });
-    }
-    });
+    })
   });
 });
 
@@ -582,7 +650,7 @@ router.get('/statistic/customerbills', (req, res) => {
 router.get('/changelog', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 20 OFFSET 0' , (error, result) => {
+      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 100 OFFSET 0' , (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -594,6 +662,31 @@ router.get('/changelog', (req, res) => {
     });
   });
 });
-
+router.put('/check_changelog', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('SELECT * FROM bill_changelog WHERE ?', { id: req.body.id } , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        let checked = String(result[0].checked || '').split(',').concat([req.body.user_id]).filter(o => o).map(o => +o);
+        checked = _.uniq(checked).join(',');
+        con.query('UPDATE bill_changelog SET ? WHERE ?', [{ checked }, { id: req.body.id }], (error) => {
+          if (error) {
+            console.log(error);
+            res.status(400).send('Error');
+            con.release();
+          } else {
+            result[0].checked = checked;
+            res.status(200).json(result[0]);
+            con.release();
+          }
+        })
+      }
+    });
+  });
+});
 
 module.exports = router;
