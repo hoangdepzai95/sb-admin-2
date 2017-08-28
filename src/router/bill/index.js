@@ -393,6 +393,19 @@ class Home extends Component {
       )
     }
   }
+  duplicate(id) {
+    if (window.confirm(`Xác nhận đơn trùng`)) {
+      axios.put(`auth/bill/duplicate/${id}`)
+      .then(
+        (res) => {
+          this.reloadBilld(this.state.page);
+        },
+        (error) => {
+          window.alert('Có lỗi xảy ra');
+        },
+      )
+    }
+  }
   filterDuplicate() {
     this.onSearchBill('', 'duplicate');
   }
@@ -552,6 +565,11 @@ class Home extends Component {
                           {
                             bill.duplicate == 2 ?
                             <p className="duplicate" onClick={this.notDuplicate.bind(this, bill.id)}>trùng ({bill.phone})</p>
+                            : null
+                          }
+                          {
+                            bill.duplicate == 1 ?
+                            <p className="not-duplicate" onClick={this.duplicate.bind(this, bill.id)}>đã xác nhận</p>
                             : null
                           }
                           </td>

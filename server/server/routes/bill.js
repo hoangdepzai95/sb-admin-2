@@ -296,6 +296,22 @@ router.put('/not_duplicate/:id', (req, res) => {
   });
 })
 
+router.put('/duplicate/:id', (req, res) => {
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query('UPDATE bill SET ? WHERE ?', [{ duplicate: 2 }, { id: req.params.id }] , (error, result) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      } else {
+        res.status(200).send('Ok');
+        con.release();
+      }
+    });
+  });
+})
+
 router.post('/', (req, res) => {
   const bill = req.body.bill_info;
   bill.create_at = (new Date()).valueOf();

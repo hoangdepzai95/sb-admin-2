@@ -20,6 +20,10 @@ table td {
   color: red;
   cursor: pointer;
 }
+.not-duplicate {
+  cursor: pointer;
+  color: #337ab7;
+}
 #wrapper {
   position: fixed;
   top: 0;
