@@ -17,7 +17,6 @@ class Home extends Component {
     this.state = {
       showForm: false,
       name: '',
-      size: '',
       code: '',
       quantity: '',
       type: '',
@@ -62,7 +61,6 @@ class Home extends Component {
         name: product.name,
         code: product.code,
         quantity: product.quantity,
-        size: product.size,
         id: product.id,
         instock: product.instock,
         price: product.price,
@@ -73,7 +71,6 @@ class Home extends Component {
         name: '',
         code: '',
         quantity: 0,
-        size: '',
         id: '',
         instock: 1,
         price: '',
@@ -113,7 +110,7 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, size, code, quantity, type, id, instock, file, price, id_category } = this.state;
+    const { name, code, quantity, type, id, instock, file, price, id_category } = this.state;
     if (name.length < 1 || !price) {
       window.alert('Tên và giá sản phẩm không được bỏ trống');
       return;
@@ -124,7 +121,6 @@ class Home extends Component {
     }
     const product = {
       name,
-      size,
       code,
       quantity: quantity || 0,
       instock,
@@ -188,7 +184,7 @@ class Home extends Component {
   }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, size, code, quantity, instock, price, id_category } = this.state;
+    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -215,7 +211,6 @@ class Home extends Component {
                        <th># </th>
                        <th>Tên </th>
                        <th>Mã</th>
-                       <th>Size</th>
                        <th>Số lượng </th>
                        <th>Giá </th>
                        <th>Nhóm </th>
@@ -242,7 +237,6 @@ class Home extends Component {
                               {product.name}
                              </td>
                              <td>{product.code} </td>
-                             <td>{product.size} </td>
                              <td>{product.quantity} </td>
                              <td>{formatCurrency(product.price)}</td>
                              <td>{product.category}</td>
@@ -320,18 +314,6 @@ class Home extends Component {
                onChange={this.onChangeCategory.bind(this)}
                clearable={false}
                searchable= {false}
-               />
-             </Col>
-           </FormGroup>
-           <FormGroup >
-             <Col componentClass={ControlLabel} sm={2}>
-               Size
-             </Col>
-             <Col sm={10}>
-               <FormControl
-               type="text"
-               onChange={this.onChange.bind(this, 'size')}
-               value={size}
                />
              </Col>
            </FormGroup>

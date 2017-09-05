@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import Select from 'react-select';
 import AddBill from './AddBill';
 import FileSaver from 'file-saver';
+import moment from 'moment';
 
 import { receiveTotalBill, receiveBill, receiveStatus } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
@@ -31,6 +32,8 @@ class Home extends Component {
         decrease: 0,
         code: '',
         status_id: null,
+        facebook: '',
+        customer_name: '',
       },
       products: [],
       type: '',
@@ -40,6 +43,7 @@ class Home extends Component {
       searchType: '',
       idFilterStatus: [],
       selectedBills: [],
+      singleBill: null,
       showChangeStatus: false,
       originBill: null,
     };
@@ -197,10 +201,14 @@ class Home extends Component {
   }
   onChangeSearchBill(e) {
     const keyword = e.target.value;
-    if (keyword.length < 3) return ;
     this.onSearchBill(keyword);
   }
   onSearchBill(keyword, type = '') {
+    if (!keyword) {
+      this.clearAll();
+      return;
+    }
+    if (keyword.length < 3) return ;
     this.setState({
       mode: 'search',
       page: 1,
@@ -255,13 +263,13 @@ class Home extends Component {
       window.alert('Không có hóa đơn được chọn');
       return;
     }
-    const header = ['ID', 'Mã', 'Nhân viên', 'Trạng thái', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
+    const header = ['ID', 'Mã', 'Trạng thái', 'Nhân viên', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
     const bills = selectedBills.map((bill) => {
       const categories = _.uniq(bill.products.map(product => product.category)).join('+');
       const quantity = bill.products.reduce((sum, product) => {
                                         return sum + product.quantity;
                                       }, 0);
-      return [bill.id, bill.code, bill.user_name, bill.status, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
+      return [bill.id, bill.code, bill.status, bill.user_name, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
     });
     if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
       axios.post('/auth/bill/excel', {
@@ -346,8 +354,11 @@ class Home extends Component {
         )
     }
   }
-  openChangeStatus() {
+  openChangeStatus(bill) {
     this.setState({ showChangeStatus: true });
+    if (bill) {
+      this.setState({ selectedBills: [bill] });
+    }
   }
   getStatusOptions() {
     return this.props.status.map((status) => {
@@ -510,15 +521,6 @@ class Home extends Component {
               }
               &nbsp;
               <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
-              {
-                user.role < 3 ?
-                <Button  bsStyle="primary" onClick={this.updateStatusByExcel.bind(this)}>
-                  Cập nhật trạng thái bằng file excel
-                </Button>
-                : null
-              }
-              &nbsp;
-              <input type="file" className="hide" id="excel-up-status" onChange={this.onFileSatusChange.bind(this)} />
               <p></p>
             </div>
               <table className="table table-striped table-bordered table-hover">
@@ -559,19 +561,28 @@ class Home extends Component {
                             }
                           </td>
                           <td>{bill.code} </td>
-                          <td>{bill.user_name} </td>
                           <td>
-                          <span style={{color: bill.color}}>{bill.status}</span>
-                          {
-                            bill.duplicate == 2 ?
-                            <p className="duplicate" onClick={this.notDuplicate.bind(this, bill.id)}>trùng ({bill.phone})</p>
-                            : null
-                          }
-                          {
-                            bill.duplicate == 1 ?
-                            <p className="not-duplicate" onClick={this.duplicate.bind(this, bill.id)}>đã xác nhận</p>
-                            : null
-                          }
+                          {bill.user_name}
+                          <p className="text-info">{moment(bill.create_at, 'x').format('HH:mm DD/MM/YYYY')}</p>
+                          </td>
+                          <td>
+                            <span style={{color: bill.color}}>{bill.status}</span>
+                            <div>
+                              <Button bsStyle="info" bsSize="xs" active onClick={this.openChangeStatus.bind(this, bill)}>
+                                Đổi trạng thái
+                              </Button>
+                              &nbsp;
+                            </div>
+                            {
+                              bill.duplicate == 2 ?
+                              <p className="duplicate" onClick={this.notDuplicate.bind(this, bill.id)}>trùng ({bill.phone})</p>
+                              : null
+                            }
+                            {
+                              bill.duplicate == 1 ?
+                              <p className="not-duplicate" onClick={this.duplicate.bind(this, bill.id)}>đã kiểm tra</p>
+                              : null
+                            }
                           </td>
                           <td>{bill.facebook} </td>
                           <td>{bill.customer_name} </td>

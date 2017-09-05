@@ -27,11 +27,20 @@ class AddBill extends Component {
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
+    this.debounceSearchCusomter = _.debounce(this.debounceSearchCusomter, 1000);
+  }
+  componentWillUpdate(nextProps) {
+    if(nextProps.showForm && !this.props.showForm) {
+      this.setState({
+        addedCustomer: null,
+        loadedBillDetail: false,
+      });
+    }
   }
   async componentDidUpdate(prevProps) {
     const { type, billInfo, showForm, changeProduct } = this.props;
     if (showForm && !prevProps.showForm && type === 'edit' ) {
-      await this.searchCustomer();
+      await this.searchCustomer(billInfo.phone);
       axios.get(`auth/bill/product/${billInfo.id}`)
       .then(
         (res) => {
@@ -44,21 +53,23 @@ class AddBill extends Component {
       );
     }
   }
-  searchCustomer() {
-    const { customer } = this.props;
-    return axios.get(`/auth/customer?phone=${customer.phone}`)
+  searchCustomer(phone) {
+    return axios.get(`/auth/customer?phone=${phone}`)
      .then(
        (res) => {
          if (res.data.length) {
            this.setState({ addedCustomer: res.data[0] });
          } else {
-           window.alert('Khách hàng không tồn tại, hãy tạo khách hàng mới');
+           this.addCustomer(this.props.customer.phone);
          }
        },
        (err) => {
          window.alert('Co loi xay ra');
        },
      )
+  }
+  debounceSearchCusomter(phone) {
+    this.searchCustomer(phone);
   }
   onChangeNewCustomer(field, e) {
     const value = e.target.value;
@@ -67,16 +78,13 @@ class AddBill extends Component {
     newcustomer[field] = value;
     this.setState({ newcustomer });
   }
-  addCustomer() {
-    const { newcustomer } = this.state;
-    if (!newcustomer.phone.length) {
+  addCustomer(phone) {
+    if (!phone.length) {
       window.alert('Số điện thoại rỗng');
       return;
     }
     axios.post('/auth/customer', {
-      phone: newcustomer.phone,
-      name: newcustomer.name,
-      facebook: newcustomer.facebook,
+      phone: phone,
     }).then(
       (res) => {
         this.setState({ addedCustomer: res.data });
@@ -95,7 +103,7 @@ class AddBill extends Component {
     return products.map((product) => {
       return {
         value: product.id,
-        label: `${product.name}, size: ${product.size} code: ${product.code}`,
+        label: product.name,
         product,
       };
     });
@@ -140,6 +148,10 @@ class AddBill extends Component {
       window.alert('Chưa chọn trạng thái');
       return;
     }
+    if (!addedCustomer) {
+      window.alert('Chưa có khách hàng');
+      return;
+    }
     if (type === 'edit') {
       const originStatus = status.find(o => o.id == originBill.status_id);
       axios.put('/auth/bill', {
@@ -153,13 +165,14 @@ class AddBill extends Component {
           decrease: billInfo.decrease || 0,
           id: billInfo.id,
           status_id: billInfo.status_id,
+          facebook: billInfo.facebook,
+          customer_name: billInfo.customer_name,
         },
         products: products.map((product) => {
           return { product_id: product.id, quantity: product.quantity, name: product.name };
         }),
         origin_bill: originBill,
         user_full_name: user.full_name,
-        user_id: user.userId,
         origin_status_id: originBill.status_id,
         write_log: originStatus.show_notify ? 1 : 0,
       })
@@ -210,6 +223,10 @@ class AddBill extends Component {
   onSelectStatus(item) {
     this.props.onChange.call(this.props.parent, 'billInfo', 'status_id', { target: { value: item.value } });
   }
+  onChangePhone(e) {
+    this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
+    this.debounceSearchCusomter(e.target.value);
+  }
   render() {
     const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
@@ -220,109 +237,55 @@ class AddBill extends Component {
           </Modal.Header>
           <Modal.Body>
             <Panel header={<span>Khách hàng </span>}  >
-              {
-                addedCustomer  && !(type === 'edit' && !loadedBillDetail) ?
-                <div className="table-responsive">
-                  <table className="table table-striped table-bordered table-hover">
-                    <thead>
-                      <tr>
-                        <th>Tên </th>
-                        <th>Facebook</th>
-                        <th>Điện thoại</th>
-                        <th>Số  đơn hàng</th>
-                        <th>Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{addedCustomer.name} </td>
-                        <td>{addedCustomer.facebook} </td>
-                        <td>{addedCustomer.phone} </td>
-                        <td>
-                        <a target="_blank" href={`${window.location.origin}/home/bill?phone=${addedCustomer.phone}`}>
-                        <Button bsStyle="info" bsSize="xs" active>
-                          Xem {addedCustomer.bills} đơn
-                        </Button>
-                        </a>
-                        </td>
-                        <td>
-                          <Button bsStyle="danger" bsSize="xs" active onClick={this.removeCustomer.bind(this)}>
-                            Xóa
-                          </Button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                :
-                <div>
-                  {
-                    type === 'edit' && !loadedBillDetail ?
-                    <div className="text-center"><i className="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
-                    :
-                    <Form horizontal>
-                      <FormGroup>
-                        <Col componentClass={ControlLabel} sm={2}>
-                          Số  điện thoại
-                        </Col>
-                        <Col sm={10}>
-                          <FormControl
-                          type="text"
-                          value={customer.phone}
-                          onChange={onChange.bind(parent, 'customer', 'phone')}
-                          />
-                        </Col>
-                      </FormGroup>
-                      <FormGroup>
-                        <Col componentClass={ControlLabel} sm={2}>
-                        </Col>
-                        <Col sm={10}>
-                          <Button bsStyle="success" onClick={this.searchCustomer.bind(this)}>
-                            Thêm khách đã lưu
-                          </Button>
-                        </Col>
-                      </FormGroup>
-                     <FormGroup>
-                       <Col componentClass={ControlLabel} sm={2}>
-                         Tên
-                       </Col>
-                       <Col sm={10}>
-                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'name')} value={newcustomer.name}/>
-                       </Col>
-                     </FormGroup>
-
-                     <FormGroup >
-                       <Col componentClass={ControlLabel} sm={2}>
-                         Số  điện thoại
-                       </Col>
-                       <Col sm={10}>
-                         <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'phone')} value={newcustomer.phone}/>
-                       </Col>
-                     </FormGroup>
-                     <FormGroup >
-                       <Col componentClass={ControlLabel} sm={2}>
-                         Facebook
-                       </Col>
-                       <Col sm={10}>
-                           <FormControl type="text" onChange={this.onChangeNewCustomer.bind(this, 'facebook')} value={newcustomer.facebook}/>
-                       </Col>
-                     </FormGroup>
-                     <FormGroup >
-                      <Col componentClass={ControlLabel} sm={2} />
-                      <Col sm={10}>
-                       <Button bsStyle="success" onClick={this.addCustomer.bind(this)}>
-                         Thêm khách hàng mới
-                       </Button>
-                       </Col>
-                     </FormGroup>
-                    </Form>
-                  }
-
-                </div>
-              }
+                <Form horizontal>
+                  <FormGroup>
+                    <Col componentClass={ControlLabel} sm={2}>
+                      Số  điện thoại
+                    </Col>
+                    <Col sm={10}>
+                      <FormControl
+                      type="text"
+                      value={customer.phone}
+                      onChange={this.onChangePhone.bind(this)}
+                      />
+                    </Col>
+                  </FormGroup>
+                 </Form>
+                 {
+                   addedCustomer ?
+                   <div className="table-responsive">
+                     <table className="table table-striped table-bordered table-hover">
+                       <thead>
+                         <tr>
+                           <th>Điện thoại</th>
+                           <th>Số  đơn hàng</th>
+                           <th>Thao tác</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         <tr>
+                           <td>{addedCustomer.phone} </td>
+                           <td>
+                           <a target="_blank" href={`${window.location.origin}/home/bill?phone=${addedCustomer.phone}`}>
+                           <Button bsStyle="info" bsSize="xs" active>
+                             Xem {addedCustomer.bills || 0} đơn
+                           </Button>
+                           </a>
+                           </td>
+                           <td>
+                             <Button bsStyle="danger" bsSize="xs" active onClick={this.removeCustomer.bind(this)}>
+                               Xóa
+                             </Button>
+                           </td>
+                         </tr>
+                       </tbody>
+                     </table>
+                   </div>
+                   : null
+                 }
             </Panel>
             {
-              addedCustomer && !(type === 'edit' && !loadedBillDetail) ?
+               !(type === 'edit' && !loadedBillDetail) ?
               <div>
               <Panel header={<span>Sản phẩm</span>} >
               <div>
@@ -344,7 +307,6 @@ class AddBill extends Component {
                     <tr>
                       <th>Tên </th>
                       <th>Mã</th>
-                      <th>Size</th>
                       <th>Số lượng</th>
                       <th>Gía</th>
                       <th>Thao tác</th>
@@ -364,7 +326,6 @@ class AddBill extends Component {
                             {product.name}
                             </td>
                             <td>{product.code}</td>
-                            <td>{product.size}</td>
                             <td>{product.quantity}</td>
                             <td>{formatCurrency(product.price)}</td>
                             <td>
@@ -443,6 +404,30 @@ class AddBill extends Component {
                        type="text"
                        onChange={onChange.bind(parent, 'billInfo', 'address')}
                        value={billInfo.address}
+                       />
+                     </Col>
+                   </FormGroup>
+                   <FormGroup >
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Facebook
+                     </Col>
+                     <Col sm={10}>
+                       <FormControl
+                       type="text"
+                       onChange={onChange.bind(parent, 'billInfo', 'facebook')}
+                       value={billInfo.facebook}
+                       />
+                     </Col>
+                   </FormGroup>
+                   <FormGroup >
+                     <Col componentClass={ControlLabel} sm={2}>
+                       Tên khách
+                     </Col>
+                     <Col sm={10}>
+                       <FormControl
+                       type="text"
+                       onChange={onChange.bind(parent, 'billInfo', 'customer_name')}
+                       value={billInfo.customer_name}
                        />
                      </Col>
                    </FormGroup>

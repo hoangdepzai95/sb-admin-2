@@ -18,8 +18,7 @@ router.get('/', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-            SELECT b.*, user.full_name AS user_name,
-            customer.name as customer_name, customer.phone, customer.facebook, status.name as status, status.color
+            SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
@@ -95,7 +94,7 @@ router.get('/search', (req, res) => {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   }
   const sql = `
-    SELECT bill.*, user.full_name AS user_name, customer.name AS customer_name, customer.phone, customer.facebook, status.name AS status
+    SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status
     FROM bill
     INNER JOIN customer ON bill.customer_id = customer.id
     INNER JOIN status ON bill.status_id = status.id
@@ -317,7 +316,7 @@ router.post('/', (req, res) => {
   bill.create_at = (new Date()).valueOf();
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT * FROM bill WHERE user_id = '${bill.user_id}' AND duplicate != '1'`, (error, result) => {
+    con.query(`SELECT * FROM bill WHERE customer_id = ${bill.customer_id} AND duplicate != 1`, (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -414,61 +413,29 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
       } else {
         const status = result;
         const updated = [];
-        bills.forEach((bill) => {
-          let stop = false;
-          if (stop) return;
-          const billStatus = status.find(o => o.name === bill[2].trim());
-          const statusId = billStatus ? billStatus.id : null;
-          const value = [ { status_id: statusId, code: bill[1] }, { id: bill[0] }];
-          con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
-          if (error) {
-            console.log(error);
-            res.status(200).josn({ message: `Có lỗi xảy ra, ${updated.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có ID ${bill[0]}` });
-            con.release();
-            stop = true;
-          } else {
-            updated.push(bill);
-            if (updated.length === bills.length) {
-              res.status(200).json({ message: `Cập nhật thành công, ${updated.length} hóa đơn đã được cập nhật` });
-            }
-          }
-        });
-      });
-      }
-    });
-  });
-});
-
-router.post('/excel/upload_status', upload.single('file'), (req, res) => {
-  const workSheetsFromBuffer = xlsx.parse(req.file.buffer);
-  const bills = workSheetsFromBuffer[0].data;
-  bills.shift();
-  pool.getConnection((err, con) => {
-      if (err) return res.status(400).send('Error');
-      con.query('SELECT * FROM status', (error, result) => {
-      if (error) {
-        console.log(error);
-        res.status(400).send('Error');
-        con.release();
-      } else {
-        const status = result;
-        const updated = [];
         let current_status_id;
+        let stop = false;
         bills.forEach((bill) => {
-          let stop = false;
           if (stop) return;
-          const billStatus = status.find(o => o.name === _.trim(bill[1]));
+          const billStatus = status.find(o => o.name === _.trim(bill[2]));
           const statusId = billStatus ? billStatus.id : null;
           if (statusId) {
             current_status_id = statusId
           };
-          const value = [ { status_id: current_status_id }, { code: String(bill[0]) }];
+          if (!current_status_id) {
+            res.status(200).json({ message: `Có lỗi xảy ra, ${updated.length}/${bills.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có mã ${bill[0]}` });
+            con.release();
+            stop = true;
+            return;
+          }
+          const value = [ { status_id: current_status_id, code: bill[1] }, { id: bill[0] }];
           con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
           if (error) {
             console.log(error);
             res.status(200).json({ message: `Có lỗi xảy ra, ${updated.length}/${bills.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có mã ${bill[0]}` });
             con.release();
             stop = true;
+            return;
           } else {
             updated.push(bill);
             if (updated.length === bills.length) {
@@ -515,6 +482,11 @@ router.put('/', (req, res) => {
         products = products.map((product) => {
           return [product.product_id, product.quantity, bill.id];
         })
+        if (!products.length) {
+          res.status(200).send('Ok');
+          con.release();
+          return;
+        }
         con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
         if (error) {
           console.log(error);

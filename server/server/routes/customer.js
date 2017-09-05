@@ -14,6 +14,11 @@ router.get('/', (req, res) => {
         res.status(400).send('Error');
         con.release();
       } else {
+        if (result[0] && !result[0].id) {
+          res.status(200).json([]);
+          con.release();
+          return;
+        }
         res.status(200).json(result);
         con.release();
       }

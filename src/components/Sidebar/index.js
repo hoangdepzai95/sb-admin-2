@@ -75,6 +75,10 @@ class Sidebar extends Component {
         return 'Phí ship';
       case 'decrease':
         return 'Giảm giá';
+      case 'facebook':
+        return 'facebook';
+      case 'customer_name':
+        return 'Tên khách hàng';
       default:
         return null;
     }
