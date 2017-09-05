@@ -38,7 +38,7 @@ router.get('/search', (req, res) => {
   const keyword = req.query.q;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id WHERE name LIKE '%${keyword}%' OR code LIKE '%${keyword}%'` , function (error, results) {
+    con.query(`SELECT * FROM product WHERE name LIKE '%${keyword}%' OR code LIKE '%${keyword}%'` , function (error, results) {
     if (error) {
       console.log(error);
       res.status(400).send('Error');
