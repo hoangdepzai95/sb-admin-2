@@ -114,7 +114,9 @@ class Home extends Component {
       });
     } else {
       this.setState({
-        customerInfo: {},
+        customer: {
+          phone: '',
+        },
         billInfo: {},
         products: [],
       });
@@ -204,11 +206,11 @@ class Home extends Component {
     this.onSearchBill(keyword);
   }
   onSearchBill(keyword, type = '') {
-    if (!keyword) {
+    if (!keyword && !type) {
       this.clearAll();
       return;
     }
-    if (keyword.length < 3) return ;
+    if (keyword.length < 3 && !type) return ;
     this.setState({
       mode: 'search',
       page: 1,

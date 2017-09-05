@@ -21,6 +21,7 @@ class AddBill extends Component {
         name: '',
         facebook: '',
       },
+      phone: '',
       addedCustomer: null,
       searchProducts: [],
       loadingProduct: false,
@@ -228,7 +229,7 @@ class AddBill extends Component {
     this.debounceSearchCusomter(e.target.value);
   }
   render() {
-    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail } = this.state;
+    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
     return (
           <Modal show={showForm} onHide={close} dialogClassName="custom-modal">
@@ -344,6 +345,95 @@ class AddBill extends Component {
                 <Panel header={<span>Thông tin đơn hàng</span>} >
                   <Form horizontal>
                     <FormGroup>
+                    <Col componentClass={ControlLabel} sm={2}>
+                    Trạng thái
+                    </Col>
+                    <Col sm={10}>
+                    <Select
+                    name="form-field-name"
+                    options={this.getStatusOptions()}
+                    placeholder="Trạng thái"
+                    searchable= {false}
+                    clearable={false}
+                    onChange={this.onSelectStatus.bind(this)}
+                    value={billInfo.status_id}
+                    />
+                    </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Facebook
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="text"
+                        onChange={onChange.bind(parent, 'billInfo', 'facebook')}
+                        value={billInfo.facebook}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Tên khách
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="text"
+                        onChange={onChange.bind(parent, 'billInfo', 'customer_name')}
+                        value={billInfo.customer_name}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Địa chỉ nhận
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="text"
+                        onChange={onChange.bind(parent, 'billInfo', 'address')}
+                        value={billInfo.address}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup>
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Phí ship
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="number"
+                        onChange={onChange.bind(parent, 'billInfo', 'shipping')}
+                        value={billInfo.shipping}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup>
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Giảm giá
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        type="number"
+                        onChange={onChange.bind(parent, 'billInfo', 'decrease')}
+                        value={billInfo.decrease}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Ghi chú
+                      </Col>
+                      <Col sm={10}>
+                        <FormControl
+                        componentClass="textarea"
+                        type="text"
+                        onChange={onChange.bind(parent, 'billInfo', 'note')}
+                        value={billInfo.note || ''}
+                        />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup>
                       <Col componentClass={ControlLabel} sm={2}>
                         Mã đơn
                       </Col>
@@ -355,82 +445,6 @@ class AddBill extends Component {
                         />
                       </Col>
                     </FormGroup>
-                    <FormGroup>
-                      <Col componentClass={ControlLabel} sm={2}>
-                        Trạng thái
-                      </Col>
-                      <Col sm={10}>
-                      <Select
-                        name="form-field-name"
-                        options={this.getStatusOptions()}
-                        placeholder="Trạng thái"
-                        searchable= {false}
-                        clearable={false}
-                        onChange={this.onSelectStatus.bind(this)}
-                        value={billInfo.status_id}
-                      />
-                      </Col>
-                    </FormGroup>
-                   <FormGroup>
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Phí ship
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       type="number"
-                       onChange={onChange.bind(parent, 'billInfo', 'shipping')}
-                       value={billInfo.shipping}
-                       />
-                     </Col>
-                   </FormGroup>
-                   <FormGroup>
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Giảm giá
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       type="number"
-                       onChange={onChange.bind(parent, 'billInfo', 'decrease')}
-                       value={billInfo.decrease}
-                       />
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Địa chỉ nhận
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       type="text"
-                       onChange={onChange.bind(parent, 'billInfo', 'address')}
-                       value={billInfo.address}
-                       />
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Facebook
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       type="text"
-                       onChange={onChange.bind(parent, 'billInfo', 'facebook')}
-                       value={billInfo.facebook}
-                       />
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Tên khách
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       type="text"
-                       onChange={onChange.bind(parent, 'billInfo', 'customer_name')}
-                       value={billInfo.customer_name}
-                       />
-                     </Col>
-                   </FormGroup>
                    <FormGroup >
                      <Col componentClass={ControlLabel} sm={2}>
                        Tổng thu
@@ -440,19 +454,6 @@ class AddBill extends Component {
                        type="text"
                        value={formatCurrency(this.getTotalProductCost())}
                        disabled
-                       />
-                     </Col>
-                   </FormGroup>
-                   <FormGroup >
-                     <Col componentClass={ControlLabel} sm={2}>
-                       Ghi chú
-                     </Col>
-                     <Col sm={10}>
-                       <FormControl
-                       componentClass="textarea"
-                       type="text"
-                       onChange={onChange.bind(parent, 'billInfo', 'note')}
-                       value={billInfo.note || ''}
                        />
                      </Col>
                    </FormGroup>

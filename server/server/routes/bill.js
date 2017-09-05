@@ -164,7 +164,7 @@ router.get('/product/:billId', (req, res) => {
 router.get('/status', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('SELECT * FROM status', (error, result) => {
+      con.query('SELECT * FROM status ORDER BY status.order', (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -638,7 +638,7 @@ router.get('/statistic/customerbills', (req, res) => {
 router.get('/changelog', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 100 OFFSET 0' , (error, result) => {
+      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 50 OFFSET 0' , (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
