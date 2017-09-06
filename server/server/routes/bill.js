@@ -501,6 +501,7 @@ router.put('/', (req, res) => {
     if (err) return res.status(400).send('Error');
     con.query('UPDATE bill SET ? WHERE ?', [bill, { id: bill.id }], function (error, result) {
     if (error) {
+      console.log(error);
       res.status(400).send('Error');
       con.release();
     }else{

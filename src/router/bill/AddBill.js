@@ -172,6 +172,7 @@ class AddBill extends Component {
         products: products.map((product) => {
           return { product_id: product.id, quantity: product.quantity, name: product.name };
         }),
+        user_id: user.userId,
         origin_bill: originBill,
         user_full_name: user.full_name,
         origin_status_id: originBill.status_id,
