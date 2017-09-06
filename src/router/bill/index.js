@@ -455,7 +455,7 @@ class Home extends Component {
           <Col md={3}>
             <FormControl
             type="text"
-            placeholder="Tìm kiếm"
+            placeholder="Nhập mã đơn, sdt hoặc facebook"
             onChange={this.onChangeSearchBill.bind(this)}
             />
             <p></p>

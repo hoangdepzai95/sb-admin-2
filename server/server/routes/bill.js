@@ -91,7 +91,7 @@ router.get('/search', (req, res) => {
   } else if (type === 'duplicate') {
     condition = `WHERE bill.duplicate = '2'`;
   } else {
-    condition = `WHERE customer.phone LIKE '%${keywords}%' OR customer.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
+    condition = `WHERE customer.phone LIKE '%${keywords}%' OR bill.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   }
   const sql = `
     SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status
