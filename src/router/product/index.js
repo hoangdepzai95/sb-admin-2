@@ -149,7 +149,7 @@ class Home extends Component {
             this.props.dispatch(receiveProduct([...this.props.products, res.data]));
           },
           (err) => {
-            alert('Có lỗi xảy ra hoặc tài khoản đã được sử dụng');
+            alert('Có lỗi xảy ra hoặn tên sản phẩm được sử dụng');
           }
         )
     }
