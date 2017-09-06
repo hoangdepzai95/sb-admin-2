@@ -16,17 +16,17 @@ class Home extends Component {
       username: '',
       password: '',
       role : 3,
+      newPassword: '',
+      showChangePass: false,
+      userId: 0,
     };
   }
   componentDidMount() {
-    const { loaded } = this.props;
-    if (!loaded) {
-      axios.get('/auth/user/users', ).then(
-        (res) => {
-          this.props.dispatch(receiveUsers(res.data));
-        }
-      )
-    }
+    axios.get('/auth/user/users', ).then(
+      (res) => {
+        this.props.dispatch(receiveUsers(res.data));
+      }
+    )
   }
   open() {
     this.setState({
@@ -85,9 +85,30 @@ class Home extends Component {
   logChange(v) {
     this.setState({ role: v.value });
   }
+  changePassword(e) {
+    e.preventDefault();
+    const { newPassword, userId } = this.state;
+    axios.put(`auth/user/change_pass`, {
+      password: newPassword,
+      user_id: userId,
+    }).then(
+      (res) => {
+        this.closeChangePass();
+      },
+      (error) => {
+        window.alert('Co loi xay ra');
+      },
+    );
+  }
+  openChangePassword(userId) {
+    this.setState({ showChangePass: true, userId });
+  }
+  closeChangePass() {
+    this.setState({ showChangePass: false });
+  }
   render() {
     const { users, user } = this.props;
-    const { showForm, name, username, password, role } = this.state;
+    const { showForm, name, username, password, role, newPassword, showChangePass } = this.state;
     var options = [
   { value: 2 , label: 'Quản lí' },
   { value: 3, label: 'Nhân viên' }
@@ -123,10 +144,14 @@ class Home extends Component {
                           <td>{index} </td>
                           <td>{user.full_name} </td>
                           <td>{user.username} </td>
-                          <td>{user.role == 2 ? 'Quản lí' : user.role == 3 ? 'Nhân viên' : ''} </td>
+                          <td>{user.role == 1 ? 'Sếp Tổng' : user.role == 2 ? 'Quản lí' : user.role == 3 ? 'Nhân viên' : ''} </td>
                           <td>
                             <Button bsStyle="danger" bsSize="xs" active onClick={this.removeUser.bind(this, user.id)}>
                               Xóa
+                            </Button>
+                            &nbsp;
+                            <Button bsStyle="info" bsSize="xs" active onClick={this.openChangePassword.bind(this, user.id)}>
+                              Đổi mật khẩu
                             </Button>
                           </td>
                         </tr>
@@ -137,6 +162,27 @@ class Home extends Component {
               </table>
             </div>
           </Panel>
+          <Modal show={showChangePass} onHide={this.closeChangePass.bind(this)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Đổi mật khẩu</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form role="form" onSubmit={this.changePassword.bind(this)}>
+                <fieldset>
+                <div className="form-group">
+                  <FormControl
+                    className="form-control"
+                    placeholder="Mật khẩu"
+                    type="text"
+                    value={newPassword}
+                    onChange={this.onChange.bind(this, 'newPassword')}
+                  />
+                </div>
+                <Button type="submit" bsSize="large" bsStyle="success" block>Đổi mật khẩu</Button>
+              </fieldset>
+            </form>
+          </Modal.Body>
+        </Modal>
           <Modal show={showForm} onHide={this.close.bind(this)}>
           <Modal.Header closeButton>
             <Modal.Title>Thêm nhân viên</Modal.Title>
@@ -196,7 +242,7 @@ class Home extends Component {
 export default connect((state) => {
   return {
     loaded: state.data.home.loaded,
-    users: state.data.home.data.filter(user => user.role != 1),
+    users: state.data.home.data,
     user: state.data.user,
   };
 })(Home);

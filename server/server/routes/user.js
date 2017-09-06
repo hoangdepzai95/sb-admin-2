@@ -62,6 +62,26 @@ router.get('/users', function(req, res) {
     });
   });
 })
+
+router.put('/change_pass', function(req, res) {
+  const password = req.body.password;
+  const user_id = req.body.user_id;
+  pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
+    bcrypt.hash(password, 10).then((hash) => {
+        con.query(`UPDATE user SET ? WHERE ?`, [{ password: hash }, { id: user_id }], function (error, results) {
+        if (error) {
+          res.status(400).send('Error');
+          con.release();
+        }else{
+          res.status(200).json(results);
+          con.release();
+        }
+        });
+    })
+  });
+})
+
 router.delete('/:id', (req, res) => {
   const id = req.params.id;
   pool.getConnection(function(err, con) {

@@ -10,6 +10,7 @@ import $ from "jquery";
 import Sidebar from '../Sidebar';
 import moment from 'moment';
 import axios from 'axios';
+import _ from 'lodash';
 import className from 'classnames';
 import { getUser } from '../../router/util';
 import { checkNotify, receiveNotify, receiveStatus } from '../../actions/fetchData';
@@ -18,7 +19,6 @@ import { checkNotify, receiveNotify, receiveStatus } from '../../actions/fetchDa
 class Header extends Component {
   componentDidMount() {
     const { status} = this.props;
-
     getUser(this.props.dispatch);
 
     if (!status.length) {
@@ -51,6 +51,10 @@ class Header extends Component {
     const { user, notify } = this.props;
     this.props.dispatch(checkNotify(id));
     window.open(`/home/changelog?id=${id}`);
+    this.checkNotify(id);
+  }
+  checkNotify(id) {
+    const { user, notify } = this.props;
     axios.put('/auth/bill/check_changelog', {
       user_id: user.userId,
       id,
@@ -78,6 +82,17 @@ class Header extends Component {
       o.isChecked = this.isChecked(user_id, o);
       return o;
     });
+  }
+  checkAll() {
+    const { user } = this.props;
+    const notify = this.formatNotify(this.props.notify, user.userId);
+    notify.forEach((o, index) => {
+      if (!o.isChecked) {
+        setTimeout(() => {
+          this.checkNotify(o.id);
+        }, index * 100);
+      }
+    })
   }
   render() {
     const { user } = this.props;
@@ -112,7 +127,7 @@ class Header extends Component {
                       })
                     }
                 </NavDropdown>
-                <span className="notify-qty">{notify.filter(o => !o.isChecked).length}</span>
+                <span className="notify-qty" onClick={this.checkAll.bind(this)}>{notify.filter(o => !o.isChecked).length}</span>
               </span>
              <NavDropdown title={<i className="fa fa-user fa-fw"></i> } id = 'navDropdown4'>
                     <MenuItem eventKey = "4" onClick = {this.logOut}>

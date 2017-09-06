@@ -48,6 +48,7 @@ table td {
   position: relative;
   z-index: 999;
   font-size: 12px;
+  cursor: pointer;
 }
 #navDropdown3 {
 }
@@ -57,7 +58,7 @@ table td {
 .changelog tr {
   cursor: pointer;
 }
-.changelog .selected, .changelog .selected:hover {
+.changelog .selected, .changelog .selected:hover, .bill-table .selected {
   background-color: #bce8f1 !important;
 }
 /*!

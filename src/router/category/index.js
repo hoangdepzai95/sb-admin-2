@@ -17,9 +17,7 @@ class Status extends Component {
   }
   componentDidMount() {
     const { category } = this.props;
-    if (!category.length) {
-      this.getCategory();
-    }
+    this.getCategory();
   }
   getCategory() {
     axios.get('auth/bill/category')

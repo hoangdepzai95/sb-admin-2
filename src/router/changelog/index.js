@@ -28,6 +28,7 @@ class Changelog extends Component {
       case 'code':
         return 'Mã';
       case 'status_id':
+      case 'status':
         return 'Trạng thái';
       case 'customer_id':
         return 'Khách hàng';
@@ -43,6 +44,10 @@ class Changelog extends Component {
         return 'Phí ship';
       case 'decrease':
         return 'Giảm giá';
+      case 'facebook':
+        return 'facebook';
+      case 'customer_name':
+        return 'Tên khách hàng';
       default:
         return null;
     }

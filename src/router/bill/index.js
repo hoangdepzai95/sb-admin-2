@@ -10,6 +10,7 @@ import Select from 'react-select';
 import AddBill from './AddBill';
 import FileSaver from 'file-saver';
 import moment from 'moment';
+import className from 'classnames';
 
 import { receiveTotalBill, receiveBill, receiveStatus } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
@@ -63,10 +64,8 @@ class Home extends Component {
     const phone = this.getQueryStringValue('phone');
     const id = this.getQueryStringValue('id');
     if (phone || id) return;
-    if (!loaded) {
-      this.getTotal();
-      this.getBills();
-    }
+    this.getTotal();
+    this.getBills();
     if (!status.length) {
       this.getStatus();
     }
@@ -279,6 +278,7 @@ class Home extends Component {
       }, { responseType: 'blob' }).then(
         (res) => {
           FileSaver.saveAs(res.data, "Don-Hang.xlsx");
+          this.setState({ selectedBills: [] });
         },
         (error) => {
           alert('Lỗi mịa nó rùi :(');
@@ -358,8 +358,8 @@ class Home extends Component {
   }
   openChangeStatus(bill) {
     this.setState({ showChangeStatus: true });
-    if (bill) {
-      this.setState({ selectedBills: [bill] });
+    if (bill.id) {
+       this.setState({ selectedBills: [bill] });
     }
   }
   getStatusOptions() {
@@ -373,18 +373,22 @@ class Home extends Component {
     this.setState({ showChangeStatus: false });
   }
   onChangeChangeStatus(item) {
+    const { user, status } = this.props;
     if (window.confirm(`Thay đổi các đơn đã chọn sang trang thái ${item.label} ?`)) {
       axios.put('auth/bill/change_status', {
         status_id: item.id,
         bills: this.state.selectedBills.map((bill) => {
           return { id: bill.id, status_id: bill.status_id };
         }),
-        user_id: this.props.user.userId,
+        user_id: user.userId,
+        user_full_name: user.full_name,
+        status,
       })
       .then(
         (res) => {
-          this.reloadBilld(this.state.page);
+          this.getBills();
           this.closeChangeStatus();
+          this.setState({ selectedBills: [] });
         },
         (error) => {
           window.alert('Có lỗi xảy ra');
@@ -525,7 +529,7 @@ class Home extends Component {
               <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
               <p></p>
             </div>
-              <table className="table table-striped table-bordered table-hover">
+              <table className="table table-striped table-bordered table-hover bill-table">
                 <thead>
                   <tr>
                     <th>Chọn</th>
@@ -544,10 +548,11 @@ class Home extends Component {
                 <tbody>
                   {
                     bills.map((bill, index) => {
+                      const selected = !!selectedBills.find(o => o.id === bill.id);
                       return (
-                        <tr key={bill.id}>
+                        <tr key={bill.id} className={className({ selected: selected })}>
                           <td className="pointer" onClick={this.selectBill.bind(this, bill)}>
-                            <Checkbox checked={!!selectedBills.find(o => o.id === bill.id)} >
+                            <Checkbox checked={selected} >
                               <span>#{bill.id}</span>
                             </Checkbox>
                             <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', bill.id)}>

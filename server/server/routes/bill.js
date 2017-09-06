@@ -230,6 +230,7 @@ router.put('/status/show_notify', (req, res) => {
 router.put('/change_status', (req, res) => {
   const status_id = req.body.status_id;
   const bills = req.body.bills;
+  const user_name = req.body.user_full_name;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`UPDATE bill SET ? WHERE id IN (?)`, [{ status_id }, bills.map(o => o.id) ] , (error, result) => {
@@ -239,6 +240,33 @@ router.put('/change_status', (req, res) => {
         con.release();
       } else {
         const temp = bills.filter(o => o.status_id == 11);
+        const logged = [];
+        function writeLog() {
+          bills.forEach((bill) => {
+            const billStatus = req.body.status.find(o => o.id == bill.status_id);
+            const newStatus = req.body.status.find(o => o.id == status_id);
+            if (billStatus.id !== status_id && status_id == 31 && billStatus.show_notify == 1) {
+              const changes = { user: user_name, data: [] };
+              changes.data.push({ field: 'status', origin: billStatus.name, changeto: newStatus.name});
+              con.query('INSERT INTO bill_changelog SET ?', { bill_id: bill.id, create_at: (new Date()).valueOf(), content: JSON.stringify(changes) }, (error, result) => {
+                if (error) {
+                  console.log(error);
+                  con.release();
+                }else{
+                  logged.push(bill);
+                  if (logged.length === bills.length) {
+                    con.release();
+                  }
+                }
+              })
+            } else {
+              logged.push(bill);
+              if (logged.length === bills.length) {
+                con.release();
+              }
+            }
+          })
+        }
         if (status_id != 11 && temp.length) {
             con.query(`UPDATE bill SET ? WHERE id IN (?)`, [{ user_id: req.body.user_id }, temp.map(o => o.id) ] , (error, result) => {
             if (error) {
@@ -247,12 +275,16 @@ router.put('/change_status', (req, res) => {
               con.release();
             } else {
               res.status(200).send('Ok');
-              con.release();
+              // write log
+              writeLog();
+              //--------------
             }
           });
         } else {
           res.status(200).send('Ok');
-          con.release();
+          // write log
+          writeLog();
+          //--------------
         }
       }
     });
@@ -517,26 +549,34 @@ router.delete('/:id', (req, res) => {
   const id = req.params.id;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('DELETE FROM bill_detail WHERE ?', { bill_id: id }, (error, result) => {
+      con.query('DELETE FROM bill_changelog WHERE ?', { bill_id: id }, (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
         con.release();
       } else {
-        con.query('DELETE FROM bill WHERE ?', { id }, (error, result) => {
-        if (error) {
-          console.log(error);
-          res.status(400).send('Error');
-          con.release();
-        } else {
-          res.status(200).send('Ok');
-          con.release();
-        }
+          con.query('DELETE FROM bill_detail WHERE ?', { bill_id: id }, (error, result) => {
+              if (error) {
+                console.log(error);
+                res.status(400).send('Error');
+                con.release();
+              } else {
+                con.query('DELETE FROM bill WHERE ?', { id }, (error, result) => {
+                  if (error) {
+                    console.log(error);
+                    res.status(400).send('Error');
+                    con.release();
+                  } else {
+                    res.status(200).send('Ok');
+                    con.release();
+                  }
+                });
+              }
+            });
+          }
+        });
       });
-      }
-    });
   });
-});
 
 router.get('/category', (req, res) => {
   pool.getConnection((err, con) => {
@@ -638,7 +678,7 @@ router.get('/statistic/customerbills', (req, res) => {
 router.get('/changelog', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
-      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 50 OFFSET 0' , (error, result) => {
+      con.query('SELECT * FROM bill_changelog ORDER BY id DESC LIMIT 100 OFFSET 0' , (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');

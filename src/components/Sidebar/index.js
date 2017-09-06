@@ -60,6 +60,7 @@ class Sidebar extends Component {
       case 'code':
         return 'Mã';
       case 'status_id':
+      case 'status':
         return 'Trạng thái';
       case 'customer_id':
         return 'Khách hàng';

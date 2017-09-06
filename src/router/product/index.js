@@ -29,13 +29,11 @@ class Home extends Component {
   }
   componentDidMount() {
     const { loaded, category } = this.props;
-    if (!loaded) {
-      axios.get('/auth/product', ).then(
-        (res) => {
-          this.props.dispatch(receiveProduct(res.data));
-        }
-      )
-    }
+    axios.get('/auth/product', ).then(
+      (res) => {
+        this.props.dispatch(receiveProduct(res.data));
+      }
+    )
     if (!category.length) {
       this.getCategory();
     }
