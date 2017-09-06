@@ -157,7 +157,7 @@ class AddBill extends Component {
       const originStatus = status.find(o => o.id == originBill.status_id);
       axios.put('/auth/bill', {
         bill_info: {
-          shipping: billInfo.shipping,
+          shipping: billInfo.shipping || 0,
           address: billInfo.address,
           pay: this.getTotalProductCost(),
           note: billInfo.note,
@@ -192,6 +192,7 @@ class AddBill extends Component {
       billInfo.customer_id = addedCustomer.id;
       billInfo.pay = this.getTotalProductCost();
       billInfo.decrease = billInfo.decrease || 0;
+      billInfo.shipping = billInfo.shipping || 0;
       axios.post('/auth/bill', {
         bill_info: billInfo,
         products: products.map((product) => {
