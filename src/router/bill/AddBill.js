@@ -28,7 +28,6 @@ class AddBill extends Component {
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
-    this.debounceSearchCusomter = _.debounce(this.debounceSearchCusomter, 1000);
   }
   componentWillUpdate(nextProps) {
     if(nextProps.showForm && !this.props.showForm) {
@@ -68,9 +67,6 @@ class AddBill extends Component {
          window.alert('Co loi xay ra');
        },
      )
-  }
-  debounceSearchCusomter(phone) {
-    this.searchCustomer(phone);
   }
   onChangeNewCustomer(field, e) {
     const value = e.target.value;
@@ -176,7 +172,7 @@ class AddBill extends Component {
         origin_bill: originBill,
         user_full_name: user.full_name,
         origin_status_id: originBill.status_id,
-        write_log: originStatus.show_notify ? 1 : 0,
+        write_log: originStatus.show_notify && user.role != 1 ? 1 : 0,
       })
         .then(
           (res) => {
@@ -228,7 +224,15 @@ class AddBill extends Component {
   }
   onChangePhone(e) {
     this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
-    this.debounceSearchCusomter(e.target.value);
+  }
+  onKeyDownPhone(e) {
+    const { customer } = this.props;
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      if (customer.phone.length > 3) {
+        this.searchCustomer(customer.phone);
+      }
+    }
   }
   render() {
     const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone } = this.state;
@@ -249,6 +253,7 @@ class AddBill extends Component {
                       <FormControl
                       type="text"
                       value={customer.phone}
+                      onKeyDown={this.onKeyDownPhone.bind(this)}
                       onChange={this.onChangePhone.bind(this)}
                       />
                     </Col>

@@ -73,9 +73,10 @@ class Home extends Component {
   getQueryStringValue (key) {
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
-  getBills() {
-    const { page, idFilterStatus } = this.state;
+  getBills(pageToLoad) {
+    const { idFilterStatus, subMode, startDate, endDate } = this.state;
     const { mode } = this.state;
+    const page = pageToLoad || this.state.page;
     return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus.join(',')}`)
       .then(
         (res) => {
@@ -232,15 +233,7 @@ class Home extends Component {
     if (mode === 'search') {
       this.onSearchBill(keyword, searchType);
     } else {
-      axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}`)
-        .then(
-          (res) => {
-            this.props.dispatch(receiveBill(res.data, page));
-          },
-          (error) => {
-
-          },
-        )
+      this.getBills(page);
     }
   }
   selectBill(bill) {
@@ -383,6 +376,7 @@ class Home extends Component {
         user_id: user.userId,
         user_full_name: user.full_name,
         status,
+        write_log: user.role != 1 ? 1 : 0,
       })
       .then(
         (res) => {

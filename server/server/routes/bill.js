@@ -94,7 +94,7 @@ router.get('/search', (req, res) => {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR bill.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
   }
   const sql = `
-    SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status
+    SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color
     FROM bill
     INNER JOIN customer ON bill.customer_id = customer.id
     INNER JOIN status ON bill.status_id = status.id
@@ -245,7 +245,7 @@ router.put('/change_status', (req, res) => {
           bills.forEach((bill) => {
             const billStatus = req.body.status.find(o => o.id == bill.status_id);
             const newStatus = req.body.status.find(o => o.id == status_id);
-            if (billStatus.id !== status_id && status_id == 31 && billStatus.show_notify == 1) {
+            if (billStatus.id !== status_id && status_id == 31 && billStatus.show_notify == 1 & req.body.write_log == 1) {
               const changes = { user: user_name, data: [] };
               changes.data.push({ field: 'status', origin: billStatus.name, changeto: newStatus.name});
               con.query('INSERT INTO bill_changelog SET ?', { bill_id: bill.id, create_at: (new Date()).valueOf(), content: JSON.stringify(changes) }, (error, result) => {
