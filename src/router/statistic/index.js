@@ -18,7 +18,7 @@ class Statistic extends Component {
     super(props);
     this.state = {
       userbills: {
-        startDate: moment().subtract(7, 'days'),
+        startDate: moment(),
         endDate: moment().add(1, 'days'),
         data: [],
       },

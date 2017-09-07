@@ -3,7 +3,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import fileExtension from 'file-extension';
 import Panel from 'react-bootstrap/lib/Panel';
-import formatCurrency from 'format-currency';
+import NumberFormat from 'react-number-format';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, Pagination, InputGroup, Checkbox } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import Select from 'react-select';
@@ -14,6 +14,7 @@ import className from 'classnames';
 
 import { receiveTotalBill, receiveBill, receiveStatus } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
+import DatePicker from './datepicker';
 
 class Home extends Component {
   constructor(props) {
@@ -47,6 +48,9 @@ class Home extends Component {
       singleBill: null,
       showChangeStatus: false,
       originBill: null,
+      startDate: moment(),
+      endDate: moment(),
+      enableFilterDate: false,
     };
     this.onSearchBill = _.debounce(this.onSearchBill, 1000);
   }
@@ -58,6 +62,9 @@ class Home extends Component {
     } else if (id) {
       this.onSearchBill(id, 'id');
     }
+  }
+  componentWillUnmount() {
+    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
   }
   componentDidMount() {
     const { loaded, currentPage,status } = this.props;
@@ -74,9 +81,13 @@ class Home extends Component {
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
   getBills(pageToLoad) {
-    const { idFilterStatus, subMode, startDate, endDate } = this.state;
+    const { idFilterStatus, subMode, startDate, endDate, keyword, searchType } = this.state;
     const { mode } = this.state;
     const page = pageToLoad || this.state.page;
+    if (mode === 'search') {
+      this.searchBill(keyword, searchType, page);
+      return;
+    }
     return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus.join(',')}`)
       .then(
         (res) => {
@@ -195,17 +206,20 @@ class Home extends Component {
     this.setState({
       mode: 'normal',
       page: 1,
+      enableFilterDate: false,
       idFilterStatus: [],
     }, () => {
       this.getTotal();
       this.getBills();
     });
+    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
   }
   onChangeSearchBill(e) {
     const keyword = e.target.value;
     this.onSearchBill(keyword);
   }
   onSearchBill(keyword, type = '') {
+    const { page } = this.state;
     if (!keyword && !type) {
       this.clearAll();
       return;
@@ -214,19 +228,31 @@ class Home extends Component {
     this.setState({
       mode: 'search',
       page: 1,
-      idFilterStatus: null,
+      idFilterStatus: [],
       searchType: type,
       keyword,
     });
-    axios.get(`/auth/bill/search?q=${keyword}&type=${type}`)
+    this.getTotalSearch(keyword, type, page);
+    this.searchBill(keyword, type, page);
+  }
+  searchBill(keyword, type = '', page) {
+    axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}`)
       .then(
         (res) => {
-          this.props.dispatch(receiveBill(res.data, 1));
+          this.props.dispatch(receiveBill(res.data, page));
         },
         (error) => {
 
         },
       )
+  }
+  getTotalSearch(keyword, type = '', page) {
+    const { mode, idFilterStatus } = this.state;
+    return axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}&mode=count`, ).then(
+      (res) => {
+        this.props.dispatch(receiveTotalBill(res.data.quantity));
+      }
+    )
   }
   reloadBilld(page) {
     const { keyword, mode, searchType } = this.state;
@@ -420,9 +446,40 @@ class Home extends Component {
   filterDuplicate() {
     this.onSearchBill('', 'duplicate');
   }
+  handleChangeStart = (e) => {
+    this.setState({ startDate: e , enableFilterDate: false });
+    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
+
+  }
+  handleChangeEnd = (e) => {
+    this.setState({ endDate: e, enableFilterDate: false });
+    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
+
+  }
+  writeDateToCookie() {
+    const { startDate, endDate } = this.state;
+
+    document.cookie = `end_date=${endDate.startOf('day').format('x')}; expires=Thu, 18 Dec 3019 12:00:00 UTC;`;
+    document.cookie = `start_date=${startDate.startOf('day').format('x')}; expires=Thu, 18 Dec 3019 12:00:00 UTC;`;
+  }
+  onChangeFilterDate = (e) => {
+    if (e) {
+      document.cookie = "filter_date=1; expires=Thu, 18 Dec 3019 12:00:00 UTC";
+    } else {
+      document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
+    }
+    this.setState({ enableFilterDate: e, page: 1 });
+    this.reloadBilld(1);
+    this.writeDateToCookie();
+  }
+  getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+  }
   render() {
     const { user, total } = this.props;
-    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills, showChangeStatus, originBill } = this.state;
+    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills, showChangeStatus, originBill, startDate, endDate, enableFilterDate } = this.state;
     const bills = this.props.bills[page] || [];
     var options = [
   { value: 1 , label: 'Còn hàng' },
@@ -459,7 +516,7 @@ class Home extends Component {
               Lọc đơn trùng
             </Button>
             &nbsp;
-            <Button bsStyle="warning" onClick={this.clearAll.bind(this)}>
+            <Button bsStyle="warning" onClick={this.clearAll.bind(this)} id="clear-all">
               Bỏ lọc và tìm kiếm
             </Button>
           </Col>
@@ -522,6 +579,28 @@ class Home extends Component {
               &nbsp;
               <input type="file" className="hide" id="excel-up" onChange={this.onFileChange.bind(this)} />
               <p></p>
+            </div>
+            <DatePicker
+              startDate={startDate}
+              endDate={endDate}
+              handleChangeStart={this.handleChangeStart}
+              handleChangeEnd={this.handleChangeEnd}
+              enable={enableFilterDate}
+              onChange={this.onChangeFilterDate}
+            />
+            <div className="text-center">
+               <Pagination
+                  prev
+                  next
+                  first
+                  last
+                  ellipsis
+                  boundaryLinks
+                  items={Math.ceil(total / PER_PAGE)}
+                  maxButtons={5}
+                  activePage={page}
+                  onSelect={this.handleSelectPage.bind(this)}
+                />
             </div>
               <table className="table table-striped table-bordered table-hover bill-table">
                 <thead>
@@ -592,7 +671,7 @@ class Home extends Component {
                             {bill.products_info}
                           </td>
                           <td>{bill.address}</td>
-                          <td>{formatCurrency(bill.pay)}</td>
+                          <td><NumberFormat value={bill.pay} displayType={'text'} thousandSeparator={true}/></td>
                           <td>{bill.note}</td>
                         </tr>
                       );
@@ -601,10 +680,6 @@ class Home extends Component {
                 </tbody>
               </table>
               <div className="text-center">
-               {
-                 mode === 'search' ?
-                 null
-                 :
                  <Pagination
                     prev
                     next
@@ -617,7 +692,6 @@ class Home extends Component {
                     activePage={page}
                     onSelect={this.handleSelectPage.bind(this)}
                   />
-               }
               </div>
             </div>
           </Panel>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
-import formatCurrency from 'format-currency';
+import NumberFormat from 'react-number-format';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, FieldGroup } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import Select from 'react-select';
@@ -236,7 +236,7 @@ class Home extends Component {
                              </td>
                              <td>{product.code} </td>
                              <td>{product.quantity} </td>
-                             <td>{formatCurrency(product.price)}</td>
+                             <td><NumberFormat value={product.price} displayType={'text'} thousandSeparator={true}/></td>
                              <td>{product.category}</td>
                              <td>
                                {

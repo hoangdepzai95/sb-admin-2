@@ -22,7 +22,7 @@ class Sidebar extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.user.userId && !this.props.user.userId) {
       this.getChangelog();
-      setInterval(this.getChangelog.bind(this), 10000);
+      setInterval(this.getChangelog.bind(this), 30000);
     }
   }
   getChangelog() {
@@ -84,6 +84,11 @@ class Sidebar extends Component {
         return null;
     }
   }
+  onClickBill() {
+    if (window.location.pathname == '/home/bill') {
+      document.getElementById('clear-all').click();
+    }
+  }
   render() {
     const { user } = this.props;
     return (
@@ -127,7 +132,7 @@ class Sidebar extends Component {
             </li>
 
             <li title="Đơn hàng">
-              <Link to="/home/bill">
+              <Link to="/home/bill" onClick={this.onClickBill}>
                 <i className="fa fa-sticky-note-o" />
               </Link>
             </li>

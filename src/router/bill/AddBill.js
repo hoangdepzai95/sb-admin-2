@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
 import shortid from 'shortid';
 import { connect } from 'react-redux';
-import formatCurrency from 'format-currency';
+import NumberFormat from 'react-number-format';
 import _ from 'lodash';
 import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
@@ -335,7 +335,7 @@ class AddBill extends Component {
                             </td>
                             <td>{product.code}</td>
                             <td>{product.quantity}</td>
-                            <td>{formatCurrency(product.price)}</td>
+                            <td><NumberFormat value={product.price} displayType={'text'} thousandSeparator={true}/></td>
                             <td>
                               <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id2)}>
                                 Xóa
@@ -381,7 +381,7 @@ class AddBill extends Component {
                     </FormGroup>
                     <FormGroup >
                       <Col componentClass={ControlLabel} sm={2}>
-                        Tên khách
+                        <span className="shadow-text">Tên khách</span>
                       </Col>
                       <Col sm={10}>
                         <FormControl
@@ -417,7 +417,7 @@ class AddBill extends Component {
                     </FormGroup>
                     <FormGroup>
                       <Col componentClass={ControlLabel} sm={2}>
-                        Giảm giá
+                        <span className="shadow-text">Giảm giá</span>
                       </Col>
                       <Col sm={10}>
                         <FormControl
@@ -442,7 +442,7 @@ class AddBill extends Component {
                     </FormGroup>
                     <FormGroup>
                       <Col componentClass={ControlLabel} sm={2}>
-                        Mã đơn
+                        <span className="shadow-text">Mã đơn</span>
                       </Col>
                       <Col sm={10}>
                         <FormControl
@@ -459,7 +459,7 @@ class AddBill extends Component {
                      <Col sm={10}>
                        <FormControl
                        type="text"
-                       value={formatCurrency(this.getTotalProductCost())}
+                       value={this.getTotalProductCost()}
                        disabled
                        />
                      </Col>

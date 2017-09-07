@@ -81,6 +81,10 @@ router.get('/search', (req, res) => {
   const keywords = req.query.q.split(',').map(o => o.trim()).join('|');
   const multiKeyword = req.query.q.split(',').length > 1 ;
   const type = req.query.type;
+  const page = req.query.page;
+  const perPage = +req.query.per_page;
+  const offset = (page - 1) * perPage;
+  let sql;
   let condition;
   if (multiKeyword) {
     condition = `WHERE bill.code REGEXP '${keywords}'`
@@ -91,52 +95,76 @@ router.get('/search', (req, res) => {
   } else if (type === 'duplicate') {
     condition = `WHERE bill.duplicate = '2'`;
   } else {
-    condition = `WHERE customer.phone LIKE '%${keywords}%' OR bill.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%'`;
+    condition = `WHERE customer.phone LIKE '%${keywords}%' OR bill.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%' OR bill.customer_name LIKE '%${keywords}%'`;
   }
-  const sql = `
-    SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color
-    FROM bill
-    INNER JOIN customer ON bill.customer_id = customer.id
-    INNER JOIN status ON bill.status_id = status.id
-    INNER JOIN user ON bill.user_id = user.id
-    ${condition};
-  `;
-  pool.getConnection((err, con) => {
-      if (err) return res.status(400).send('Error');
-      con.query(sql, (error, bills) => {
-      if (error) {
-        console.log(error);
-        res.status(400).send('Error');
-        con.release();
-      } else {
-        if (!bills.length) {
-          res.status(200).json([]);
-          con.release();
-          return;
-        }
-        con.query(
-          `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
-           INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
-           WHERE bill_detail.bill_id IN (?)`
-        ,[bills.map(o => o.id)], (error, products) => {
-          if (error) {
-            console.log(error);
-            res.status(400).send('Error');
-            con.release();
-          } else {
-            const groupProduct = _.groupBy(products, 'bill_id');
-            for (let bill of bills) {
-              const billProducts = groupProduct[bill.id] || [];
-              bill.products = billProducts || [];
-              bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
-            }
-            res.status(200).json(bills);
-            con.release();
-          }
-        })
-      }
-    });
-  });
+  if (req.query.mode === 'count') {
+    sql = `
+     SELECT COUNT(bill.id) AS bills
+     FROM bill
+     INNER JOIN customer ON bill.customer_id = customer.id
+     INNER JOIN status ON bill.status_id = status.id
+     INNER JOIN user ON bill.user_id = user.id
+     ${condition}`;
+     pool.getConnection((err, con) => {
+         if (err) return res.status(400).send('Error');
+         con.query(sql, (error, result) => {
+         if (error) {
+           res.status(400).send('Error');
+           con.release();
+         } else {
+           res.status(200).json({ quantity: result[0]['bills'] });
+           con.release();
+         }
+       });
+     });
+  } else {
+    sql = `
+     SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color
+     FROM bill
+     INNER JOIN customer ON bill.customer_id = customer.id
+     INNER JOIN status ON bill.status_id = status.id
+     INNER JOIN user ON bill.user_id = user.id
+     ${condition}
+     ORDER BY id DESC
+     LIMIT ${perPage} OFFSET ${offset};
+   `;
+   pool.getConnection((err, con) => {
+       if (err) return res.status(400).send('Error');
+       con.query(sql, (error, bills) => {
+       if (error) {
+         console.log(error);
+         res.status(400).send('Error');
+         con.release();
+       } else {
+         if (!bills.length) {
+           res.status(200).json([]);
+           con.release();
+           return;
+         }
+         con.query(
+           `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
+            INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
+            WHERE bill_detail.bill_id IN (?)`
+         ,[bills.map(o => o.id)], (error, products) => {
+           if (error) {
+             console.log(error);
+             res.status(400).send('Error');
+             con.release();
+           } else {
+             const groupProduct = _.groupBy(products, 'bill_id');
+             for (let bill of bills) {
+               const billProducts = groupProduct[bill.id] || [];
+               bill.products = billProducts || [];
+               bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+             }
+             res.status(200).json(bills);
+             con.release();
+           }
+         })
+       }
+     });
+   });
+  }
 })
 
 
