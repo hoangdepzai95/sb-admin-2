@@ -9,7 +9,7 @@ export default class Picker extends Component {
     const { startDate, endDate, handleChangeStart, handleChangeEnd, onChange, enable } = this.props;
     return (
       <div className="bill-date-pick">
-        <Col md={2} >
+        <Col md={3} >
         Từ 0 giờ sáng ngày:
         </Col>
         <Col md={2}>
@@ -21,7 +21,7 @@ export default class Picker extends Component {
             onChange={handleChangeStart}
           />
       </Col>
-      <Col md={2} >
+      <Col md={3} >
       Đến 0 giờ sáng ngày:
       </Col>
       <Col md={2}>
@@ -33,7 +33,7 @@ export default class Picker extends Component {
           onChange={handleChangeEnd}
         />
       </Col>
-      <Col md={4}>
+      <Col md={2}>
          <Switch checked={enable} onChange={onChange} />
       </Col>
       <p className="clear-fix"></p>

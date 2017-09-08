@@ -14,7 +14,11 @@ router.get('/', (req, res) => {
   const offset = (page - 1) * perPage;
   const mode = req.query.mode;
   const statusId = req.query.idStatus;
-  const whereSql = mode === 'filterByStatus' ? `WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')}` : '';
+  const filterByDate = req.query.filter_date == 1;
+  const dateCondition = `(create_at >= ${req.query.start_date} AND create_at <= ${req.query.end_date})`;
+  const whereSql = mode === 'filterByStatus' ?
+  `WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')} ${filterByDate ? ` AND ${dateCondition}` : ''}` :
+  `${filterByDate ? `WHERE ${dateCondition}` : ''}`;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
@@ -62,7 +66,10 @@ router.get('/', (req, res) => {
 router.get('/total', (req, res) => {
   const mode = req.query.mode;
   const statusId = req.query.idStatus;
-  const sql = mode === 'filterByStatus' ? `SELECT COUNT(*) FROM bill WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')}` : 'SELECT COUNT(*) FROM bill';
+  const filterByDate = req.query.filter_date == 1;
+  const dateCondition = `(create_at >= ${req.query.start_date} AND create_at <= ${req.query.end_date})`;
+  const sql = mode === 'filterByStatus' ? `SELECT COUNT(*) FROM bill WHERE ${statusId.split(',').map(o => `status_id=${o}`).join(' OR ')} ${filterByDate ? ` AND ${dateCondition}` : ''}` :
+  `SELECT COUNT(*) FROM bill ${filterByDate ? `WHERE ${dateCondition}` : ''}`;
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(sql, (error, result) => {

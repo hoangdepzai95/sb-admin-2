@@ -126,6 +126,10 @@ class AddBill extends Component {
     const qty = prompt('Nhập số lượng', 1);
     if (qty) {
       const product = _.cloneDeep(e.product);
+      if (product.instock == 0) {
+        alert('Hết hàng');
+        return;
+      }
       product.quantity = qty;
       product.id2 = shortid.generate();
       changeProduct([...products, product]);

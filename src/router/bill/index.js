@@ -49,7 +49,7 @@ class Home extends Component {
       showChangeStatus: false,
       originBill: null,
       startDate: moment(),
-      endDate: moment(),
+      endDate: moment().add(1, 'days'),
       enableFilterDate: false,
     };
     this.onSearchBill = _.debounce(this.onSearchBill, 1000);
@@ -62,9 +62,6 @@ class Home extends Component {
     } else if (id) {
       this.onSearchBill(id, 'id');
     }
-  }
-  componentWillUnmount() {
-    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
   }
   componentDidMount() {
     const { loaded, currentPage,status } = this.props;
@@ -81,14 +78,16 @@ class Home extends Component {
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
   getBills(pageToLoad) {
-    const { idFilterStatus, subMode, startDate, endDate, keyword, searchType } = this.state;
+    const { idFilterStatus, subMode, startDate, endDate, keyword, searchType, enableFilterDate } = this.state;
     const { mode } = this.state;
+    const start_date = startDate.startOf('day').format('x');
+    const end_date = endDate.startOf('day').format('x');
     const page = pageToLoad || this.state.page;
     if (mode === 'search') {
       this.searchBill(keyword, searchType, page);
       return;
     }
-    return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus.join(',')}`)
+    return axios.get(`auth/bill?per_page=${PER_PAGE}&page=${page}&mode=${mode}&idStatus=${idFilterStatus.join(',')}&filter_date=${enableFilterDate ? 1 : 0}&start_date=${start_date}&end_date=${end_date}`)
       .then(
         (res) => {
           this.props.dispatch(receiveBill(res.data, page));
@@ -99,8 +98,11 @@ class Home extends Component {
       )
   }
   getTotal() {
-    const { mode, idFilterStatus } = this.state;
-    return axios.get(`/auth/bill/total?mode=${mode}&idStatus=${idFilterStatus.join(',')}`, ).then(
+    const { mode, idFilterStatus, startDate, endDate, enableFilterDate } = this.state;
+    const start_date = startDate.startOf('day').format('x');
+    const end_date = endDate.startOf('day').format('x');
+
+    return axios.get(`/auth/bill/total?mode=${mode}&idStatus=${idFilterStatus.join(',')}&filter_date=${enableFilterDate ? 1 : 0}&start_date=${start_date}&end_date=${end_date}`, ).then(
       (res) => {
         this.props.dispatch(receiveTotalBill(res.data.quantity));
       }
@@ -212,7 +214,6 @@ class Home extends Component {
       this.getTotal();
       this.getBills();
     });
-    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
   }
   onChangeSearchBill(e) {
     const keyword = e.target.value;
@@ -228,6 +229,7 @@ class Home extends Component {
     this.setState({
       mode: 'search',
       page: 1,
+      enableFilterDate: false,
       idFilterStatus: [],
       searchType: type,
       keyword,
@@ -448,34 +450,17 @@ class Home extends Component {
   }
   handleChangeStart = (e) => {
     this.setState({ startDate: e , enableFilterDate: false });
-    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
 
   }
   handleChangeEnd = (e) => {
     this.setState({ endDate: e, enableFilterDate: false });
-    document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
 
-  }
-  writeDateToCookie() {
-    const { startDate, endDate } = this.state;
-
-    document.cookie = `end_date=${endDate.startOf('day').format('x')}; expires=Thu, 18 Dec 3019 12:00:00 UTC;`;
-    document.cookie = `start_date=${startDate.startOf('day').format('x')}; expires=Thu, 18 Dec 3019 12:00:00 UTC;`;
   }
   onChangeFilterDate = (e) => {
-    if (e) {
-      document.cookie = "filter_date=1; expires=Thu, 18 Dec 3019 12:00:00 UTC";
-    } else {
-      document.cookie = "filter_date=; expires=Thu, 18 Dec 1971 12:00:00 UTC";
-    }
-    this.setState({ enableFilterDate: e, page: 1 });
-    this.reloadBilld(1);
-    this.writeDateToCookie();
-  }
-  getCookie(name) {
-    var value = "; " + document.cookie;
-    var parts = value.split("; " + name + "=");
-    if (parts.length == 2) return parts.pop().split(";").shift();
+    this.setState({ enableFilterDate: e, page: 1 }, () => {
+      this.reloadBilld(1);
+      this.getTotal();
+    });
   }
   render() {
     const { user, total } = this.props;
@@ -506,7 +491,7 @@ class Home extends Component {
           <Col md={3}>
             <FormControl
             type="text"
-            placeholder="Nhập mã đơn, sdt hoặc facebook"
+            placeholder="Nhập mã đơn, tên, sdt hoặc facebook"
             onChange={this.onChangeSearchBill.bind(this)}
             />
             <p></p>
