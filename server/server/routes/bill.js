@@ -52,7 +52,7 @@ router.get('/', (req, res) => {
             for (let bill of bills) {
               const billProducts = groupProduct[bill.id] || [];
               bill.products = billProducts || [];
-              bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+              bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
             }
             res.status(200).json(_.sortBy(bills, 'id').reverse());
             con.release();
@@ -162,7 +162,7 @@ router.get('/search', (req, res) => {
              for (let bill of bills) {
                const billProducts = groupProduct[bill.id] || [];
                bill.products = billProducts || [];
-               bill.products_info = bill.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+               bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
              }
              res.status(200).json(bills);
              con.release();
