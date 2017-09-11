@@ -285,13 +285,13 @@ class Home extends Component {
       window.alert('Không có hóa đơn được chọn');
       return;
     }
-    const header = ['ID', 'Mã', 'Trạng thái', 'Nhân viên', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
+    const header = ['ID', 'Mã', 'Trạng thái', 'Nhân viên', 'Tên trên phiếu', 'Facebook', 'Tên khách hàng', 'Số điện thoại', 'Sản phẩm', 'Danh mục', 'Số lượng', 'Địa chỉ', 'Tổng thu', 'Ghi chú' ];
     const bills = selectedBills.map((bill) => {
       const categories = _.uniq(bill.products.map(product => product.category)).join('+');
       const quantity = bill.products.reduce((sum, product) => {
                                         return sum + product.quantity;
                                       }, 0);
-      return [bill.id, bill.code, bill.status, bill.user_name, bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
+      return [bill.id, bill.code, bill.status, bill.user_name, bill.customer_name || bill.facebook || '', bill.facebook, bill.customer_name, bill.phone, bill.products_info, categories, quantity,  bill.address, bill.pay || 0, bill.note];
     });
     if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
       axios.post('/auth/bill/excel', {

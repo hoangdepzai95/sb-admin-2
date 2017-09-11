@@ -52,7 +52,7 @@ const data = (state = initialState, action) => {
       return _.assign({}, state, { bill });
     }
     case RECEIVE_BILL: {
-      const bill = _.clone(state.bill);
+      const bill = _.cloneDeep(state.bill);
       if (action.page == 1) {
         bill.data = {};
       }
