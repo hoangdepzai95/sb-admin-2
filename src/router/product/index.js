@@ -133,7 +133,7 @@ class Home extends Component {
       quantity: quantity || 0,
       instock,
       price,
-      real_price,
+      real_price || 0,
       id_category,
     };
     if (type === 'edit') product.id = id;
