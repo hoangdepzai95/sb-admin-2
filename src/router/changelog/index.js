@@ -9,11 +9,16 @@ import _ from 'lodash';
 
 class Changelog extends Component {
   parseChangelog(changelog) {
+    const { status } = this.props;
     const clone = _.cloneDeep(changelog);
     return clone.map((log) => {
       log.create_at = moment(log.create_at, 'x').format('HH:mm DD/MM/YYYY');
       log.content = JSON.parse(log.content);
       log.content.data = log.content.data.map((item) => {
+        if (item.field === 'status_id' || item.field === 'status') {
+          item.origin = (status.find(o => o.id == item.origin) || {}).name || item.origin;
+          item.changeto = (status.find(o => o.id == item.changeto) || {}).name || item.changeto;
+        }
         item.name = this.formatChange(item.field);
         return item;
       }).filter(o => o.name);
@@ -106,5 +111,6 @@ class Changelog extends Component {
 export default connect((state) => {
   return {
     changelog: state.data.changelog,
+    status: state.data.status,
   }
 })(Changelog);

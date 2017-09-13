@@ -6,10 +6,12 @@ import { Button, Modal, FormControl, Form, FormGroup, Col, ControlLabel, FieldGr
 import { connect } from 'react-redux';
 import Select from 'react-select';
 import className from 'classnames';
+import Switch from 'rc-switch';
 
 import './style.css';
 import { receiveProduct, receiveCategory } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
+import Product from './Product';
 
 class Home extends Component {
   constructor(props) {
@@ -24,19 +26,25 @@ class Home extends Component {
       instock: 1,
       file: null,
       price: '',
+      real_price: '',
       id_category: null,
+      filterByRealPrice: false,
     };
   }
   componentDidMount() {
     const { loaded, category } = this.props;
-    axios.get('/auth/product', ).then(
+    this.getProducts();
+    if (!category.length) {
+      this.getCategory();
+    }
+  }
+  getProducts() {
+    const { filterByRealPrice } = this.state;
+    axios.get(`/auth/product?filter_real_price=${filterByRealPrice ? 1 : 0}`, ).then(
       (res) => {
         this.props.dispatch(receiveProduct(res.data));
       }
     )
-    if (!category.length) {
-      this.getCategory();
-    }
   }
   getCategory() {
     axios.get('auth/bill/category')
@@ -62,6 +70,7 @@ class Home extends Component {
         id: product.id,
         instock: product.instock,
         price: product.price,
+        real_price: product.real_price,
         id_category: product.id_category,
       });
     } else {
@@ -72,6 +81,7 @@ class Home extends Component {
         id: '',
         instock: 1,
         price: '',
+        real_price: '',
         id_category: null,
       });
     }
@@ -108,7 +118,7 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, code, quantity, type, id, instock, file, price, id_category } = this.state;
+    const { name, code, quantity, type, id, instock, file, price, id_category, real_price } = this.state;
     if (name.length < 1 || !price) {
       window.alert('Tên và giá sản phẩm không được bỏ trống');
       return;
@@ -123,6 +133,7 @@ class Home extends Component {
       quantity: quantity || 0,
       instock,
       price,
+      real_price,
       id_category,
     };
     if (type === 'edit') product.id = id;
@@ -180,9 +191,12 @@ class Home extends Component {
       return item
     });
   }
+  onChangeFilter = (v) => {
+    this.setState({ filterByRealPrice: v }, this.getProducts);
+  }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category } = this.state;
+    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category, real_price, filterByRealPrice } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -202,6 +216,15 @@ class Home extends Component {
              null
              :
              <Panel header={<span>Danh sách sản phẩm </span>} >
+                {
+                  user.role == 1 ?
+                  <div>
+                    <span>Lọc sản phẩm chưa có giá nhập&nbsp;</span>
+                    <Switch checked={filterByRealPrice} onChange={this.onChangeFilter} />
+                    <p></p>
+                  </div>
+                  : null
+                }
                <div className="table-responsive">
                  <table className="table table-striped table-bordered table-hover">
                    <thead>
@@ -211,6 +234,11 @@ class Home extends Component {
                        <th>Mã</th>
                        <th>Số lượng </th>
                        <th>Giá </th>
+                       {
+                         user.role == 1 ?
+                         <th>Giá nhập </th>
+                         : null
+                       }
                        <th>Nhóm </th>
                        <th>Trạng thái</th>
                        {
@@ -220,50 +248,13 @@ class Home extends Component {
                        }
                      </tr>
                    </thead>
-                   <tbody>
-                     {
-                       products.map((product, index) => {
-                         return (
-                           <tr key={product.id}>
-                             <td>{index + 1} </td>
-                             <td>
-                              {
-                                product.image ?
-                                <img src={`${HOST}/images/${product.image}`} className="product-image" />
-                                : null
-                              }
-                              {product.name}
-                             </td>
-                             <td>{product.code} </td>
-                             <td>{product.quantity} </td>
-                             <td><NumberFormat value={product.price} displayType={'text'} thousandSeparator={true}/></td>
-                             <td>{product.category}</td>
-                             <td>
-                               {
-                                 product.instock == 1 ?
-                                   <Button bsStyle="success" bsSize="xs"> Còn hàng</Button>
-                                   :
-                                   <Button bsStyle="danger" bsSize="xs"> Hết hàng</Button>
-                               }
-                             </td>
-                             {
-                               user.role < 3 ?
-                               <td>
-                                 <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id)}>
-                                   Xóa
-                                 </Button>
-                                 &nbsp;
-                                 <Button bsStyle="info" bsSize="xs" active onClick={this.open.bind(this, 'edit', product.id)}>
-                                   Chỉnh sửa
-                                 </Button>
-                               </td>
-                               : null
-                             }
-                           </tr>
-                         );
-                       })
-                     }
-                   </tbody>
+                   <Product
+                    user={user}
+                    products={products}
+                    parent={this}
+                    removeProduct={this.removeProduct}
+                    open={this.open}
+                   />
                  </table>
                </div>
              </Panel>
@@ -339,6 +330,22 @@ class Home extends Component {
                />
              </Col>
            </FormGroup>
+           {
+             user.role == 1 ?
+             <FormGroup >
+               <Col componentClass={ControlLabel} sm={2}>
+                 Giá nhập
+               </Col>
+               <Col sm={10}>
+                 <FormControl
+                 type="number"
+                 onChange={this.onChange.bind(this, 'real_price')}
+                 value={real_price}
+                 />
+               </Col>
+             </FormGroup>
+             : null
+           }
            <FormGroup >
              <Col componentClass={ControlLabel} sm={2}>
                Ảnh

@@ -39,6 +39,9 @@ table td {
   overflow: auto;
   width: 400px;
 }
+.btn-bill-edit {
+  margin-bottom: 5px;
+}
 .notify .notify-qty {
   display: inline-block;
   background-color: green;

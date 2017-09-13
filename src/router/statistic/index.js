@@ -3,6 +3,7 @@ import axios from 'axios';
 import Panel from 'react-bootstrap/lib/Panel';
 import { Button, Modal, FormControl, Col } from 'react-bootstrap';
 import 'rc-color-picker/assets/index.css';
+import NumberFormat from 'react-number-format';
 import { connect } from 'react-redux';
 import Select from 'react-select';
 import ColorPicker from 'rc-color-picker';
@@ -33,12 +34,18 @@ class Statistic extends Component {
        endDate: moment().add(1, 'days'),
        data: [],
      },
+     bills: {
+       startDate: moment().subtract(30, 'days'),
+       endDate: moment().add(1, 'days'),
+       data: {},
+     },
     };
   }
   componentDidMount() {
     this.getCusomters();
     this.onProcess('userbills');
     this.onProcess('customerbills');
+    this.onProcess('bills');
   }
   handleChangeStart(type, e) {
     const value = this.state[type];
@@ -55,8 +62,13 @@ class Statistic extends Component {
     axios.get(`/auth/bill/statistic/${type}?start=${value.startDate.startOf('day').format('x')}&end=${value.endDate.startOf('day').format('x')}`)
     .then(
       (res) => {
-        value.data = res.data.reverse();
-        this.setState({ [type]: value });
+        if (type == 'bills') {
+          value.data = res.data;
+          this.setState({ [type]: value });
+        } else {
+          value.data = res.data.reverse();
+          this.setState({ [type]: value });
+        }
       },
       (error) => {
 
@@ -118,7 +130,7 @@ class Statistic extends Component {
     return 300;
   }
   render() {
-    const { customerbills, newcustomer, userbills  } = this.state;
+    const { customerbills, newcustomer, userbills, bills  } = this.state;
     if (this.props.user.role > 2) return null;
     const newCusotmerOptions = [
       { value: 'day', label: '7 ngày gần nhất' },
@@ -159,6 +171,39 @@ class Statistic extends Component {
                       );
                     })
                   }
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+          <Panel header={<span>Thống kê doanh thu </span>} >
+            <DatePicker
+              startDate={bills.startDate}
+              endDate={bills.endDate}
+              handleChangeStart={this.handleChangeStart.bind(this, 'bills')}
+              handleChangeEnd={this.handleChangeEnd.bind(this, 'bills')}
+              onProcess={this.onProcess.bind(this, 'bills')}
+            />
+            <div className="table-responsive">
+              <table className="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Tổng thu </th>
+                    <th>Tiền cước </th>
+                    <th>Phí nhập hàng </th>
+                    <th>Số sản phẩm đã bán </th>
+                    <th>Số sản phẩm trong đơn hàng </th>
+                    <th>Lợi nhuận</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><NumberFormat value={bills.data.totalPay || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                    <td><NumberFormat value={bills.data.totalRealShipping || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                    <td><NumberFormat value={bills.data.totalRealPrice || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                    <td><NumberFormat value={bills.data.totalSoldProducts || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                    <td><NumberFormat value={bills.data.totalProducts || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                    <td><NumberFormat value={(bills.data.totalPay - bills.data.totalRealShipping - bills.data.totalRealPrice) || 0} displayType={'text'} thousandSeparator={true}/> </td>
+                  </tr>
                 </tbody>
               </table>
             </div>

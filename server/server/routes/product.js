@@ -21,9 +21,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 router.get('/', (req, res) => {
+  const condition = req.query.filter_real_price == 1 ? 'WHERE product.real_price = 0' : '';
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id`, function (error, results) {
+    con.query(`SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id ${condition}`, function (error, results) {
     if (error) {
       res.status(400).send('Error');
       con.release();

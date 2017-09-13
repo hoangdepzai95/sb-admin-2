@@ -495,7 +495,7 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
             stop = true;
             return;
           }
-          const value = [ { status_id: current_status_id, code: bill[1] }, { id: bill[0] }];
+          const value = [ { status_id: current_status_id, code: bill[1], real_shipping: bill[3] }, { id: bill[0] }];
           con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
           if (error) {
             console.log(error);
@@ -520,7 +520,7 @@ router.put('/', (req, res) => {
   const bill = req.body.bill_info;
   const originBill = req.body.origin_bill;
   const changes = { user: req.body.user_full_name, data: [] };
-  const newProductInfo = req.body.products.map(product => `${product.name}(${product.quantity})`).join(', ');
+  const newProductInfo = req.body.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
   for (let field in bill) {
     if ((bill[field] !== originBill[field]) && field !== 'products'){
       changes.data.push({ field, origin: originBill[field], changeto: bill[field] });
@@ -682,6 +682,82 @@ router.get('/statistic/userbills', (req, res) => {
           })
           res.status(200).json(_.sortBy(data, 'quantity'));
           con.release();
+        }
+    });
+  });
+});
+
+router.get('/statistic/bills', (req, res) => {
+  const startDate = req.query.start;
+  const endDate = req.query.end;
+  pool.getConnection((err, con) => {
+      if (err) return res.status(400).send('Error');
+      con.query(`
+        SELECT id, real_shipping, status_id, pay FROM bill
+        WHERE create_at >= ${startDate} AND create_at <= ${endDate}`,
+      (error, bills) => {
+        if (error) {
+          console.log(error);
+          res.status(400).send('Error');
+          con.release();
+        } else {
+          const completedBills = bills.filter(o => o.status_id == 2);
+          const notCompletedBills = bills.filter(o => o.status_id == 19);
+          const totalPay = _.sumBy(completedBills, 'pay');
+          const totalRealShipping = _.sumBy(completedBills, 'real_shipping') + _.sumBy(notCompletedBills, 'real_shipping') * 1.5;
+          if (!completedBills.length) {
+            res.status(200).json({
+              totalPay: 0,
+              totalRealShipping,
+              totalSoldProducts: 0,
+              totalRealPrice: 0,
+              totalProducts: 0,
+            });
+            con.release();
+            return;
+          }
+          con.query(
+            `SELECT bill_detail.bill_id, bill_detail.quantity, product.real_price FROM bill_detail
+             INNER JOIN product ON bill_detail.product_id = product.id
+             WHERE bill_detail.bill_id IN (?)`
+          ,[completedBills.map(o => o.id)], (error, products) => {
+            if (error) {
+              console.log(error);
+              res.status(400).send('Error');
+              con.release();
+              return;
+            } else {
+              const groupProduct = _.groupBy(products, 'bill_id');
+              for (let bill of completedBills) {
+                const billProducts = groupProduct[bill.id] || [];
+                bill.products = billProducts || [];
+              }
+              const totalSoldProducts = _.sumBy(products, 'quantity');
+              const totalRealPrice = _.sumBy(products, (product) => {
+                return product.quantity * product.real_price;
+              });
+              con.query(
+                `SELECT SUM(quantity) AS quantity FROM bill_detail
+                 WHERE bill_detail.bill_id IN (?)`
+              , [bills.map(o => o.id)], (error, result) => {
+                if (error) {
+                  console.log(error);
+                  res.status(400).send('Error');
+                  con.release();
+                  return;
+                } else {
+                  res.status(200).json({
+                    totalPay,
+                    totalRealShipping,
+                    totalSoldProducts,
+                    totalRealPrice,
+                    totalProducts: result[0].quantity,
+                  });
+                  con.release();
+                }
+              })
+            }
+          })
         }
     });
   });
