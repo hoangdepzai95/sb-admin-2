@@ -77,7 +77,7 @@ class AddBill extends Component {
     this.setState({ newcustomer });
   }
   addCustomer(phone, cb) {
-    if (!phone.length < 4) {
+    if (phone.length < 4) {
       window.alert('Số điện thoại không hợp lệ');
       return;
     }
