@@ -28,6 +28,7 @@ class AddBill extends Component {
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
+    this.searchCustomer = _.debounce(this.searchCustomer, 1000);
   }
   componentWillUpdate(nextProps) {
     if(nextProps.showForm && !this.props.showForm) {
@@ -60,7 +61,7 @@ class AddBill extends Component {
          if (res.data.length) {
            this.setState({ addedCustomer: res.data[0] });
          } else {
-           this.addCustomer(this.props.customer.phone);
+           this.setState({ addedCustomer: null });
          }
        },
        (err) => {
@@ -75,16 +76,16 @@ class AddBill extends Component {
     newcustomer[field] = value;
     this.setState({ newcustomer });
   }
-  addCustomer(phone) {
-    if (!phone.length) {
-      window.alert('Số điện thoại rỗng');
+  addCustomer(phone, cb) {
+    if (!phone.length < 4) {
+      window.alert('Số điện thoại không hợp lệ');
       return;
     }
     axios.post('/auth/customer', {
       phone: phone,
     }).then(
       (res) => {
-        this.setState({ addedCustomer: res.data });
+        this.setState({ addedCustomer: res.data }, cb);
       },
       (err) => {
         window.alert('Khách hàng đã tồn tại');
@@ -139,6 +140,14 @@ class AddBill extends Component {
     const { changeProduct, products } = this.props;
     if (window.confirm('Bạn có chắc chắn muốn xóa')) {
       changeProduct(products.filter(o => o.id2 !== id2));
+    }
+  }
+  beforeCreateBill() {
+    const { addedCustomer } = this.state;
+    if (!addedCustomer) {
+      this.addCustomer(this.props.customer.phone, this.createBill)
+    } else {
+      this.createBill();
     }
   }
   createBill() {
@@ -227,15 +236,11 @@ class AddBill extends Component {
     this.props.onChange.call(this.props.parent, 'billInfo', 'status_id', { target: { value: item.value } });
   }
   onChangePhone(e) {
+    const phone = e.target.value;
+
     this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
-  }
-  onKeyDownPhone(e) {
-    const { customer } = this.props;
-    if (e.keyCode === 13) {
-      e.preventDefault();
-      if (customer.phone.length > 3) {
-        this.searchCustomer(customer.phone);
-      }
+    if (phone.length > 3) {
+      this.searchCustomer(phone);
     }
   }
   render() {
@@ -257,7 +262,6 @@ class AddBill extends Component {
                       <FormControl
                       type="text"
                       value={customer.phone}
-                      onKeyDown={this.onKeyDownPhone.bind(this)}
                       onChange={this.onChangePhone.bind(this)}
                       />
                     </Col>
@@ -473,11 +477,11 @@ class AddBill extends Component {
                 <div className="text-right">
                 {
                   type === 'add' ?
-                  <Button bsStyle="success" active onClick={this.createBill.bind(this)} >
+                  <Button bsStyle="success" active onClick={this.beforeCreateBill.bind(this)} >
                     Tạo đơn hàng
                   </Button>
                   :
-                  <Button bsStyle="success" active onClick={this.createBill.bind(this)}>
+                  <Button bsStyle="success" active onClick={this.beforeCreateBill.bind(this)}>
                     Sửa đơn hàng
                   </Button>
                 }

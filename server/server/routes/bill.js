@@ -383,14 +383,15 @@ router.post('/', (req, res) => {
   bill.create_at = (new Date()).valueOf();
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT * FROM bill WHERE customer_id = ${bill.customer_id} AND duplicate != 1`, (error, result) => {
+    con.query(`SELECT * FROM bill WHERE customer_id = ${bill.customer_id}`, (error, result) => {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
         con.release();
       }else{
         if (result.length) {
-          const bill_ids = result.map(o => o.id);
+          let bill_ids = result.filter(o => o.duplicate != 1).map(o => o.id);
+          if (!bill_ids.length) bill_ids = [0];
           con.query('UPDATE bill SET ? WHERE id IN (?)', [{ duplicate: 2 }, bill_ids], (error, result) => {
             if (error) {
               console.log(error);
