@@ -236,6 +236,7 @@ class AddBill extends Component {
     this.props.onChange.call(this.props.parent, 'billInfo', 'status_id', { target: { value: item.value } });
   }
   onChangePhone(e) {
+    e.preventDefault();
     const phone = e.target.value;
 
     this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
@@ -263,6 +264,7 @@ class AddBill extends Component {
                       type="text"
                       value={customer.phone}
                       onChange={this.onChangePhone.bind(this)}
+                      onKeyDown={(e) => { if(e.keyCode == 13) e.preventDefault() }}
                       />
                     </Col>
                   </FormGroup>
