@@ -28,7 +28,7 @@ class AddBill extends Component {
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
-    this.searchCustomer = _.debounce(this.searchCustomer, 1000);
+    this.debouncedSearchCustomer = _.debounce(this.searchCustomer, 1000);
   }
   componentWillUpdate(nextProps) {
     if(nextProps.showForm && !this.props.showForm) {
@@ -241,7 +241,7 @@ class AddBill extends Component {
 
     this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
     if (phone.length > 3) {
-      this.searchCustomer(phone);
+      this.debouncedSearchCustomer(phone);
     }
   }
   render() {
