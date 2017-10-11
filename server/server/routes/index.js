@@ -21,7 +21,7 @@ function createAccessToken(username, full_name, role, userId) {
   return jwt.sign({
     iss: 'hoang',
     aud: 'nguyen',
-    exp: Math.floor(Date.now() / 1000) + (60 * 600000000),
+    exp: Math.floor(Date.now() / 1000) + (60 * 60000000),
     username,
     userId,
     full_name,
@@ -93,11 +93,10 @@ router.post('/login', function(req, res) {
     });
   });
 });
-router.use('/auth', jwtCheck);
-router.use('/auth/user', requireScope(1), user);
-router.use('/auth/product', requireScope(2, ['GET', 'POST']), product);
-router.use('/auth/bill', requireScope(3), bill);
-router.use('/auth/customer', requireScope(3), customer);
-router.use('/auth/file', requireScope(3), file);
+router.use('/auth/user', user);
+router.use('/auth/product', product);
+router.use('/auth/bill', bill);
+router.use('/auth/customer', customer);
+router.use('/auth/file', file);
 
 module.exports = router;
