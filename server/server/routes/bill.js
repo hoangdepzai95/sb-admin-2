@@ -22,11 +22,14 @@ router.get('/', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-            SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color
+            SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
+            district.color AS district_color, district.custom_id AS district_id, province.custom_id as province_id
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
             INNER JOIN user ON b.user_id = user.id
+            INNER JOIN district ON b.district = district.name
+            INNER JOIN province ON b.province = province.name
             `, (error, bills) => {
       if (error) {
         console.log(error);
@@ -830,4 +833,37 @@ router.put('/check_changelog', (req, res) => {
   });
 });
 
+router.get('/search/province', (req, res) => {
+    const keyword = req.query.q;
+    pool.getConnection(function(err, con) {
+      if (err) return res.status(400).send('Error');
+      con.query(`SELECT * FROM province WHERE name LIKE '%${keyword}%'` , function (error, results) {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      }else{
+        res.status(200).json(results);
+        con.release();
+      }
+      });
+    });
+})
+
+router.get('/district', (req, res) => {
+    const keyword = req.query.q;
+    pool.getConnection(function(err, con) {
+      if (err) return res.status(400).send('Error');
+      con.query(`SELECT district.name FROM district INNER JOIN province ON district.provinceid = province.provinceid WHERE province.name = '${keyword}'` , function (error, results) {
+      if (error) {
+        console.log(error);
+        res.status(400).send('Error');
+        con.release();
+      }else{
+        res.status(200).json(results);
+        con.release();
+      }
+      });
+    });
+})
 module.exports = router;

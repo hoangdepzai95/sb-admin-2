@@ -24,11 +24,14 @@ class AddBill extends Component {
       phone: '',
       addedCustomer: null,
       searchProducts: [],
+      searchProvince: [],
+      searchDistrict: [],
       loadingProduct: false,
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
     this.debouncedSearchCustomer = _.debounce(this.searchCustomer, 1000);
+    this.onSearchProvince = _.debounce(this.onSearchProvince, 500);
   }
   componentWillUpdate(nextProps) {
     if(nextProps.showForm && !this.props.showForm) {
@@ -170,6 +173,8 @@ class AddBill extends Component {
           address: billInfo.address,
           pay: this.getTotalProductCost(),
           note: billInfo.note,
+          province: billInfo.province,
+          district: billInfo.district,
           customer_id: addedCustomer.id,
           code: billInfo.code,
           decrease: billInfo.decrease || 0,
@@ -244,8 +249,56 @@ class AddBill extends Component {
       this.debouncedSearchCustomer(phone);
     }
   }
+  getProvinceOption(data) {
+      return data.map(o => {
+          o.value = o.provinceid;
+          o.label = o.name;
+          return o;
+      })
+  }
+  getDistrictOption(data) {
+      return data.map(o => {
+          o.value = o.name;
+          o.label = o.name;
+          return o;
+      })
+  }
+  onSearchProvince(keyword) {
+      if (keyword.length >= 1) {
+          axios.get(`/auth/bill/search/province?q=${keyword}`)
+            .then(
+                (res) => {
+                    this.setState({ searchProvince: this.getProvinceOption(res.data) });
+                },
+                (error) => {
+
+                }
+            )
+      }
+  }
+  onSelectProvince(e) {
+      const { onChange, parent } = this.props;
+      onChange.call(parent, 'billInfo', 'province', { target: { value: e.name}});
+      this.getDistrict(e.name);
+  }
+  getDistrict(province) {
+      axios.get(`/auth/bill/district?q=${province}`)
+        .then(
+            (res) => {
+                console.log(res)
+                this.setState({ searchDistrict: this.getDistrictOption(res.data) })
+            },
+            (error) => {
+
+            }
+        )
+  }
+  onSelectDistrict(e) {
+      const { onChange, parent } = this.props;
+      onChange.call(parent, 'billInfo', 'district', { target: { value: e.name}});
+  }
   render() {
-    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone } = this.state;
+    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
     return (
           <Modal show={showForm} onHide={close} dialogClassName="custom-modal">
@@ -411,6 +464,42 @@ class AddBill extends Component {
                         onChange={onChange.bind(parent, 'billInfo', 'address')}
                         value={billInfo.address}
                         />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Tỉnh/Thành phố
+                      </Col>
+                      <Col sm={6}>
+                          <Select
+                            name="form-field-name"
+                            options={searchProvince}
+                            placeholder="Tìm tỉnh/thành phố"
+                            noResultsText="Không tìm thấy"
+                            onInputChange={this.onSearchProvince.bind(this)}
+                            onChange={this.onSelectProvince.bind(this)}
+                          />
+                      </Col>
+                      <Col sm={4}>
+                        <p className="text-center">{billInfo.province}</p>
+                      </Col>
+                    </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Quận/Huyện
+                      </Col>
+                      <Col sm={6}>
+                          <Select
+                            name="form-field-name"
+                            options={searchDistrict}
+                            placeholder="Tìm quận/huyện"
+                            noResultsText="Không tìm thấy"
+                            searchable= {true}
+                            onChange={this.onSelectDistrict.bind(this)}
+                          />
+                      </Col>
+                      <Col sm={4}>
+                        <p className="text-center">{billInfo.district}</p>
                       </Col>
                     </FormGroup>
                     <FormGroup>
