@@ -130,11 +130,15 @@ router.get('/search', (req, res) => {
      });
   } else {
     sql = `
-     SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color
+     SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color,
+     district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
+     province.name AS _province, district.name AS _district
      FROM bill
      INNER JOIN customer ON bill.customer_id = customer.id
      INNER JOIN status ON bill.status_id = status.id
      INNER JOIN user ON bill.user_id = user.id
+     INNER JOIN district ON bill.district_id = district.districtid
+     INNER JOIN province ON bill.province_id = province.provinceid
      ${condition}
      ORDER BY id DESC
      LIMIT ${perPage} OFFSET ${offset};
