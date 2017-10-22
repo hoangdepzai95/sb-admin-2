@@ -173,8 +173,8 @@ class AddBill extends Component {
           address: billInfo.address,
           pay: this.getTotalProductCost(),
           note: billInfo.note,
-          province: billInfo.province,
-          district: billInfo.district,
+          province_id: billInfo.province_id,
+          district_id: billInfo.district_id,
           customer_id: addedCustomer.id,
           code: billInfo.code,
           decrease: billInfo.decrease || 0,
@@ -258,7 +258,7 @@ class AddBill extends Component {
   }
   getDistrictOption(data) {
       return data.map(o => {
-          o.value = o.name;
+          o.value = o.districtid;
           o.label = o.name;
           return o;
       })
@@ -278,7 +278,10 @@ class AddBill extends Component {
   }
   onSelectProvince(e) {
       const { onChange, parent } = this.props;
-      onChange.call(parent, 'billInfo', 'province', { target: { value: e.name}});
+      onChange.call(parent, 'billInfo', '_province', { target: { value: e.name}});
+      window.setTimeout(() => {
+          onChange.call(parent, 'billInfo', 'province_id', { target: { value: e.provinceid}});
+      }, 0);
       this.getDistrict(e.name);
   }
   getDistrict(province) {
@@ -295,7 +298,10 @@ class AddBill extends Component {
   }
   onSelectDistrict(e) {
       const { onChange, parent } = this.props;
-      onChange.call(parent, 'billInfo', 'district', { target: { value: e.name}});
+      onChange.call(parent, 'billInfo', '_district', { target: { value: e.name}});
+      window.setTimeout(() => {
+          onChange.call(parent, 'billInfo', 'district_id', { target: { value: e.districtid}});
+      }, 0);
   }
   render() {
     const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict } = this.state;
@@ -481,7 +487,7 @@ class AddBill extends Component {
                           />
                       </Col>
                       <Col sm={4}>
-                        <p className="text-center">{billInfo.province}</p>
+                        <p className="text-center">{billInfo._province}</p>
                       </Col>
                     </FormGroup>
                     <FormGroup >
@@ -499,7 +505,7 @@ class AddBill extends Component {
                           />
                       </Col>
                       <Col sm={4}>
-                        <p className="text-center">{billInfo.district}</p>
+                        <p className="text-center">{billInfo._district}</p>
                       </Col>
                     </FormGroup>
                     <FormGroup>

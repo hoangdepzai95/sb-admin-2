@@ -31,8 +31,10 @@ class Home extends Component {
         address: '',
         pay: 0,
         note: '',
-        province: '',
-        district: '',
+        _province: '',
+        _district: '',
+        province_id: '',
+        district_id: '',
         decrease: 0,
         code: '',
         status_id: null,
@@ -143,6 +145,7 @@ class Home extends Component {
     });
   }
   onChange(type, field, e) {
+      console.log(field, e)
     const value = e.target.value;
     if (type === 'customer' && field === 'phone' && value.length > 44) return;
     const target = _.cloneDeep(this.state[type]);
@@ -307,7 +310,7 @@ class Home extends Component {
         'Tổng thu',
         'Ghi chú'
     ];
-    const bills = selectedBills.map((bill) => {
+    let bills = selectedBills.map((bill) => {
       const categories = _.uniq(bill.products.map(product => product.category)).join('+');
       const quantity = bill.products.reduce((sum, product) => {
                                         return sum + product.quantity;
@@ -326,9 +329,9 @@ class Home extends Component {
           categories,
           quantity,
           bill.address,
-          `${bill.address || ''}, ${bill.district}, ${bill.province}`,
-          bill.province_id,
-          bill.district_id,
+          `${bill.address || ''}, ${bill._district}, ${bill._province}`,
+          bill.province_custom_id,
+          bill.district_custom_id,
           bill.pay || 0,
           bill.note
       ];
@@ -705,13 +708,13 @@ class Home extends Component {
                           <td>
                           {bill.address}
                           {
-                              _.trim(bill.district) ?
-                              <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill.district}</p>
+                              _.trim(bill._district) ?
+                              <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill._district}</p>
                               : null
                           }
                           {
-                              _.trim(bill.district) ?
-                              <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill.province}</p>
+                              _.trim(bill._district) ?
+                              <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill._province}</p>
                               : null
                           }
                           </td>

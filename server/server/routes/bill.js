@@ -23,13 +23,14 @@ router.get('/', (req, res) => {
       if (err) return res.status(400).send('Error');
       con.query(`
             SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
-            district.color AS district_color, district.custom_id AS district_id, province.custom_id as province_id
+            district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
+            province.name AS _province, district.name AS _district
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
             INNER JOIN user ON b.user_id = user.id
-            INNER JOIN district ON b.district = district.name
-            INNER JOIN province ON b.province = province.name
+            INNER JOIN district ON b.district_id = district.districtid
+            INNER JOIN province ON b.province_id = province.provinceid
             `, (error, bills) => {
       if (error) {
         console.log(error);
@@ -854,7 +855,7 @@ router.get('/district', (req, res) => {
     const keyword = req.query.q;
     pool.getConnection(function(err, con) {
       if (err) return res.status(400).send('Error');
-      con.query(`SELECT district.name FROM district INNER JOIN province ON district.provinceid = province.provinceid WHERE province.name = '${keyword}'` , function (error, results) {
+      con.query(`SELECT district.name, district.districtid FROM district INNER JOIN province ON district.provinceid = province.provinceid WHERE province.name = '${keyword}'` , function (error, results) {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -863,6 +864,35 @@ router.get('/district', (req, res) => {
         res.status(200).json(results);
         con.release();
       }
+      });
+    });
+})
+router.get('/fix', (req, res) => {
+    pool.getConnection(function(err, con) {
+      if (err) return res.status(400).send('Error');
+      con.query(`SELECT bill.*, province.provinceid FROM bill
+          INNER JOIN province ON bill.province = province.name
+          WHERE bill.district != ' '` , function (error, results) {
+
+        for (let i = 0 ; i < results.length; i++) {
+            con.query(`UPDATE bill SET province_id = '${results[i].provinceid}' WHERE bill.id = '${results[i].id}'`, () => {
+                if (i == (results.length - 1)) {
+                    console.log('end set provinceid');
+                    con.query(`SELECT * FROM bill WHERE district != ' '`, (err, resp) => {
+                        for ( let j = 0 ; j < resp.length; j++) {
+                            const bill = resp[j];
+                            con.query(`SELECT * FROM district WHERE (district.name = '${bill.district.trim()}' OR district.name = 'Quận ${bill.district}') AND district.provinceid = ${bill.province_id}`, (err, results) => {
+                                console.log(results && results[0] ? results[0].name : 'rong', bill.district);
+                                if (results && results[0]) {
+                                    con.query(`UPDATE bill SET district_id = '${results[0].districtid}' WHERE id = ${bill.id}`)
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        }
+        res.status(200).json(results);
       });
     });
 })
