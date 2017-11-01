@@ -24,7 +24,7 @@ router.get('/', (req, res) => {
       con.query(`
             SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
             district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
-            province.name AS _province, district.name AS _district
+            province.name AS _province, district.name AS _district, district.shipping AS district_shipping, district.shipping_time
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
             INNER JOIN customer ON b.customer_id = customer.id
             INNER JOIN status ON b.status_id = status.id
@@ -132,7 +132,7 @@ router.get('/search', (req, res) => {
     sql = `
      SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color,
      district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
-     province.name AS _province, district.name AS _district
+     province.name AS _province, district.name AS _district, district.shipping AS district_shipping, district.shipping_time
      FROM bill
      INNER JOIN customer ON bill.customer_id = customer.id
      INNER JOIN status ON bill.status_id = status.id

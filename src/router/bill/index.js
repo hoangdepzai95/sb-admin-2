@@ -336,6 +336,7 @@ class Home extends Component {
           bill.note
       ];
     });
+    bills = _.sortBy(bills, o => o[1]);
     if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
       axios.post('/auth/bill/excel', {
         bills: [header, ...bills],
@@ -700,7 +701,11 @@ class Home extends Component {
                             }
                           </td>
                           <td>{bill.facebook} </td>
-                          <td>{bill.customer_name} </td>
+                          <td>
+                            {bill.customer_name}
+                            <p style={{color: '#337ab7'}}><NumberFormat value={bill.district_shipping} displayType={'text'} thousandSeparator={true}/></p>
+                            <p style={{color: '#337ab7'}}>{bill.shipping_time}</p>
+                          </td>
                           <td>{bill.phone} </td>
                           <td>
                             {bill.products_info}

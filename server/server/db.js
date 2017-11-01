@@ -7,7 +7,7 @@ function createPool() {
     user     : 'monty',
     password : 'Kidvn95123@',
     database : 'myapp',
-    connectionLimit: 100,
+    connectionLimit: 1000,
   });
   return pool;
 }
