@@ -386,7 +386,7 @@ class Home extends Component {
                                         }, 0);
         return [
             bill.customer_name || bill.facebook || '',
-            bill.phone,
+            _.trim(bill.phone),
             `${bill.address || ''}, ${bill._district}, ${bill._province}`,
             bill.province_custom_id,
             bill.district_custom_id,
