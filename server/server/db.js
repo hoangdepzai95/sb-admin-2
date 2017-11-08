@@ -6,7 +6,7 @@ function createPool() {
     host     : '103.63.109.151',
     user     : 'monty',
     password : 'Kidvn95123@',
-    database : 'myapp',
+    database : 'hoang-app',
     connectionLimit: 1000,
   });
   return pool;

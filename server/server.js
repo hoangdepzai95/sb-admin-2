@@ -24,6 +24,6 @@ app.get('*', (req, res) => {
   res.sendFile(`${rootPath}/build/index.html`);
 });
 
-app.listen(80, () => {
+app.listen(443, () => {
   console.log(`The server is running at http://localhost:${port}/`);
 });

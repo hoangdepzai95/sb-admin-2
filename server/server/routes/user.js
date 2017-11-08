@@ -97,4 +97,37 @@ router.delete('/:id', (req, res) => {
     });
   });
 })
+
+router.get('/json', (req, res) => {
+    res.json([
+                    {
+                        id: 1,
+                title: 'title 1 w',
+                        shortText: 'short text 1',
+                helpUrl: 'http://facebook.com',
+                createdAt: '2017-11-02',
+                buttonLabel: 'button label',
+                buttonUrl: 'http://facebook.com',
+                }
+                ,
+                    {
+                        id: 2,
+                        title: 'title 1 w',
+                        shortText: 'short text 1',
+                        helpUrl: 'http://facebook.com',
+                        createdAt: '2017-11-03',
+                        buttonLabel: 'button label',
+                        buttonUrl: 'http://facebook.com',
+                    },
+                    {
+                        id: 3,
+                        title: 'title 1 w',
+                        shortText: 'short text 1',
+                        helpUrl: 'http://facebook.com',
+                        createdAt: '2017-11-03',
+                        buttonLabel: 'button label',
+                        buttonUrl: 'http://facebook.com',
+                    }
+            ])
+})
 module.exports = router

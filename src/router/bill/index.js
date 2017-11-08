@@ -55,6 +55,8 @@ class Home extends Component {
       startDate: moment(),
       endDate: moment().add(1, 'days'),
       enableFilterDate: false,
+      showProducts: false,
+      products_info: ''
     };
     this.onSearchBill = _.debounce(this.onSearchBill, 1000);
   }
@@ -351,6 +353,97 @@ class Home extends Component {
       )
     }
   }
+  exportGhn() {
+      const { selectedBills } = this.state;
+      if (!selectedBills.length) {
+        window.alert('Không có hóa đơn được chọn');
+        return;
+      }
+      const header = [
+          'Nguoi_Nhan',
+          'Dien_Thoai',
+          'Dia_Chi',
+          'Tinh_Thanh',
+          'Quan',
+          'Dich_Vu',
+          'Hinh_Thuc_Thanh_Toan',
+          'Ghi_Chu',
+          'COD',
+          'Ma_Shop',
+          'Khoi_Luong_(gr)',
+          'Dai_(cm)',
+          'Rong_(cm)',
+          'Cao_(cm)',
+          'KL_Quy_Doi_(gr)',
+          'Noi_Dung_Hang',
+          'Ghi chú bắt buộc',
+          'Gửi hàng tại điểm'
+      ];
+      let bills = selectedBills.map((bill) => {
+        const categories = _.uniq(bill.products.map(product => product.category)).join('+');
+        const quantity = bill.products.reduce((sum, product) => {
+                                          return sum + product.quantity;
+                                        }, 0);
+        return [
+            bill.customer_name || bill.facebook || '',
+            bill.phone,
+            `${bill.address || ''}, ${bill._district}, ${bill._province}`,
+            bill.province_custom_id,
+            bill.district_custom_id,
+            '2 - Chuẩn',
+            '1 - Người gửi trả tiền',
+            bill.note,
+            bill.pay || 0,
+            bill.id,
+            500,
+            10,
+            10,
+            200,
+            null,
+            categories,
+            '1 -  Cho xem hàng, không cho thử',
+            '2 - Không'
+        ]
+      });
+      if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
+        axios.post('/auth/bill/excel', {
+          bills: [header, ...bills],
+        }, { responseType: 'blob' }).then(
+          (res) => {
+            FileSaver.saveAs(res.data, "Don-Hang.xlsx");
+            this.setState({ selectedBills: [] });
+          },
+          (error) => {
+            alert('Lỗi mịa nó rùi :(');
+          }
+        )
+      }
+  }
+  exportProducts() {
+      const { selectedBills } = this.state;
+      if (!selectedBills.length) {
+        window.alert('Không có hóa đơn được chọn');
+        return;
+      }
+      let products = [];
+      for ( let bill of selectedBills) {
+          products = products.concat(bill.products);
+      }
+      products = _.groupBy(products, 'name');
+      console.log( products)
+      const header = [
+          'Sản phẩm',
+          'Số lượng'
+      ];
+      let products_infos = [];
+      for (let product_name in products) {
+          products_infos.push(`${product_name}: ${products[product_name].length}`);
+      }
+      this.setState({
+          showProducts: true,
+          products_info: products_infos.sort().join('\n')
+      })
+  }
   onFileChange(e) {
     e.persist();
     const file = e.target.files[0];
@@ -506,9 +599,29 @@ class Home extends Component {
       this.getTotal();
     });
   }
+  closeShowProducts() {
+      this.setState({ showProducts: false });
+  }
   render() {
     const { user, total } = this.props;
-    const { showForm, type, customer, billInfo, products, page, mode, idFilterStatus, selectedBills, showChangeStatus, originBill, startDate, endDate, enableFilterDate } = this.state;
+    const { showForm,
+        type,
+        customer,
+        billInfo,
+        products,
+        page,
+        mode,
+        idFilterStatus,
+        selectedBills,
+        showChangeStatus,
+        originBill,
+        startDate,
+        endDate,
+        enableFilterDate,
+        showProducts,
+        closeShowProducts,
+        products_info
+    } = this.state;
     const bills = this.props.bills[page] || [];
     var options = [
   { value: 1 , label: 'Còn hàng' },
@@ -516,6 +629,14 @@ class Home extends Component {
 ];
     return (
       <div className="row ng-scope">
+      <Modal show={showProducts} onHide={this.closeShowProducts.bind(this)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Sản phầm cần lấy hàng</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <pre>{products_info}</pre>
+          </Modal.Body>
+    </Modal>
         <div className="">
         <p></p>
         <div>
@@ -597,6 +718,18 @@ class Home extends Component {
                 </Button>
                 : null
               }
+              &nbsp;
+              {
+                user.role < 3 ?
+                <Button onClick={this.exportGhn.bind(this)} bsStyle="primary">
+                  Xuất file ghn
+                </Button>
+                : null
+              }
+              &nbsp;
+              <Button onClick={this.exportProducts.bind(this)} bsStyle="primary">
+                Xuất file lấy hàng
+              </Button>
               &nbsp;
               {
                 user.role < 3 ?
