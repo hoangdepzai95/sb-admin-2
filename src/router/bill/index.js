@@ -398,7 +398,7 @@ class Home extends Component {
             500,
             10,
             10,
-            200,
+            10,
             null,
             categories,
             '1 -  Cho xem hàng, không cho thử',
