@@ -402,7 +402,7 @@ class Home extends Component {
             200,
             categories,
             '1 -  Cho xem hàng, không cho thử',
-            '2 - Không'
+            '1 - Có'
         ]
       });
       if (window.confirm('Quá trình này có thể  lâu, vui lòng đợi ?')) {
