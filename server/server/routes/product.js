@@ -84,6 +84,7 @@ router.put('/', upload.single('file'), (req, res) => {
     if (err) return res.status(400).send('Error');
     con.query('UPDATE product SET ? WHERE ?', [product, { id: product.id }], function (error, results) {
     if (error) {
+        console.log(error);
       res.status(400).send('Error');
       con.release();
     }else{

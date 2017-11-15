@@ -33,6 +33,8 @@ export default class Product extends Component {
                 <td><NumberFormat value={product.real_price} displayType={'text'} thousandSeparator={true}/></td>
                 : null
               }
+              <td><NumberFormat value={product.real_price_2} displayType={'text'} thousandSeparator={true}/></td>
+
               <td>{product.category}</td>
               <td>
                 {

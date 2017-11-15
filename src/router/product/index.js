@@ -27,6 +27,7 @@ class Home extends Component {
       file: null,
       price: '',
       real_price: '',
+      real_price_2: '',
       id_category: null,
       filterByRealPrice: false,
     };
@@ -71,6 +72,7 @@ class Home extends Component {
         instock: product.instock,
         price: product.price,
         real_price: product.real_price,
+        real_price_2: product.real_price_2,
         id_category: product.id_category,
       });
     } else {
@@ -82,6 +84,7 @@ class Home extends Component {
         instock: 1,
         price: '',
         real_price: '',
+        real_price_2: '',
         id_category: null,
       });
     }
@@ -118,7 +121,7 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, code, quantity, type, id, instock, file, price, id_category, real_price } = this.state;
+    const { name, code, quantity, type, id, instock, file, price, id_category, real_price, real_price_2 } = this.state;
     if (name.length < 1 || !price) {
       window.alert('Tên và giá sản phẩm không được bỏ trống');
       return;
@@ -134,6 +137,7 @@ class Home extends Component {
       instock,
       price,
       real_price: real_price || 0,
+      real_price_2: real_price_2 || 0,
       id_category,
     };
     if (type === 'edit') product.id = id;
@@ -196,7 +200,7 @@ class Home extends Component {
   }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category, real_price, filterByRealPrice } = this.state;
+    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category, real_price, real_price_2, filterByRealPrice } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -239,6 +243,7 @@ class Home extends Component {
                          <th>Giá nhập </th>
                          : null
                        }
+                       <th>Giá sỉ</th>
                        <th>Nhóm </th>
                        <th>Trạng thái</th>
                        {
@@ -346,6 +351,18 @@ class Home extends Component {
              </FormGroup>
              : null
            }
+           <FormGroup >
+             <Col componentClass={ControlLabel} sm={2}>
+               Giá sỉ
+             </Col>
+             <Col sm={10}>
+               <FormControl
+               type="number"
+               onChange={this.onChange.bind(this, 'real_price_2')}
+               value={real_price_2}
+               />
+             </Col>
+           </FormGroup>
            <FormGroup >
              <Col componentClass={ControlLabel} sm={2}>
                Ảnh
