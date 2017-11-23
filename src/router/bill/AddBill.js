@@ -29,7 +29,6 @@ class AddBill extends Component {
       searchDistrict: [],
       loadingProduct: false,
       loadedBillDetail: false,
-      is_real_price_2: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
     this.debouncedSearchCustomer = _.debounce(this.searchCustomer, 1000);
@@ -184,6 +183,7 @@ class AddBill extends Component {
           status_id: billInfo.status_id,
           facebook: billInfo.facebook,
           customer_name: billInfo.customer_name,
+          don_si: billInfo.don_si
         },
         products: products.map((product) => {
           return { product_id: product.id, quantity: product.quantity, name: product.name };
@@ -227,10 +227,9 @@ class AddBill extends Component {
     }
   }
   getTotalProductCost() {
-      const {  is_real_price_2 } = this.state;
     const { products, billInfo } = this.props;
     return products.reduce((sum, product) => {
-      return sum + (is_real_price_2 ? product.real_price_2 : product.price) * product.quantity;
+      return sum + (billInfo.don_si ? product.real_price_2 : product.price) * product.quantity;
     }, 0) - (+billInfo.decrease || 0) + (+billInfo.shipping || 0) ;
   }
   getStatusOptions() {
@@ -307,10 +306,11 @@ class AddBill extends Component {
       }, 0);
   }
   onChangeRealPrice2(v) {
-      this.setState({ is_real_price_2: v });
+      const { onChange, parent } = this.props;
+      onChange.call(parent, 'billInfo', 'don_si', { target: { value: v}});
   }
   render() {
-    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict, is_real_price_2 } = this.state;
+    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
     return (
           <Modal show={showForm} onHide={close} dialogClassName="custom-modal">
@@ -372,7 +372,7 @@ class AddBill extends Component {
               <div>
               <Panel header={<span>Sản phẩm</span>} >
                 <span>Tính giá sỉ</span>&nbsp;
-                <Switch checked={is_real_price_2} onChange={this.onChangeRealPrice2.bind(this)} />
+                <Switch checked={!!billInfo.don_si} onChange={this.onChangeRealPrice2.bind(this)} />
                 <p></p>
               <div>
                 <Select
@@ -413,7 +413,7 @@ class AddBill extends Component {
                             </td>
                             <td>{product.code}</td>
                             <td>{product.quantity}</td>
-                            <td><NumberFormat value={is_real_price_2 ? product.real_price_2 : product.price} displayType={'text'} thousandSeparator={true}/></td>
+                            <td><NumberFormat value={billInfo.don_si ? product.real_price_2 : product.price} displayType={'text'} thousandSeparator={true}/></td>
                             <td>
                               <Button bsStyle="danger" bsSize="xs" active onClick={this.removeProduct.bind(this, product.id2)}>
                                 Xóa
