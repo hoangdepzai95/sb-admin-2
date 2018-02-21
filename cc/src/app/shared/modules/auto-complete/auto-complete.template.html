@@ -1,0 +1,27 @@
+<div class="auto-complete input-group-btn" [class.open]="open">
+    <div class="auto-complete-group-btn">
+        <input
+                class="form-control"
+                type="text"
+                (focus)="onFocusInput()"
+                [(ngModel)]="inputValue"
+                (input)="onInputChange()"
+                [placeholder]="placeHolder"
+                (keydown)="onKeyDownInput($event)"
+                (keydown.enter)="onEnter()"
+        >
+        <circle-loading *ngIf="loading"></circle-loading>
+    </div>
+    <ul class="dropdown-menu">
+        <li
+            *ngFor="let item of data; trackBy: trackByValue; let i = index"
+            (click)="selectItem(item)" [class.focus]="focusIndex === i"
+            (mouseenter)="onMouseEnterItem(i)"
+        >
+            <a href="javascript:void(0)">
+                <i *ngIf="item.iconClass" [class]="item.iconClass"></i>
+                {{ item.noTranslate ? item.label : (item.label | translate) }}
+            </a>
+        </li>
+    </ul>
+</div>

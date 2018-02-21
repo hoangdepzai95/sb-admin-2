@@ -1,0 +1,20 @@
+.data-table-top-block {
+  margin-top: 20px ;
+  margin-bottom: 15px;
+  border: 1px solid #e7eaec;
+  padding: 10px 0px;
+  border-left: 0;
+  border-right: 0;
+  data-table-multi-status-edit {
+    display: inline-block;
+    border: 1px solid #e7eaec;
+    border-bottom: 0;
+    border-top: 0;
+    padding: 0px 15px;
+    margin: 0px 10px;
+  }
+}
+
+.data-table-top-block-row {
+  display: flex;
+}

@@ -1,0 +1,61 @@
+<td class="data-table-select">
+    <app-checkbox
+            [checked]="isSelected"
+            (change)="selectKeyword()"
+            [disabled]="keyword.blocked"
+    >
+
+    </app-checkbox>
+</td>
+<td>
+    <span class="data-table-inline-edit-container status-edit" (click)="openInlineEdit('status')">
+        <i
+                class="fa fa-circle"
+                [ngClass]="keyword.details.user_status_text"
+                [tooltip]="keyword.details.user_status_text"
+        >
+
+        </i>
+        <i class="fa fa-sort-desc hide-icon"></i>
+        <data-table-inline-status-edit
+                *ngIf="editType === 'status'"
+                (close)="closeInlineEdit()"
+                [id]="keyword.id"
+                [endPoint]="MATCH_INLINE_EDIT_ENDPOINT"
+                [updateFunction]="keywordListService.updateKeyword"
+        >
+        </data-table-inline-status-edit>
+    </span>
+</td>
+<td>
+    {{ keyword.details.value }}
+</td>
+<td *ngIf="!(dataTableService.getInCampaignContext() | async)" >
+    <a
+        [routerLink]="['/keyword/list']"
+        [queryParams]="{ campaignId: keyword.campaignId }"
+    >
+        {{ keyword.campaignName }}
+    </a>
+</td>
+<td *ngIf="!((dataTableService.getInCampaignContext() | async) && (dataTableService.getInAdsGroupContext() | async))">
+    <a [routerLink]="['/keyword/list']" [queryParams]="{ campaignId: keyword.campaignId, adsGroupId: keyword.adsGroupId }">{{ keyword.adsGroupName }}</a>
+</td>
+<td>
+    <span>{{ keyword.state.status }}</span>
+</td>
+<td class="text-right" >
+    <span>{{ keyword.stats.clicks | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ keyword.stats.shows | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ keyword.stats.ctr | percentFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ keyword.stats.averagePos | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ keyword.stats.spending | numberFormat }}</span>
+</td>

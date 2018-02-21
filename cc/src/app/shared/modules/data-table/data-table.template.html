@@ -1,0 +1,12 @@
+<data-table-pagination [isMainComponent]="true">
+</data-table-pagination>
+<table class="table table-hover data-table" [ngClass]="tableClass">
+    <thead
+            app-data-table-head
+            [tableFields]="tableFields"
+    >
+    </thead>
+    <ng-content select="tbody"></ng-content>
+</table>
+<p *ngIf="!(service.getTotalItems() | async)" class="data-table-no_rows">{{ notFoundText | translate }}</p>
+<data-table-pagination></data-table-pagination>

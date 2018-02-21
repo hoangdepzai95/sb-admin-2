@@ -1,0 +1,22 @@
+<div class="{{ classes.join(' ') }} input-group-btn dropdown-component" [class.is_open]="isOpen">
+    <button
+        class="btn"
+        [ngClass]="btnClass"
+        [class.dropdown-toggle]="btnClass"
+        type="button"
+        (click)="toggleDropdown()"
+    >
+        <span class="dropdown-selected-label">
+            {{ fixedLabel ? fixedLabel : getSelectedItemLabel(value)}}
+        </span>
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" *ngIf="isOpen || preRender">
+        <li *ngFor="let item of data; trackBy: trackByValue" (click)="selectItem(item)">
+            <a href="javascript:void(0)">
+                <i *ngIf="item.iconClass" [class]="item.iconClass"></i>
+                {{ item.noTranslate ? item.label : (item.label | translate) }}
+            </a>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,39 @@
+.location-widget-image {
+  width: 307px;
+  height: 177px;
+  margin-left: 30px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+  .laptop-icon {
+    height: 100%;
+    width: 100%;
+  }
+  .drag-area {
+    position: absolute;
+    top: 10px;
+    left: 37px;
+    right: 76px;
+    bottom: 53px;
+    .callback-icon {
+      position: absolute;
+      z-index: 2;
+      cursor: pointer;
+      background: url("#{$images-path}/qc-images/icon-callback.png") no-repeat 0 0;
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
+.location-widget {
+  position: relative;
+  .slider.horizontal {
+    width: 255px;
+    margin-left: 61px;
+  }
+  .slider.vertical {
+    height: 175px;
+    position: absolute;
+  }
+}

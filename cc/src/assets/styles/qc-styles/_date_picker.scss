@@ -1,0 +1,16 @@
+.date-range-picker.one-line {
+  .form-group {
+    display: flex;
+  }
+}
+
+.date-range-picker {
+  display: flex;
+  .form-group {
+    flex: 1;
+    margin: 0;
+  }
+  .date-middle {
+    padding: 9px 10px 0 10px;
+  }
+}

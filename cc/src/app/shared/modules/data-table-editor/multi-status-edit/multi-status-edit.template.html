@@ -1,0 +1,12 @@
+<div>
+    <app-dropdown
+            [data]="USER_STATUS_OPTIONS"
+            [classes]="['status-edit']"
+            [fixedLabel]="isEditing ? ('campaignsList.SAVING' | translate) : ('campaignsList.EDIT' | translate)"
+            [disabled]="!selectedRows.length"
+            (open)="onOpen()"
+            (select)="multiEditStatus($event)"
+            [btnClass]="'btn-default'"
+    >
+    </app-dropdown>
+</div>

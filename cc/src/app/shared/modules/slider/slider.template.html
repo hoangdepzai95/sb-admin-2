@@ -1,0 +1,4 @@
+<div class="slider {{ vertical ? 'vertical' : 'horizontal' }}" [ngClass]="className">
+    <div class="slider-fill" [ngStyle]="{ height: vertical ? percent + '%' : null, width: vertical ? null : percent + '%'}"></div>
+    <div class="slider-handle" [ngStyle]="{ top: vertical ? percent + '%' : null, left: vertical ? null : percent + '%' }" (mousedown)="activeSlider($event)"></div>
+</div>

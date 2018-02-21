@@ -1,0 +1,48 @@
+<div class="ads-groups row white-bg dashboard-header">
+    <data-table-top-block
+            [filterName]="'advert'"
+            [appFilterData]="filterService.getAppFiltersData()"
+            [fullFilterData]="filterService.getFullFiltersData()"
+            [ignoreFilterIds]="['advert_status']"
+    >
+        <div>
+            <button class="btn btn-primary">
+                <i class="fa fa-plus"></i>
+                <span class="text-uppercase">{{ 'common.Create new ad' | translate }}</span>
+            </button>
+            <data-table-multi-status-edit
+                    [endPoint]="MULTI_EDIT_ADVERT_STATUS_ENDPOINT"
+            >
+            </data-table-multi-status-edit>
+            <div class="general-filter">
+                <span class="general-filter-label">{{ 'common.Show ads' | translate }}:</span>
+                <app-single-filter
+                        [filterData]="filterService.filterByStatusData.children"
+                        [parentId]="'advert_status'"
+                >
+                </app-single-filter>
+            </div>
+        </div>
+    </data-table-top-block>
+    <data-table
+            [tableFields]="service.tableFields"
+            [defaultSortKey]="'ads_group_name'"
+            [getRowsDataFunc]="service.getAds"
+            [name]="'advert'"
+            [selectedRowsTexts]="service.selectedRowsTexts"
+            [notFoundText]="'common.No adverts found'"
+    >
+        <tbody>
+        <tr
+                *ngFor="let advert of (dataTableService.getObservableDataTable() | async).items"
+                advert
+                [advert]="advert"
+                [isSelected]="dataTableService.isSelectedRow(advert.id, dataTableService.getSelectedRows() | async)"
+                [class.disabled]="advert.blocked"
+                [class.selected]="dataTableService.isSelectedRow(advert.id, dataTableService.getSelectedRows() | async)"
+                [@fadeInAnimation]
+        >
+        </tr>
+        </tbody>
+    </data-table>
+</div>

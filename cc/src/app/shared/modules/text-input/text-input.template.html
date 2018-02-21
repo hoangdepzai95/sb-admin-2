@@ -1,0 +1,12 @@
+<div class="text-input" [class.has-error]="hasErrors">
+    <input
+        type="text"
+        (input)="onChange($event)"
+        (blur)="validate()"
+        class="form-control"
+        [placeholder]="placeHolder"
+    >
+    <p class="text-danger" *ngIf="errors.required && !errors.customError">{{ 'common.This field is required' | translate }}</p>
+    <p class="text-danger" *ngIf="errors.maxLength">{{ 'common.Max length is' }} {{ maxLength }}</p>
+    <p class="text-danger" *ngIf="errors.customError">{{ errorText | translate }}</p>
+</div>

@@ -1,0 +1,48 @@
+<div class="ads-groups row white-bg dashboard-header">
+    <data-table-top-block
+        [filterName]="'ads_group'"
+        [appFilterData]="filterService.getAppFiltersData()"
+        [fullFilterData]="filterService.getFullFiltersData()"
+        [ignoreFilterIds]="['ads_group_status']"
+    >
+        <div>
+            <button class="btn btn-primary" [routerLink]="['/ads-group/new']">
+                <i class="fa fa-plus"></i>
+                <span class="text-uppercase">{{ 'common.Create new ad group' | translate }}</span>
+            </button>
+            <data-table-multi-status-edit
+                [endPoint]="MULTI_EDIT_ADS_GROUP_STATUS_ENDPOINT"
+            >
+            </data-table-multi-status-edit>
+            <div class="general-filter">
+                <span class="general-filter-label">{{ 'common.Show ad groups' | translate }}:</span>
+                <app-single-filter
+                        [filterData]="filterService.filterByStatusData.children"
+                        [parentId]="'ads_group_status'"
+                >
+                </app-single-filter>
+            </div>
+        </div>
+    </data-table-top-block>
+    <data-table
+            [tableFields]="service.tableFields"
+            [defaultSortKey]="'details.name'"
+            [getRowsDataFunc]="service.getAdsGroups"
+            [name]="'ads_group'"
+            [selectedRowsTexts]="service.selectedRowsTexts"
+            [notFoundText]="'common.No ads groups found'"
+    >
+        <tbody>
+        <tr
+                *ngFor="let adsGroup of (dataTableService.getObservableDataTable() | async).items"
+                ads-group-list-ads-group
+                [adsGroup]="adsGroup"
+                [isSelected]="dataTableService.isSelectedRow(adsGroup.id, dataTableService.getSelectedRows() | async)"
+                [class.disabled]="adsGroup.blocked"
+                [class.selected]="dataTableService.isSelectedRow(adsGroup.id, dataTableService.getSelectedRows() | async)"
+                [@fadeInAnimation]
+        >
+        </tr>
+        </tbody>
+    </data-table>
+</div>

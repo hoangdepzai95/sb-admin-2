@@ -1,0 +1,46 @@
+<a class="dropdown-toggle count-info" data-toggle="dropdown" href="javascript:void(0)" aria-expanded="false">
+    <i class="fa fa-bell"></i>
+    <span class="label label-primary" *ngIf="notifications.length > 0">{{ notifications.length }}</span>
+</a>
+<ul class="dropdown-menu dropdown-messages transform-origin-right" (click)="$event.stopPropagation()">
+    <span *ngIf="notifications.length === 0" i18n>{{ 'common.You have no notifications' | translate }}</span>
+    <ng-container *ngFor="let notification of notifications; let i = index">
+        <li class="divider" *ngIf="i > 0"></li>
+        <li class="navbar-top-notification">
+            <i class="navbar-top-notification-icon fa fa-exclamation-circle" aria-hidden="false"></i>
+            <div class="dropdown-messages-box">
+                <div class="media-body">
+                    <small class="pull-right">{{ notification.fromNow }}</small>
+                    <strong>{{ notification.title }}</strong><br>
+                    <span>{{ notification.shortText }}</span>
+                    <div class="navbar-top-notification-actions">
+                        <a
+                                class="text-muted"
+                                *ngIf="notification.buttonLabel && notification.buttonUrl"
+                                [href]="notification.buttonUrl"
+                        >
+                            {{ notification.buttonLabel }}
+                        </a>
+                         |
+                        <a
+                                class=" text-muted"
+                                *ngIf="notification.helpUrl"
+                                [href]="notification.helpUrl"
+                        >
+                             {{ 'common.Learn more' | translate }}
+                        </a>
+                         |
+                        <a
+                                class="text-muted mark-as-read"
+                                [class.disabled]="isDisabledDismissBtn(notification.id)"
+                                href="javascript:void(0)"
+                                (click)="markNotificationsAsRead(notification.id)"
+                        >
+                            {{ 'common.Dismiss' | translate }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ng-container>
+</ul>

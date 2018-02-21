@@ -1,0 +1,56 @@
+<td class="data-table-select">
+    <app-checkbox
+            [checked]="isSelected"
+            (change)="selectDemographic()"
+            [disabled]="demographic.blocked"
+    >
+
+    </app-checkbox>
+</td>
+<td>
+    <span class="data-table-inline-edit-container status-edit" (click)="openInlineEdit('status')">
+        <i
+                class="fa fa-circle"
+                [ngClass]="demographic.details.user_status_text"
+                [tooltip]="demographic.details.user_status_text"
+        >
+
+        </i>
+        <i class="fa fa-sort-desc hide-icon"></i>
+        <data-table-inline-status-edit
+                *ngIf="editType === 'status'"
+                (close)="closeInlineEdit()"
+                [id]="demographic.id"
+                [endPoint]="MATCH_INLINE_EDIT_ENDPOINT"
+                [updateFunction]="demographicListService.updateDemographic"
+        >
+        </data-table-inline-status-edit>
+    </span>
+</td>
+<td>
+    {{ getDemographicLabel(demographic.details.value) | translate }}
+</td>
+<td *ngIf="!(dataTableService.getInCampaignContext() | async)">
+    <a [routerLink]="['/demographic/list']" [queryParams]="{ campaignId: demographic.campaignId }">{{ demographic.campaignName }}</a>
+</td>
+<td *ngIf="!((dataTableService.getInCampaignContext() | async) && (dataTableService.getInAdsGroupContext() | async))">
+    <a [routerLink]="['/demographic/list']" [queryParams]="{ campaignId: demographic.campaignId, adsGroupId: demographic.adsGroupId }">{{ demographic.adsGroupName }}</a>
+</td>
+<td>
+    <span>{{ demographic.state.status }}</span>
+</td>
+<td class="text-right" >
+    <span>{{ demographic.stats.clicks | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ demographic.stats.shows | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ demographic.stats.ctr | percentFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ demographic.stats.averagePos | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ demographic.stats.spending | numberFormat }}</span>
+</td>

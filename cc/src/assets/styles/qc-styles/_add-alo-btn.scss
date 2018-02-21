@@ -1,0 +1,79 @@
+.add-alo-btn {
+  user-select: none;
+  padding-top: 10px;
+  .alo-widget {
+    > span {
+      margin-right: 12px;
+
+    }
+  }
+  app-checkbox {
+    margin-right: 5px;
+  }
+  .form-group {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .fa-question-circle {
+    color: #888888;
+    cursor: help;
+    margin-left: 3px;
+  }
+  .form-group.multi-input {
+    .text-input {
+      margin-bottom: 20px;
+    }
+    .form-group-wrapper {
+      position: relative;
+      .fa-times-circle {
+        position: absolute;
+        right: -20px;
+        top: 8px;
+        font-size: 18px;
+        cursor: pointer;
+        color: #888888;
+      }
+      .fa-times-circle:hover {
+        color: $text-color;
+      }
+    }
+  }
+  .sale-manager-info {
+    display: flex;
+     > text-input:first-of-type {
+      margin-right: 20px;
+    }
+    text-input {
+      flex: 1;
+    }
+  }
+  .schedule-option-label {
+    width: 130px;
+    display: inline-block;
+  }
+  .schedule-option {
+    .dropdown-toggle {
+      margin-right: 20px;
+      margin-top: 0;
+    }
+    margin-bottom: 22px;
+  }
+  .schedule-option-all-time {
+    margin: 20px 0;
+  }
+  .schedule-option-warning {
+    margin: 5px 0 0 130px;
+  }
+
+  .location-widget {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+}
+
+.add-alo-btn-row {
+  margin-bottom: 20px;
+}
+
+.create-new-alo-btn {
+}

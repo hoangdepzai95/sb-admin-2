@@ -1,0 +1,164 @@
+.filters-btn.open .dropdown-menu {
+  display: block;
+}
+
+.filters {
+  display: flex;
+  margin-top: 6px;
+  margin-bottom: 1px;
+  .nested-dropdown .dropdown-menu {
+    top: 107%;
+  }
+  input[type="number"] {
+    width: 70px;
+  }
+  input[type="text"] {
+    width: 100px;
+  }
+  input {
+    padding: 2px 4px;
+    height: 21px;
+    font-size: 11px;
+  }
+
+  my-date-picker {
+    height: 21px;
+    .icon-mydpcalendar {
+      font-size: 13px;
+    }
+  }
+}
+
+.filters-items {
+  display: inline-block;
+  vertical-align: middle;
+  .dropdown-component {
+    .btn {
+      font-size: 12px;
+      padding: 0 0 1px 0;
+      margin-right: 1px;
+      border: 1px solid #cccccc;
+      padding: 1px 4px;
+      background-color: #ebebeb;
+    }
+    .caret {
+      display: none;
+    }
+  }
+  .dropdown-component:hover {
+    .btn {
+      background-color: #cccccc9e;
+      border: 1px solid #b7b4b4;
+    }
+  }
+  .dropdown-component.thin {
+    .btn {
+      padding: 1px 4px;
+    }
+  }
+}
+
+.filters-item {
+  border: 1px solid #cccccc;
+  border-radius: 1px;
+  margin-right: 4px;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.filters-btn {
+  position: relative;
+  background-color: #ebebeb;
+  border-right: 1px solid #cccccc;
+  border-radius: 0;
+  > .fa {
+    position: relative;
+    top: -3px;
+    margin-left: 10px;
+  }
+}
+
+.filters-btn:hover {
+  background-color: #FFF;
+}
+
+.filters-item-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.filters-item-name {
+  margin-right: 10px;
+}
+
+.filters-item-apply_btn {
+  margin-left: 10px;
+}
+
+.filters-item-remove_btn {
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.filters-item-remove_btn:hover {
+  color: #333333;
+}
+
+.filters-editing_filter {
+  padding: 1px 5px 2px 5px;
+  background-color: #FFF;
+}
+
+.filter-saved_item {
+  cursor: pointer;
+  background-color: #ebebeb;
+  padding: 3px 5px 4px 5px;
+  .filters-item-name {
+    margin-right: 0;
+  }
+}
+
+.filter-saved_item:hover {
+  background-color: #cccccc9e;
+  border: 1px solid #b7b4b4;
+}
+
+.filters-clear-all {
+  font-weight: 600;
+  text-align: right;
+  padding-top: 7px;
+  padding-right: 9px;
+  padding-left: 10px;
+  flex: 1;
+  span {
+    cursor: pointer;
+  }
+  span:hover {
+    color: #333333;
+  }
+  .fa {
+    font-size: 16px;
+    margin-left: 5px;
+    position: relative;
+    top: 1px;
+  }
+}
+
+.filters-add-your-filter {
+  padding-top: 8px;
+  padding-left: 8px;
+  flex: 1;
+  background-color: #f5f7f8;
+}
+
+.filters-items-container {
+  justify-content: flex-start;
+}
+
+.general-filter-label {
+  vertical-align: middle;
+}
+.general-filter {
+  display: inline-block;
+}

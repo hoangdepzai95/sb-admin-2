@@ -1,0 +1,126 @@
+<div class="add-alo-btn green-tooltip">
+    <div class="line-loader" *ngIf="service.getLoading() | async">
+    </div>
+    <div *ngIf="!(service.getLoading() | async)">
+        <div class="selected-exist-btn add-alo-btn-row form-group" *ngIf="(service.getAloButtons() | async).length">
+            <label>{{ 'common.Choice Alo Cốc Cốc button' | translate }}</label>
+            <div>
+                <app-dropdown
+                        [data]="service.getAloBtnOptions(service.getAloButtons() | async)"
+                        [btnClass]="'btn-default'"
+                        (select)="selectButton($event.value)"
+                        [value]="selectedButton"
+                >
+                </app-dropdown>
+            </div>
+        </div>
+        <div class="add-alo-btn-row alo-widget">
+            <span>
+                <app-checkbox [checked]="showInAdvert" (change)="toggleShowInAdvert($event)"></app-checkbox>
+                <span>{{ 'common.Alo show in advert' | translate }}</span>
+            </span>
+            <span>
+               <app-checkbox [checked]="showOnSite" (change)="toggleShowOnSite($event)"></app-checkbox>
+               <span>{{ 'common.Alo show on site' | translate }}</span>
+            </span>
+            <p></p>
+            <p class="text-muted">{{ 'common.The alo button will appear on search engine result page (Alo show in Advert) and on your landing page (Alo show on site)' | translate }}</p>
+        </div>
+        <div class="add-alo-btn-row">
+            <button class="btn btn-primary btn-sm" (click)="changeCreating(true)" *ngIf="!creatingNew">
+                <i class="fa fa-plus"></i>
+                <span class="text-uppercase">{{ 'common.Create new button' | translate }}</span>
+            </button>
+            <div class="create-new-alo-btn" *ngIf="creatingNew">
+                <form>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label>{{ 'common.Button name' | translate }}</label>
+                        <text-input></text-input>
+                    </div>
+                    <div class="form-group multi-input">
+                        <label>
+                            {{ 'common.Email notification list' | translate }}
+                            <i class="fa fa-question-circle" [tooltip]="'common.Alo Coc Coc will send notification to these emails when a Alo Cốc Cốc request is received on website' | translate"></i>
+                        </label>
+                        <div *ngFor="let email of emailList; trackBy:trackById" class="form-group-wrapper">
+                            <text-input
+                                [validateFunction]="validateEmail"
+                                [errorText]="'The email is invalid'"
+                                [required]="false"
+                                (change)="onChangeEmail(email.id, $event)"
+                            >
+                            </text-input>
+                            <i class="fa fa-times-circle" *ngIf="email.id > 1" (click)="removeEmail(email.id)"></i>
+                        </div>
+                        <button class="btn btn-primary btn-sm" (click)="addBlankEmail()" type="button">{{ 'common.Add email' | translate }}</button>
+                    </div>
+                    <div class="form-group multi-input">
+                        <label>
+                            {{ 'common.Sale manager' | translate }}
+                            <i class="fa fa-question-circle" [tooltip]="'common.Alo Cốc Cốc will connect to customers from this number' | translate"></i>
+                        </label>
+                        <div class="sale-manager-info form-group-wrapper" *ngFor="let manager of managerList; trackBy: trackById">
+                            <text-input [placeHolder]="'common.Name' | translate" (change)="onChangeManager(manager.id, 'name', $event)"></text-input>
+                            <text-input
+                                [placeHolder]="'common.Phone number' | translate"
+                                [validateFunction]="validatePhoneNumber"
+                                [errorText]="'common.The number is invalid'"
+                                (change)="onChangeManager(manager.id, 'phone', $event)"
+                            >
+                            </text-input>
+                            <i class="fa fa-times-circle" *ngIf="manager.id > 1" (click)="removeManager(manager.id)"></i>
+                        </div>
+                        <button class="btn btn-primary btn-sm" (click)="addBlankManager()" type="button">{{ 'common.Add manager' | translate }}</button>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'common.Schedule' | translate }}</label>
+                        <div>
+                            <div>
+                                <div class="schedule-option-all-time">
+                                    <app-checkbox (change)="toggleAllWorkingDay($event)" [checked]="allWorkingDay"></app-checkbox>
+                                    <span>{{ 'common.All working time' | translate }}</span>
+                                </div>
+
+                                <div *ngFor="let scheduleOption of service.getScheduleOptionsValue(allWorkingDay, service.getScheduleOptions() | async); trackBy: trackByValue" class="schedule-option">
+                                    <span class="schedule-option-label">{{ scheduleOption.label | translate }}</span>
+                                    <app-dropdown
+                                            [data]="service.fromTimeOptions"
+                                            [btnClass]="'btn-default'"
+                                            [preRender]="false"
+                                            [value]="scheduleOption.from"
+                                            (select)="service.changeSchedule(scheduleOption.value, 'from', $event.value)"
+                                    >
+                                    </app-dropdown>
+                                    <app-dropdown
+                                            [data]="service.toTimeOptions"
+                                            [btnClass]="'btn-default'"
+                                            [preRender]="false"
+                                            [value]="scheduleOption.to"
+                                            (select)="service.changeSchedule(scheduleOption.value, 'to', $event.value)"
+                                    >
+                                    </app-dropdown>
+                                    <app-checkbox
+                                            [checked]="scheduleOption.selected"
+                                            (change)="service.changeSchedule(scheduleOption.value, 'selected', $event.checked)"
+                                    >
+                                    </app-checkbox>
+                                    <p *ngIf="scheduleOption.error" class="text-danger schedule-option-warning">{{ 'common.End time is earlier than start time' | translate }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'common.Location' | translate }}</label>
+                        <location-widget (locationChange)="onLocationChange($event)"></location-widget>
+                    </div>
+                </form>
+                <div class="load-form">
+                    <button class="btn btn-primary" (click)="create()" type="button">{{ 'common.Save' | translate }}</button>&nbsp;
+                    <button class="btn btn-default" (click)="cancel()" type="button">{{ 'common.Cancel' | translate }}</button>&nbsp;&nbsp;
+                    <circle-loading *ngIf="createRequestSending"></circle-loading>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+<div class="location-widget">
+    <app-slider [percent]="top" (percentChange)="topChange($event)" [vertical]="true"></app-slider>
+    <div class="location-widget-image">
+        <img src="assets/images/qc-images/laptop-illustration.png" class="laptop-icon">
+        <div class="drag-area">
+            <div
+                class="callback-icon"
+                 (mousedown)="startMoveIcon($event)"
+                 [style.top]="top + '%'"
+                 [style.left]="left + '%'"
+            >
+            </div>
+        </div>
+    </div>
+    <app-slider [percent]="left" (percentChange)="leftChange($event)"></app-slider>
+</div>

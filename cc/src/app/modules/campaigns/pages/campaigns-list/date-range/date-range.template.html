@@ -1,0 +1,10 @@
+<div class="campaigns-list-date-range">
+    <span class="campaigns-list-date-range-label">{{ 'campaignsList.Ad stats' | translate }}:</span>
+    <app-dropdown
+            [data]="service.dateRangeOptions"
+            [classes]="['date-range transform-origin-right']"
+            (select)="onSelect($event)"
+            [value]="period"
+    >
+    </app-dropdown>
+</div>

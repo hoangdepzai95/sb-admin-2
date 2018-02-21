@@ -1,0 +1,133 @@
+<td class="campaign-select">
+    <app-checkbox
+            [checked]="isSelected"
+            (change)="selectCampaign()"
+            [disabled]="campaign.blocked"
+    >
+
+    </app-checkbox>
+</td>
+<td >
+    <span class="data-table-inline-edit-container status-edit" (click)="openInlineEdit('status')">
+        <i
+            class="fa fa-circle"
+            [ngClass]="campaign.state.status.state"
+            [tooltip]="campaign.state.status.text"
+        >
+
+        </i>
+        <i class="fa fa-sort-desc hide-icon"></i>
+        <data-table-inline-status-edit
+            *ngIf="editType === 'status'"
+            (close)="closeInlineEdit()"
+            [id]="campaign.id"
+            [endPoint]="CAMPAIGN_INLINE_EDIT_ENDPOINT"
+            [updateFunction]="campaignsListService.updateCampaign"
+        >
+        </data-table-inline-status-edit>
+    </span>
+</td>
+<td>
+    <div class="data-table-list-name-wrapper">
+        <a
+            class="campaigns-list-low_position_warning"
+            [href]="'/' + campaign.id + '/quang-cao'"
+            *ngIf="!campaign.isConformed"
+        >
+            <i
+                class="fa fa-warning"
+                [tooltip]="'common.Your ads could have a higher position' | translate"
+                placement="right"
+            >
+            </i>
+        </a>
+        <span class="data-table-inline-edit-container name-edit">
+            <i class="fa fa-lock"
+               [tooltip]="'common.This campaign is locked for a moment for editing' | translate"
+               placement="right"
+               *ngIf="campaign.blocked"
+            ></i>
+            <a
+                class="data-table_name"
+                [routerLink]="['/ads-group/list']"
+                [queryParams]="{ campaignId: campaign.id, page: 1  }"
+            >
+                {{ campaign.details.name }}
+            </a>
+            <i class="fa fa-pencil hide-icon" (click)="openInlineEdit('name')"></i>
+            <data-table-inline-name-edit
+                *ngIf="editType === 'name'"
+                [endPoint]="CAMPAIGN_INLINE_EDIT_ENDPOINT"
+                [updateFunction]="campaignsListService.updateCampaign"
+                [id]="campaign.id"
+                (close)="closeInlineEdit()"
+                [initialName]="campaign.details.name"
+            >
+            </data-table-inline-name-edit>
+        </span>
+        <p class="campaigns-list-features" *ngIf="campaign.features.alo || campaign.features.feed">
+           <span
+                   class="campaigns-list-feature"
+                   [tooltip]="'common.Alo Cốc Cốc button to your advertisement' | translate"
+                   placement="bottom"
+                   *ngIf="campaign.features.alo"
+           >
+            <span class="label">Alô Cốc Cốc</span>
+        </span>
+            <span
+                    class="campaigns-list-feature"
+                    [tooltip]="'common.Campaign is controlled by Feed' | translate"
+                    placement="bottom"
+                    *ngIf="campaign.features.feed"
+            >
+            <span class="label">Feed</span>
+        </span>
+        </p>
+        <p class="campaigns-list-campaign-detail">
+            <span class="nowrap">ID: {{ campaign.id }}</span>
+        </p>
+    </div>
+</td>
+<td class="text-right">
+    <span class="data-table-inline-edit-container budget-edit text-left nowrap" (click)="openInlineEdit('budget')">
+        <i class="fa fa-pencil hide-icon"></i>
+        {{ campaign.details.weeklyBudget ? (campaign.details.weeklyBudget | numberFormat) : ('common.Unlimited' | translate) }}
+        <inline-budget-edit
+                *ngIf="editType === 'budget'"
+                [campaign]="campaign"
+                (close)="closeInlineEdit()"
+        >
+
+        </inline-budget-edit>
+    </span>
+</td>
+<td>
+    <p>{{ campaign.details.type }}</p>
+    <span
+        class="label campaigns-list-campaign-payment_type"
+        [tooltip]="campaign.details.paymentType === 'CPC' ? ('common.Payment type' | translate) + ': CPC (cost per click)' : ('common.Payment type' | translate) + ': CPM (cost per mille)'"
+        placement="bottom"
+    >
+        {{ campaign.details.paymentType }}
+    </span>
+</td>
+<td class="text-right nowrap">{{ campaign.advertCount | numberFormat }}</td>
+<td class="text-right nowrap">{{ campaign.clicks ? (campaign.clicks | numberFormat) : 0 }}</td>
+<td class="text-right nowrap">{{ campaign.shows ? (campaign.shows | numberFormat) : 0 }}</td>
+<td class="text-right nowrap">{{ campaign.ctr | percentFormat }}</td>
+<td class="text-right nowrap">{{ campaign.avgCPC === null ? '-' : campaign.avgCPC | numberFormat }}</td>
+<td class="text-right nowrap">{{ campaign.avgCPM === null ? '-' : campaign.avgCPM | numberFormat }}</td>
+<td class="text-right nowrap">{{ campaign.spending ? (campaign.spending | numberFormat) : 0 }}</td>
+<td>
+    <span class="data-table-inline-edit-container duration-edit" (click)="openInlineEdit('duration')">
+        {{ campaign.timeEnd ? (campaign.timeStart | dateFormat) + ' - ' + (campaign.timeEnd | dateFormat) : (campaign.timeStart | dateFormat) + ' - ...'  }}
+        <i class="fa fa-pencil hide-icon"></i>
+        <inline-duration-edit
+                *ngIf="editType === 'duration'"
+                [campaign]="campaign"
+                (close)="closeInlineEdit()"
+        >
+
+        </inline-duration-edit>
+    </span>
+</td>

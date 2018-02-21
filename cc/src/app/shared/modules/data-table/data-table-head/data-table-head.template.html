@@ -1,0 +1,53 @@
+<ng-template #tableHead let-clone="clone">
+    <tr>
+        <th class="data-table-select-all" [style.width]="clone ? tableColumnsWidth[0] : null">
+            <app-checkbox [checked]="isSelectedAllRows" (change)="toggleSelectAllRows()"></app-checkbox>
+        </th>
+        <th
+                *ngFor="let field of getTableFields(); trackBy : trackBySortKey; let i = index;"
+                (click)="onSortTable(field.sortKey)"
+                [class.sorted]="sortState.sortKey === field.sortKey"
+                [style.width]="clone ? tableColumnsWidth[i + 1] : null"
+                [ngClass]="{
+                wide: field.wide,
+                'text-right': field.rightAlign,
+                'text-left': !field.rightAlign,
+                semiwide: field.semiwide,
+                thin: field.thin
+                }"
+        >
+            <div>
+                <span class="data-table-field_name" [ngClass]="getSortIconClass(field.sortKey)">
+                {{ field.langKey | translate }}
+            </span>
+            </div>
+        </th>
+    </tr>
+    <tr class="data-table-loading">
+        <div class="line-loader" *ngIf="loading" [style.width]="tableWidth">
+
+        </div>
+    </tr>
+</ng-template>
+
+<ng-template
+        [ngTemplateOutlet]="tableHead"
+        [ngTemplateOutletContext]="{ clone: false }"
+>
+</ng-template>
+
+<table
+        class="data-table data-table-fixed-head table table-hover"
+        *ngIf="showFixedHead"
+        [style.width]="tableWidth"
+        [style.top]="pageHeaderHeight || 0"
+        [style.left]="tableOffsetLeft"
+>
+    <thead>
+        <ng-template
+            [ngTemplateOutlet]="tableHead"
+            [ngTemplateOutletContext]="{ clone: true }"
+        >
+        </ng-template>
+    </thead>
+</table>

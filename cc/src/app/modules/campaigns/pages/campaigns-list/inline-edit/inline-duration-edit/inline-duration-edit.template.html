@@ -1,0 +1,16 @@
+<div class="data-table-inline-edit duration-edit slide-in-animation transform-origin-right">
+    <div class="data-table-inline-edit-body">
+        <date-range
+            [fromDate]="fromDate"
+            [toDate]="toDate"
+            (fromDateChange)="onFromDateChange($event)"
+            (toDateChange)="onToDateChange($event)"
+        >
+        </date-range>
+    </div>
+    <div class="data-table-inline-edit-footer ">
+        <button type="button" class="btn btn-primary" (click)="editDuration()">{{ 'common.Apply' | translate }}</button>
+        <button type="button" class="btn btn-white" data-dismiss="modal" (click)="cancel()">{{ 'common.Cancel' | translate }}</button>
+    </div>
+    <app-loading [loading]="loading"></app-loading>
+</div>

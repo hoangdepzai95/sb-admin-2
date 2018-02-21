@@ -1,0 +1,38 @@
+<div class="create-ads-group">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Campaign</label>
+            <div class="col-sm-8">
+                <auto-complete [placeHolder]="'Search'"></auto-complete>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Ad group name</label>
+            <div class="col-sm-8">
+                <text-input [maxLength]="130"></text-input>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Max CPC</label>
+            <div class="col-sm-8">
+                <number-input></number-input>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Geo-targeting</label>
+            <div class="col-sm-8">
+                <geo-targeting></geo-targeting>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Scheduling</label>
+            <div class="col-sm-8">
+                <ad-scheduling></ad-scheduling>
+            </div>
+        </div>
+    </form>
+</div>

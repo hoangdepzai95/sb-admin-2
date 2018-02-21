@@ -1,0 +1,83 @@
+.ad-scheduling {
+  .form-group {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .day-name {
+    display: table-cell;
+    position: relative;
+    > span {
+      position: absolute;
+      text-align: right;
+      width: 96px;
+      right: 8px;
+      top: 3px;
+    }
+  }
+
+  .day-of-week {
+    display: table-row;
+  }
+
+  .hour-cell {
+    height: 30px;
+    width: 19px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+  }
+
+  .hour-cell:hover {
+    background-color: #e0dbdb;
+  }
+
+  .hour-cell.border-right {
+    border-right: 1px solid #FFF;
+  }
+
+  .hour-cell.selected {
+    background-color: #1ab394;
+  }
+
+  .hour-of-day {
+    display: table-row;
+  }
+
+  .hour-range {
+    display: table-cell;
+  }
+
+  .hour-range-cell {
+    display: table-cell;
+    border: 1px solid #d3d3d3;
+  }
+
+  .hour-cell.border-right.selected {
+    border-right: 1px solid #d3d3d3;
+  }
+
+  .hour-cell-container {
+    display: flex;
+  }
+
+  .day-of-week-picker {
+    display: table;
+    border-collapse: collapse;
+  }
+
+  .every-day-picker {
+    margin-top: 10px;
+    .hour-cell {
+      background-color: #FFF;
+    }
+    .hour-cell:hover {
+      background-color: #e0dbdb;
+    }
+    .hour-cell.border-right {
+      border-right: 1px solid #d3d3d3;
+    }
+    .hour-cell.selected {
+      background-color: #1ab394;
+    }
+  }
+}

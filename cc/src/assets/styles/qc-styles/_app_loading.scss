@@ -1,0 +1,39 @@
+.app-loading {
+  background-color: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.line-loader {
+  height: 2px;
+  width: 100%;
+  overflow: hidden;
+  background-color: rgba(26, 179, 148, 0.22);
+  position: absolute;
+}
+.line-loader:before{
+  display: block;
+  position: absolute;
+  content: "";
+  left: -200px;
+  width: 200px;
+  height: 2px;
+  background-color: #1ab394;
+  animation: line-loader 2.5s linear infinite;
+}
+
+@keyframes line-loader {
+  from {left: -100%; width: 100%;}
+  50% {width: 100%;}
+  70% {width: 100%;}
+  80% { left: 50%;}
+  95% {left: 120%;}
+  to {left: 100%;}
+}

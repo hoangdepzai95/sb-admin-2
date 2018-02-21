@@ -1,0 +1,134 @@
+<div class="row white-bg dashboard-header new-campaign green-tooltip">
+    <div class="small-page-container">
+        <div class="campaign-types-container">
+            <div>
+                <h4>{{ 'common.Select a campaign type' | translate }}</h4>
+            </div>
+            <div class="campaign-types">
+                <div
+                        class="new-campaign-card"
+                        *ngFor="let campaignType of service.getCampaignTypeData(); trackBy: trackByValue"
+                        (click)="selectCampaignType(campaignType)"
+                        [class.minimize]="selectedType"
+                        [class.selected]="selectedType && selectedType.value === campaignType.value"
+                >
+                    <div class="new-campaign-card-header">
+                        <span>{{ campaignType.label | translate }}</span>
+                    </div>
+                    <div class="new-campaign-card-body">
+                        <img [src]="campaignType.img">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="selectedType" class="new-campaign-create">
+            <form class="form-horizontal new-campaign-form">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ 'common.Targeting options' | translate }}</label>
+                    <div class="col-sm-8 new-campaign-form-targets">
+                        <span
+                            class="new-campaign-target-label text-muted"
+                            *ngFor="let target of selectedType.targets; trackBy: trackByValue;"
+                            [tooltip]="target.description | translate"
+                        >
+                            {{ target.label | translate }}
+                        </span>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ 'common.Campaign name' | translate }}</label>
+                    <div class="col-sm-8">
+                        <text-input [maxLength]="130" (change)="onChangeCampaignName($event)"></text-input>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ 'common.Campaign duration' | translate }}</label>
+                    <div class="col-sm-8">
+                        <date-range
+                            [oneLine]="true"
+                            (fromDateChange)="onChangeDuration('from', $event)"
+                            (toDateChange)="onChangeDuration('to', $event)"
+                        >
+                        </date-range>
+                        <p class="text-muted">{{ 'common.Leave empty if you do not want to set a time limit' | translate }}</p>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div *ngIf="[21, 22].includes(selectedType.value)">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{{ 'common.Payment type' | translate }}</label>
+                        <div class="col-sm-8">
+                            <app-dropdown
+                                [data]="service.paymentTypeOptions"
+                                [btnClass]="'btn-default'"
+                                (select)="onChangePaymentType($event.value)"
+                                [value]="paymentType"
+                            >
+                            </app-dropdown>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">
+                        {{ 'common.Maximum weekly budget' | translate }}
+                    </label>
+                    <div class="col-sm-8">
+                        <number-input [min]="2000000" [max]="1000000000" (change)="onChangeMaxBudget($event)"></number-input>
+                        <p class="text-muted">{{ 'common.Leave empty if you want your budget to be unlimited' | translate }}</p>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div *ngIf="[21, 22, 23, 24].includes(selectedType.value)">
+                    <div class="form-group max-impressions-form">
+                        <label class="col-sm-4 control-label">{{ 'common.Max impressions' | translate }}</label>
+                        <div class="col-sm-8 new-campaign-form-value">
+                            <number-input [min]="1" (change)="onChangeMaxImpression('value', $event)"></number-input>
+                            <span>/user/</span>
+                            <app-dropdown
+                                    [data]="service.maxImpressionUnitOptions"
+                                    [btnClass]="'btn-default'"
+                                    (select)="onChangeMaxImpression('unit', $event.value)"
+                                    [value]="maxImpression.unit"
+                            >
+                            </app-dropdown>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                </div>
+                <div *ngIf="[10].includes(selectedType.value)">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{{ 'common.Alo Cốc Cốc button' | translate }}</label>
+                        <div class="col-sm-8">
+                            <ui-switch [size]="'small'" [(ngModel)]="enableAlo" name="alo"></ui-switch>
+                            <add-alo-btn
+                                    *ngIf="enableAlo"
+                                    (showOnSiteChange)="toggleAloShowOnSite($event)"
+                                    (showInAdvertChange)="toggleAloShowInAdvert($event)"
+                            >
+                            </add-alo-btn>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ 'common.Stat tracking' | translate }}</label>
+                    <div class="col-sm-8">
+                        <ui-switch [size]="'small'" [(ngModel)]="statTracking" name="stat"></ui-switch>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label"></label>
+                    <div class="col-sm-8 load-form">
+                        <button type="button" class="btn btn-primary" (click)="saveCampaign()">{{ 'common.Save' | translate }}</button>&nbsp;
+                        <button type="button" class="btn btn-default" (click)="backToCampaignsList()">{{ 'common.Cancel' | translate }}</button>&nbsp;&nbsp;
+                        <circle-loading *ngIf="creatingCampaign"></circle-loading>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

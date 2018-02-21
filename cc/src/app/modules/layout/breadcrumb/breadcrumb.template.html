@@ -1,0 +1,7 @@
+<ol class="breadcrumb">
+    <li *ngFor="let crumb of breadcrumbs; let last = last" [class.active]="last">
+        <a *ngIf="!last" [routerLink]="crumb.fullPath" [queryParams]="crumb.queryParams">{{ crumb.translate ? (crumb.path | translate) : crumb.path }}</a>
+        <span *ngIf="last">{{ crumb.translate ? (crumb.path | translate) : crumb.path }}</span>
+    </li>
+
+</ol>

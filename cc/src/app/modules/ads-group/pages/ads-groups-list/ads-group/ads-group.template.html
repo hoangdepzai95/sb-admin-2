@@ -1,0 +1,78 @@
+<td class="data-table-select">
+    <app-checkbox
+            [checked]="isSelected"
+            (change)="selectAdsGroup()"
+            [disabled]="adsGroup.blocked"
+    >
+
+    </app-checkbox>
+</td>
+<td>
+    <span class="data-table-inline-edit-container status-edit" (click)="openInlineEdit('status')">
+        <i
+                class="fa fa-circle"
+                [ngClass]="adsGroup.details.user_status_text"
+                [tooltip]="adsGroup.details.user_status_text"
+        >
+
+        </i>
+        <i class="fa fa-sort-desc hide-icon"></i>
+        <data-table-inline-status-edit
+                *ngIf="editType === 'status'"
+                (close)="closeInlineEdit()"
+                [id]="adsGroup.id"
+                [endPoint]="ADS_GROUP_INLINE_EDIT_ENDPOINT"
+                [updateFunction]="adsGroupService.updateAdsGroup"
+        >
+        </data-table-inline-status-edit>
+    </span>
+</td>
+<td>
+    <div class="data-table-name-wrapper">
+        <span class="data-table-inline-edit-container name-edit">
+            <a
+                class="data-table_name"
+                [routerLink]="['/keyword/list']"
+                [queryParams]="{ campaignId: adsGroup.campaignId, adsGroupId: adsGroup.id, page: 1 }"
+            >
+                {{ adsGroup.details.name }}
+            </a>
+            <i class="fa fa-pencil hide-icon" (click)="openInlineEdit('name')"></i>
+            <data-table-inline-name-edit
+                    *ngIf="editType === 'name'"
+                    [endPoint]="ADS_GROUP_INLINE_EDIT_ENDPOINT"
+                    [updateFunction]="adsGroupService.updateAdsGroup"
+                    [id]="adsGroup.id"
+                    (close)="closeInlineEdit()"
+                    [initialName]="adsGroup.details.name"
+            >
+            </data-table-inline-name-edit>
+        </span>
+    </div>
+</td>
+<td *ngIf="!(dataTableService.getInCampaignContext() | async)">
+    <a
+        [routerLink]="['/ads-group/list']"
+        [queryParams]="{ campaignId: adsGroup.campaignId, page: 1 }"
+    >
+        {{ adsGroup.campaignName }}
+    </a>
+</td>
+<td>
+    <span>{{ adsGroup.state.status }}</span>
+</td>
+<td class="text-right" >
+    <span>{{ adsGroup.stats.clicks | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ adsGroup.stats.shows | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ adsGroup.stats.ctr | percentFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ adsGroup.stats.averagePos | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ adsGroup.stats.spending | numberFormat }}</span>
+</td>

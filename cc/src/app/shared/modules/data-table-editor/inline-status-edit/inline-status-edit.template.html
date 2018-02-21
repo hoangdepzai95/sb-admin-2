@@ -1,0 +1,11 @@
+<div class="dropdown-component open data-table-inline-edit status-edit" (click)="$event.stopPropagation()">
+    <ul class="dropdown-menu slide-in-animation transform-origin-left slide-in-animation">
+        <li *ngFor="let item of USER_STATUS_OPTIONS" (click)="singleEditStatus(item.value)" >
+            <a href="javascript:void(0)">
+                <i *ngIf="item.iconClass" [class]="item.iconClass"></i>
+                {{ item.label | translate }}
+            </a>
+        </li>
+        <app-loading [loading]="isEditing"></app-loading>
+    </ul>
+</div>
