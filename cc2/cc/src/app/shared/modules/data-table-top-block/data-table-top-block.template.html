@@ -1,0 +1,23 @@
+<div class="data-table-top-block">
+    <div class="data-table-top-block-row nowrap">
+        <ng-content select="div"></ng-content>
+        <app-nested-dropdown
+                [data]="appFilterData"
+                (select)="onSelectFilter($event)"
+                [btnLabel]="'common.FILTERS'"
+                [selected]="selectedDropDownData"
+                (remove)="onRemoveFilterByDropDown($event)"
+        >
+        </app-nested-dropdown>
+        <span class="text-muted filters-add-your-filter nowrap">{{ 'common.Add filters to narrow the data you are seeing' | translate }}.</span>
+    </div>
+    <app-filters
+            [data]="appFilterData"
+            [fullData]="fullFilterData"
+            [ignoreList]="ignoreFilterIds"
+            (selectedDropDownDataChange)="onSelectedDropDownDataChange($event)"
+            [name]="filterName"
+            (filterChange)="onFilterChange()"
+    >
+    </app-filters>
+</div>

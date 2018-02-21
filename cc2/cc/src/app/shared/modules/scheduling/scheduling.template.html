@@ -1,0 +1,61 @@
+<div class="ad-scheduling">
+    <form role="form">
+        <div class="form-group">
+            <label>Ad Duration</label>
+            <div>
+                <date-range [oneLine]="true"></date-range>
+                <p class="text-muted">You can select a date range and a daily schedule (by hour) for your ad to be displayed. If you do not need ad scheduling you can leave these fields blank.</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Ad Scheduling</label>
+            <div class="ad-scheduling-picker">
+                <div class="day-of-week-picker">
+                    <div class="hour-of-day">
+                        <div class="day-name"></div>
+                        <div *ngFor="let hourRange of HOUR_RANGES" class="hour-range">
+                            {{ hourRange.label }}
+                        </div>
+                    </div>
+                    <div class="day-of-week" *ngFor="let day of DAY_OF_WEEK">
+
+                        <div class="day-name">
+                            <span>{{ day.label | translate }}</span>
+                        </div>
+                        <div class="hour-range-cell" *ngFor="let hourRange of HOUR_RANGES">
+                            <div class="hour-cell-container">
+                                <div
+                                        class="hour-cell"
+                                        *ngFor="let hour of [1, 2, 3]"
+                                        [class.border-right]="hour === 1 || hour === 2"
+                                        [class.selected]="isSelected(day.value, hourRange.value + hour)"
+                                        (click)="toggleSchedule(day.value, hourRange.value + hour)"
+                                >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="day-of-week-picker every-day-picker">
+                    <div class="day-of-week">
+                        <div class="day-name">
+                            <span>Every day</span>
+                        </div>
+                        <div class="hour-range-cell" *ngFor="let hourRange of HOUR_RANGES">
+                            <div class="hour-cell-container">
+                                <div
+                                        class="hour-cell"
+                                        *ngFor="let hour of [1, 2, 3]"
+                                        [class.border-right]="hour === 1 || hour === 2"
+                                        [class.selected]="isSelectedEveryDay(hourRange.value + hour)"
+                                        (click)="toggleSelectEveryDay(hourRange.value + hour)"
+                                >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

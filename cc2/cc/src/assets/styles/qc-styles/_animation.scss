@@ -1,0 +1,51 @@
+.dropdown-component .dropdown-menu, .nested-dropdown .dropdown-menu, .dropdown .dropdown-menu {
+  display: block;
+  transform: scale(0, 0);
+  transition: transform 218ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left top 0px;
+}
+
+.dropdown-component.transform-origin-right .dropdown-menu, .dropdown-menu.transform-origin-right, .transform-origin-right {
+  transform-origin: right top 0px;
+}
+
+.dropdown-component.is_open .dropdown-menu, .nested-dropdown.is_open .dropdown-menu, .dropdown.open .dropdown-menu {
+  transform: scale(1, 1);
+}
+
+@keyframes slide-in {
+  0%   {transform: scale(0, 0);}
+  100% {transform: scale(1, 1);}
+}
+
+@keyframes slide-in-opacity {
+  0%   {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+@keyframes slide-in-compose-effect {
+  0%   {opacity: 0; max-height: 1px; visibility: hidden}
+  100% {opacity: 1; max-height: 4000px; visibility: visible}
+}
+
+.slide-in-opacity-animation  {
+  animation-name: slide-in-opacity;
+  animation-duration: 180ms;
+}
+
+.slide-in-animation, .dropdown-component .slide-in-animation {
+  transform: scale(1, 1);
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-name: slide-in;
+  animation-duration: 180ms;
+}
+
+.transform-origin-left {
+  transform-origin: left top 0px;
+}
+
+.slide-in-compose-effect-animation {
+  animation-name: slide-in-compose-effect;
+  transition-timing-function: ease-out;
+  animation-duration: 1000ms;
+}

@@ -1,0 +1,10 @@
+<div class="number-input" [class.has-error]="hasErrors">
+    <input
+        type="text"
+        (input)="onChange($event)"
+        class="form-control"
+        [ngModel]="value"
+    >
+    <p class="text-danger" *ngIf="errors.min">{{ 'common.Min value is' | translate }} {{ min }}</p>
+    <p class="text-danger" *ngIf="errors.max">{{ 'common.Max value is' | translate }} {{ max }}</p>
+</div>

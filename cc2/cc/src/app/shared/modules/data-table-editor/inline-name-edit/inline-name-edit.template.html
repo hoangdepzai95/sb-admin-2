@@ -1,0 +1,25 @@
+<div class="data-table-inline-edit slide-in-animation" (click)="$event.stopPropagation()">
+    <div class="data-table-inline-edit-body {{ name.invalid && (name.dirty || name.touched) ? 'has-error' : '' }}">
+        <p
+            *ngIf="name.invalid && (name.dirty || name.touched)"
+            class="text-danger"
+        >
+            {{ 'common.This field is required' | translate }}
+        </p>
+        <input
+                id="name"
+                autocomplete="off"
+                class="form-control"
+                appName
+                [(ngModel)]="editingName"
+                #name="ngModel"
+                [maxlength]="MAX_NAME_LENGTH"
+                (keydown.enter)="onEnter()"
+        >
+    </div>
+    <div class="data-table-inline-edit-footer ">
+        <button type="button" class="btn btn-primary" (click)="editName()" [disabled]="name.invalid && (name.dirty || name.touched)">{{ 'common.Rename' | translate }}</button>
+        <button type="button" class="btn btn-white" data-dismiss="modal" (click)="cancel()">{{ 'common.Cancel' | translate }}</button>
+    </div>
+    <app-loading [loading]="loading"></app-loading>
+</div>

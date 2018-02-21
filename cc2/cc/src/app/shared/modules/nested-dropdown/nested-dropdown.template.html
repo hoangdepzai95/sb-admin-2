@@ -1,0 +1,33 @@
+<div class="nested-dropdown-container nowrap">
+    <button class="btn btn-default nested-dropdown-btn dropdown-toggle" (click)="toggleDropdown()">
+        <span>{{ btnLabel | translate }}</span>
+        <span class="caret"></span>
+    </button>
+    <div class="nested-dropdown open" [class.is_open]="isOpen">
+        <ul class="dropdown-menu">
+            <li *ngFor="let item of data; trackBy: trackByValue" (click)="onClickItem(item, $event, isParentSelected(item.value))" [class.no-children]="item.children.length < 2">
+                <a *ngIf="openedItem.value !== item.value" href="javascript:void(0)">
+                    <i class="fa fa-check icon-right" *ngIf="isParentSelected(item.value) && item.children.length === 1"></i>
+                    <i class="fa fa-chevron-right icon-right" *ngIf="item.children.length > 1"></i>
+                    {{ item.label | translate }}
+                </a>
+                <a *ngIf="openedItem.value === item.value" href="javascript:void(0)">
+                    <i class="fa fa-check icon-right" *ngIf="isParentSelected(item.value) && item.children.length === 1"></i>
+                    <i class="fa fa-chevron-down icon-right" *ngIf="item.children.length > 1"></i>
+                    {{ item.label | translate }}
+                </a>
+                <ul
+                    *ngIf="openedItem.value === item.value && openedItem.children.length > 1"
+                    class="nested-dropdown-children dropdown-menu slide-in-compose-effect-animation"
+                >
+                    <li *ngFor="let child of item.children; trackBy: trackByValue" (click)="onSelectedChildren(child, item, $event, isChildSelected(child.value, item.value))">
+                        <a href="javascript:void(0)">
+                            <i class="fa fa-check icon-left" *ngIf="isChildSelected(child.value, item.value)"></i>
+                            {{ child.label | translate }}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>

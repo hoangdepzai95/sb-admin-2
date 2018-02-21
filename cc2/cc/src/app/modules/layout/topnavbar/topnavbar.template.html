@@ -1,0 +1,28 @@
+<div class="row border-bottom">
+    <nav class="navbar navbar-fixed-top" id="page_header" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <a class="minimalize-styl-2 toggle-navigation-btn" (click)="toggleNavigation()"><i class="fa fa-bars"></i> </a>
+            <a class="navbar-top-logo" [routerLink]="['/']">Quảng Cáo Cốc Cốс</a>
+        </div>
+        <app-breadcrumb></app-breadcrumb>
+        <ul class="nav navbar-top-links navbar-right">
+            <li class="dropdown" app-notification>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fa fa-sign-out"></i>
+                 {{ 'common.Sign out' | translate }}
+                </a>
+            </li>
+            <li>
+                <div
+                    class="icon-lang {{ translate.currentLang === 'vi' ? 'en' : 'vi' }}"
+                    (click)="changeLang()"
+                >
+                </div>
+            </li>
+
+        </ul>
+
+    </nav>
+</div>

@@ -1,0 +1,10 @@
+<div class="geo-targeting">
+    <auto-complete
+        (getData)="searchRegion($event)"
+        [loading]="service.getSearchingRegion() | async"
+        [data]="service.getRegionsOptions(service.getRegions() | async)"
+        (select)="selectRegion($event)"
+    >
+    </auto-complete>
+    <div id="google_map"></div>
+</div>

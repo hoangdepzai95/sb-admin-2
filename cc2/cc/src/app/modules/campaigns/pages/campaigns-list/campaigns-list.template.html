@@ -1,0 +1,51 @@
+<div class="row white-bg dashboard-header campaigns-list">
+    <campaigns-list-date-range></campaigns-list-date-range>
+    <data-table-top-block
+        [filterName]="'campaign_list'"
+        [appFilterData]="filterService.getAppFiltersData()"
+        [fullFilterData]="filterService.getFullFiltersData()"
+        [ignoreFilterIds]="['campaign_status']"
+    >
+        <div>
+            <a class="btn btn-primary" [routerLink]="['/campaigns/new']">
+                <i class="fa fa-plus"></i>
+                <span class="text-uppercase">{{ 'common.Create new campaign' | translate }}</span>
+            </a>
+            <data-table-multi-status-edit
+                [endPoint]="MULTI_EDIT_CAMPAIGN_STATUS_ENDPOINT"
+            >
+            </data-table-multi-status-edit>
+            <div class="general-filter">
+                <span class="general-filter-label">{{ 'campaignsList.Show campaigns' | translate }}:</span>
+                <app-single-filter
+                        [filterData]="filterService.filterByStatusData.children"
+                        [parentId]="'campaign_status'"
+                >
+                </app-single-filter>
+            </div>
+        </div>
+    </data-table-top-block>
+    <data-table
+            [tableFields]="service.tableFields"
+            [defaultSortKey]="'-createAt'"
+            [getRowsDataFunc]="service.getCampaigns"
+            [name]="'campaign_list'"
+            [selectedRowsTexts]="service.selectedRowsText"
+            [notFoundText]="'common.No campaigns found'"
+    >
+        <tbody>
+            <!-- todo: DRY code for isSelected -->
+            <tr
+                *ngFor="let campaign of (dataTableService.getObservableDataTable() | async).items"
+                campaigns-list-campaign
+                [campaign]="campaign"
+                [isSelected]="dataTableService.isSelectedRow(campaign.id, dataTableService.getSelectedRows() | async)"
+                [ngClass]="'campaign-' + campaign.state.status.state"
+                [class.disabled]="campaign.blocked"
+                [class.selected]="dataTableService.isSelectedRow(campaign.id, dataTableService.getSelectedRows() | async)"
+                [@fadeInAnimation]
+            >
+            </tr>
+        </tbody>
+    </data-table>
+</div>

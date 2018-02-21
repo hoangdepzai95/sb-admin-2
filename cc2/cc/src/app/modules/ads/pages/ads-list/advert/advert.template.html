@@ -1,0 +1,72 @@
+<td class="data-table-select">
+    <app-checkbox
+            [checked]="isSelected"
+            (change)="selectAdvert()"
+            [disabled]="advert.blocked"
+    >
+
+    </app-checkbox>
+</td>
+<td>
+    <span class="data-table-inline-edit-container status-edit" (click)="openInlineEdit('status')">
+        <i
+                class="fa fa-circle"
+                [ngClass]="advert.details.user_status_text"
+                [tooltip]="advert.details.user_status_text"
+        >
+
+        </i>
+        <i class="fa fa-sort-desc hide-icon"></i>
+        <data-table-inline-status-edit
+                *ngIf="editType === 'status'"
+                (close)="closeInlineEdit()"
+                [id]="advert.id"
+                [endPoint]="ADVERT_INLINE_EDIT_ENDPOINT"
+                [updateFunction]="adsListService.updateAdvert"
+        >
+        </data-table-inline-status-edit>
+    </span>
+</td>
+<td>
+    <div class="advert-title">
+        {{ advert.details.title }}
+    </div>
+    <div>
+        <p class="advert-url">{{ cutLongText(advert.details.url, 50) }}</p>
+    </div>
+    <div>
+        {{ advert.details.description }}
+    </div>
+</td>
+<td *ngIf="!((dataTableService.getInCampaignContext() | async) && (dataTableService.getInAdsGroupContext() | async))">
+    <a
+        [routerLink]="['/ads/list']"
+        [queryParams]="{ campaignId: advert.campaignId, adsGroupId: advert.adsGroupId }"
+    >
+        {{ advert.adsGroupName }}
+    </a>
+</td>
+<td *ngIf="!(dataTableService.getInCampaignContext() | async)">
+    <a [routerLink]="['/ads/list']" [queryParams]="{ campaignId: advert.campaignId }">{{ advert.campaignName }}</a>
+</td>
+<td>
+    <span>{{ getAdvertType(advert.type) | translate }}</span>
+</td>
+<td>
+    <span>{{ advert.state.status }}</span>
+</td>
+<td class="text-right" >
+    <span>{{ advert.stats.clicks | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ advert.stats.shows | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ advert.stats.ctr | percentFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ advert.stats.averagePos | numberFormat }}</span>
+</td>
+<td class="text-right">
+    <span>{{ advert.stats.spending | numberFormat }}</span>
+</td>

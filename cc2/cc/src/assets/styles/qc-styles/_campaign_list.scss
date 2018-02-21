@@ -1,0 +1,86 @@
+
+.campaigns-list .invisible {
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.campaign-select {
+  position: relative;
+}
+
+.campaigns-list .date-range {
+  margin-left: 3px;
+}
+
+.campaigns-list-date-range-label {
+  vertical-align: middle;
+}
+
+.campaigns-list .filter-search {
+  max-width: 250px;
+  margin-left: 20px;
+}
+
+.campaign-stopped {
+  color: $red;
+  .campaigns-list-campaign_name {
+    color: $red;
+  }
+}
+
+.campaigns-list .campaign-archived {
+  color: #999999;
+}
+
+.campaigns-list-campaign-detail {
+  padding-left: 5px;
+}
+
+.campaigns-list-campaign-payment_type {
+  cursor: help;
+}
+
+.campaigns-list-low_position_warning {
+  padding-left: 5px;
+  color: #f8ac59;
+  cursor: pointer;
+}
+
+.campaigns-list-low_position_warning:hover {
+  color: #f8ac59;
+}
+
+.campaigns-list .campaigns-list-loading_campaigns {
+  td {
+    padding: 0;
+  }
+}
+
+.campaigns-list-features {
+  padding: 2px 5px;
+  margin-bottom: 5px;
+}
+
+.campaigns-list-feature {
+  cursor: help;
+}
+
+.campaigns-list-date-range {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  app-dropdown {
+    position: relative;
+  }
+  .input-group-btn {
+    position: static;
+  }
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}

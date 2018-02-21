@@ -1,0 +1,20 @@
+<div class="data-table-inline-edit slide-in-animation" (click)="$event.stopPropagation()">
+    <div class="data-table-inline-edit-body {{ errors.min || errors.max ? 'has-error' : '' }}">
+        <p class="text-danger" *ngIf="errors.min">{{ 'campaignsList.Min value is' | translate }} {{ MIN_WEEK_BUDGET }}</p>
+        <p class="text-danger" *ngIf="errors.max">{{ 'campaignsList.Max value is' | translate }} {{ MAX_WEEK_BUDGET }}</p>
+        <input
+            type="text"
+            class="form-control input-sm"
+            [ngModel]="budget"
+            (input)="onChangeBudget($event)"
+            (keydown.enter)="changeBudget()"
+        />
+        <br>
+        <p>{{ 'common.Leave empty if you want your budget to be unlimited' | translate }}</p>
+    </div>
+    <div class="data-table-inline-edit-footer ">
+        <button type="button" class="btn btn-primary" (click)="changeBudget()">{{ 'common.Apply' | translate }}</button>
+        <button type="button" class="btn btn-white" data-dismiss="modal" (click)="cancel()">{{ 'common.Cancel' | translate }}</button>
+    </div>
+    <app-loading [loading]="loading"></app-loading>
+</div>

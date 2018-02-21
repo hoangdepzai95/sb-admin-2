@@ -1,0 +1,37 @@
+<div class="data-table-pagination">
+    <data-table-selected-rows
+            *ngIf="isMainComponent"
+            [totalItems]="total"
+    >
+    </data-table-selected-rows>
+    <div></div>
+    <div class="data-table-pagination-main_content">
+        <div>
+            <span class="data-table-show-rows-label">{{ 'campaignsList.Show rows' | translate }}:</span>
+            <app-dropdown
+                    [data]="dataTableService.pageLimitOptions"
+                    [classes]="['campaigns-page-limit']"
+                    (select)="onChangeLimit($event)"
+                    [value]="limit"
+            >
+            </app-dropdown>
+        </div>
+        <pagination
+                *ngIf="total > -1"
+                [totalItems]="total"
+                [maxSize]="5"
+                [itemsPerPage]="limit"
+                [firstText]="'«'"
+                [previousText]="'‹'"
+                [nextText]="'›'"
+                [lastText]="'»'"
+                [boundaryLinks]="true"
+                [rotate]="false"
+                (pageChanged)="changePage($event)"
+                [class.hide]="numsPage < 2"
+                [(ngModel)]="currentPage"
+        >
+        </pagination>
+        <strong class="data-table-pagination-current_range">{{ total ? offset + 1 : 0 }}-{{ offset + limit > total ? total : (offset + limit) }} {{ 'campaignsList.of' | translate }} {{ total }}</strong>
+    </div>
+</div>

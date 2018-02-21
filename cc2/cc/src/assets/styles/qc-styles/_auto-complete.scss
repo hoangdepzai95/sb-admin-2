@@ -1,0 +1,25 @@
+.auto-complete-group-btn {
+  position: relative;
+  circle-loading {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    transform: scale(0.6, 0.6);
+  }
+}
+
+auto-complete {
+  display: flex;
+  .auto-complete {
+    flex: 1;
+  }
+  li.focus {
+    background-color: #f5f5f5;
+  }
+  li:not(.focus):hover > a {
+    background-color: #FFF !important;
+  }
+  li i.fa {
+    margin-right: 15px;
+  }
+}

@@ -1,0 +1,19 @@
+<div class="data-table-selected-rows" *ngIf="selectedRows.length" [@fadeInAnimation]>
+    <span><strong>{{ isSelectedTotalItems ? totalItems : selectedRows.length }}</strong>
+        {{(isSelectedAllRows ? selectedRowsTexts.selectedRows : selectedRowsTexts.selectedRowsOnPage) | translate }}.</span>
+    <span
+            class="data-table-selected-rows-selected_all"
+            *ngIf="isSelectedAllRows && selectedRows.length < totalItems"
+    >
+        <a
+                href="javascript:void(0)"
+                *ngIf="!isSelectedTotalItems"
+                (click)="selectTotalItems()"
+        >
+            <span>{{ 'common.Select all' | translate }}</span>
+            <strong>{{ totalItems }}</strong>
+            <span>{{ selectedRowsTexts.filtered | translate }}.</span>
+        </a>
+        <a href="javascript:void(0)" *ngIf="isSelectedTotalItems" (click)="deselectTotalItems()">{{ 'common.Deselect all' | translate }}</a>
+    </span>
+</div>

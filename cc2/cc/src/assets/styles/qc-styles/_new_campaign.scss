@@ -1,0 +1,116 @@
+.new-campaign-card {
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 2px 0px;
+  border-radius: 4px;
+  transition-duration: 0.5s;
+  transition-timing-function: ease;
+  transition-delay: initial;
+  transition-property: all;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  width: 160px;
+  margin: 4px;
+  cursor: pointer;
+
+}
+
+.new-campaign-card:not(.minimize):hover {
+  margin-top: 0px;
+  margin-bottom: 6px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px 0px;
+}
+
+.campaign-types {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-left: -4px;
+}
+
+.new-campaign-card-body {
+  padding: 8px;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+  transition-property: height;
+  height: 150px;
+}
+
+.new-campaign-card.minimize {
+  .new-campaign-card-body {
+    padding: 0;
+    height: 0;
+  }
+}
+
+
+.new-campaign-card.minimize:not(.selected) {
+  .new-campaign-card-header {
+    background-color: #f5f5f5;
+    color: $text-color;
+  }
+  .new-campaign-card-header:hover {
+    background-color: #1ab394;
+    color: #FFF;
+  }
+}
+
+.new-campaign-card-header {
+  padding: 5px 0;
+  text-align: center;
+  background-color: #1ab394;
+  color: #FFF;
+  user-select: none;
+}
+
+.new-campaign-target-label {
+  background-color: #f5f5f5;
+  display: inline-block;
+  padding: 3px 8px 5px 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  cursor: help;
+}
+
+.new-campaign-form {
+  .dropdown-selected-label {
+    font-weight: normal;
+  }
+  .dropdown-menu {
+    min-width: auto;
+  }
+  .caret {
+    margin-left: 13px;
+  }
+
+  .max-impressions-form .new-campaign-form-value {
+    display: flex;
+    align-items: center;
+    input {
+      width: 150px;
+    }
+    > span {
+      margin: 0 15px;
+    }
+  }
+  .switch {
+    top: 5px;
+  }
+  .add-alo-btn {
+    margin-top: 10px;
+  }
+}
+
+.new-campaign-form-value {
+  position: relative;
+}
+
+.new-campaign-create {
+  margin-top: 40px;
+}
+
+.new-campaign {
+  .load-form {
+    display: flex;
+  }
+}

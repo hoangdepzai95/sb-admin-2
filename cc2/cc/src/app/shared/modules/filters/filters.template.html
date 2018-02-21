@@ -1,0 +1,86 @@
+<div class="filters" *ngIf="filters.length">
+    <div class="filters-items-container">
+        <div class="filters-items" *ngFor="let filter of filters">
+            <div class="filters-item filters-editing_filter" *ngIf="filter.isEditing">
+                <div class="filters-item-wrapper">
+                    <span class="filters-item-name">{{ filter.label | translate }}</span>
+                    <ng-container *ngIf="filter.inputType === 'options'">
+                        <app-dropdown
+                                [data]="filter.selfOptions"
+                                [value]="filter.value"
+                                [preRender]="true"
+                                (select)="onChangeFilterWithOptionsInput(filter, $event)"
+                        >
+
+                        </app-dropdown>
+                    </ng-container>
+                    <app-dropdown
+                            *ngIf="filter.operatorOptions.length"
+                            [data]="filter.operatorOptions"
+                            [value]="filter.operator"
+                            [preRender]="true"
+                            [classes]="['thin']"
+                            (select)="onChangeOperator(filter, $event)"
+                    >
+
+                    </app-dropdown>
+                    <input
+                            *ngIf="filter.inputType === 'number' || filter.inputType === 'percent'"
+                            class="form-control"
+                            type="number"
+                            (input)="onChangeFilterValue(filter.id, $event)"
+                            [value]="filter.value"
+                            (keydown.enter)="filter.value.toString().trim() === '' ? null : onSaveFilter(filter)"
+                    />
+                    <span *ngIf="filter.inputType === 'percent'">&nbsp;&nbsp;%</span>
+                    <input
+                            *ngIf="filter.inputType === 'text'"
+                            class="form-control"
+                            type="text"
+                            (input)="onChangeFilterValue(filter.id, $event)"
+                            [value]="filter.value"
+                            (keydown.enter)="filter.value.toString().trim() === '' ? null : onSaveFilter(filter)"
+                    />
+                    <my-date-picker
+                        *ngIf="filter.inputType === 'date'"
+                        name="mydate"
+                        [options]="myDatePickerOptions"
+                        required
+                        [locale]="langService.getCurrentLang()"
+                        [placeholder]="filter.value ? getSavedFilterValue(filter) : ('common.select a day' | translate)"
+                        (dateChanged)="onDateFilterChanged(filter.id, $event)"
+                    >
+
+                    </my-date-picker>
+                    <button
+                            class="btn-xs btn-default filters-item-apply_btn"
+                            (click)="onSaveFilter(filter)"
+                            [disabled]="filter.value.toString().trim() === ''"
+                    >
+                        {{ 'common.Apply' | translate }}
+                    </button>
+                    <i class="fa fa-times filters-item-remove_btn" (click)="onRemoveFilter(filter)"></i>
+                </div>
+            </div>
+            <div
+                    class="filters-item filter-saved_item"
+                    *ngIf="filter.saved && !filter.isEditing"
+                    (click)="switchFromSavedToEditing(filter.id)"
+            >
+            <span class="filters-item-name">
+                {{ filter.label | translate }}
+                :
+                <strong *ngIf="filter.operatorOptions.length">&nbsp;{{ getOperatorLabel(filter) }}</strong>
+                <span>&nbsp;{{ getSavedFilterValue(filter) }}</span>
+            </span>
+                <i class="fa fa-times filters-item-remove_btn" (click)="onRemoveFilter(filter)"></i>
+            </div>
+        </div>
+    </div>
+    <div
+        class="filters-clear-all"
+        *ngIf="filters.length"
+    >
+        <span (click)="onClearAllFilter()" class="nowrap">{{ 'common.Clear' | translate }}<i class="fa fa-times-circle"></i></span>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+<div class="keyword row white-bg dashboard-header">
+    <data-table-top-block
+            [filterName]="'keyword'"
+            [appFilterData]="filterService.getAppFiltersData()"
+            [fullFilterData]="filterService.getFullFiltersData()"
+            [ignoreFilterIds]="['keyword_status']"
+    >
+        <div>
+            <button class="btn btn-primary">
+                <i class="fa fa-plus"></i>
+                <span class="text-uppercase">{{ 'common.Create new keyword' | translate }}</span>
+            </button>
+            <data-table-multi-status-edit
+                    [endPoint]="MATCH_MULTI_EDIT_STATUS_ENDPOINT"
+            >
+            </data-table-multi-status-edit>
+            <div class="general-filter">
+                <span class="general-filter-label">{{ 'common.Show keywords' | translate }}:</span>
+                <app-single-filter
+                        [filterData]="filterService.filterByStatusData.children"
+                        [parentId]="'keyword_status'"
+                >
+                </app-single-filter>
+            </div>
+        </div>
+    </data-table-top-block>
+    <data-table
+            [tableFields]="service.tableFields"
+            [defaultSortKey]="'campaign_name'"
+            [getRowsDataFunc]="service.getKeywords"
+            [name]="'keyword'"
+            [selectedRowsTexts]="service.selectedRowsTexts"
+            [notFoundText]="'common.No keywords found'"
+    >
+        <tbody>
+        <tr
+                *ngFor="let keyword of (dataTableService.getObservableDataTable() | async).items"
+                keyword
+                [keyword]="keyword"
+                [isSelected]="dataTableService.isSelectedRow(keyword.id, dataTableService.getSelectedRows() | async)"
+                [class.disabled]="keyword.blocked"
+                [class.selected]="dataTableService.isSelectedRow(keyword.id, dataTableService.getSelectedRows() | async)"
+                [@fadeInAnimation]
+        >
+        </tr>
+        </tbody>
+    </data-table>
+</div>

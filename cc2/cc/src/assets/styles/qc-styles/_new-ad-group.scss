@@ -1,0 +1,16 @@
+#google_map {
+  height: 250px;
+}
+
+.new-ads-group {
+  #google_map {
+    border: 1px solid #e5e6e7;
+    border-top: none;
+  }
+  .ad-scheduling {
+    margin-top: 7px;
+    .ad-scheduling-picker {
+      margin-top: 10px;
+    }
+  }
+}
