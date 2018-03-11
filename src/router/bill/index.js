@@ -147,7 +147,6 @@ class Home extends Component {
     });
   }
   onChange(type, field, e) {
-      console.log(field, e)
     const value = e.target.value;
     if (type === 'customer' && field === 'phone' && value.length > 44) return;
     const target = _.cloneDeep(this.state[type]);
@@ -602,6 +601,14 @@ class Home extends Component {
   closeShowProducts() {
       this.setState({ showProducts: false });
   }
+
+  groupDistrictColor() {
+      const bills = this.props.bills[this.state.page] || [];
+      let group = _.groupBy(bills, o => o.district_color.trim());
+      group = Object.keys(group).map(o => ({ color: `#${o}`, qty: group[o].length }))
+      return group;
+  }
+
   render() {
     const { user, total } = this.props;
     const { showForm,
@@ -750,7 +757,7 @@ class Home extends Component {
               enable={enableFilterDate}
               onChange={this.onChangeFilterDate}
             />
-            <div className="text-center">
+            <div className="text-center pagination-block">
                <Pagination
                   prev
                   next
@@ -763,6 +770,13 @@ class Home extends Component {
                   activePage={page}
                   onSelect={this.handleSelectPage.bind(this)}
                 />
+                <div className="group-color">
+                    {
+                        this.groupDistrictColor().map((group) => {
+                            return (<span style={{ color: group.color }}>{ group.qty }&nbsp;</span>)
+                        })
+                    }
+                </div>
             </div>
               <table className="table table-striped table-bordered table-hover bill-table">
                 <thead>

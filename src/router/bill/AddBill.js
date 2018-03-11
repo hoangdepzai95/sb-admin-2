@@ -244,9 +244,8 @@ class AddBill extends Component {
   }
   onChangePhone(e) {
     e.preventDefault();
-    const phone = e.target.value;
-
-    this.props.onChange.call(this.props.parent, 'customer', 'phone', e);
+    const phone = e.target.value.replace(/\D/g, '');
+    this.props.onChange.call(this.props.parent, 'customer', 'phone', { target: { value: phone } });
     if (phone.length > 3) {
       this.debouncedSearchCustomer(phone);
     }
