@@ -242,6 +242,7 @@ class Home extends Component {
       page: 1,
       enableFilterDate: false,
       idFilterStatus: [],
+      keyword: ''
     }, () => {
       this.getTotal();
       this.getBills();
