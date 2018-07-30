@@ -151,7 +151,7 @@ router.get('/search', (req, res) => {
           query.push(`b.facebook LIKE '${keywords}'`);
           break;
         case 'phone':
-          query.push(`b.facebook LIKE '${keywords}'`);
+          query.push(`customer.phone LIKE '${keywords}'`);
           break;
         case 'customer_name':
           query.push(`b.customer_name LIKE '${keywords}'`);
