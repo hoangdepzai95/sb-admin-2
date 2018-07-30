@@ -53,10 +53,13 @@ class Changelog extends Component {
         return 'facebook';
       case 'customer_name':
         return 'Tên khách hàng';
-      case 'province':
+      case '_province':
         return 'Tỉnh/Thành phố';
-     case 'district':
+     case '_district':
         return 'Quận/Huyện';
+
+      case '_ward':
+      return 'Phường/Xã';
       default:
         return null;
     }

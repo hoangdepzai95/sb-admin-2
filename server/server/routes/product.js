@@ -3,7 +3,7 @@ const multer  = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
 const mime = require('mime');
-const getRootPath = require('../../../util');
+const util = require('../../../util');
 
 const express = require('express');
 
@@ -11,7 +11,7 @@ const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, `${getRootPath()}/uploads/images`)
+    cb(null, `${util.getRootPath()}/uploads/images`)
   },
   filename: function (req, file, cb) {
     crypto.pseudoRandomBytes(16, function (err, raw) {

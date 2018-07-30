@@ -3,10 +3,53 @@ const _ = require('lodash');
 const multer  = require('multer');
 const express = require('express');
 const xlsx =  require('node-xlsx');
-const getRootPath = require('../../../util');
+const util = require('../../../util');
 const router = express.Router();
-
 const upload  = multer({ storage: multer.memoryStorage() });
+
+const billSelectSql = `SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
+district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
+province.name AS _province, district.name AS _district, district.shipping AS district_shipping, district.shipping_time,
+ward.name AS _ward`;
+
+const billJoinSql = `LEFT JOIN customer ON b.customer_id = customer.id
+LEFT JOIN status ON b.status_id = status.id
+LEFT JOIN user ON b.user_id = user.id
+LEFT JOIN district ON b.district_id = district.districtid
+LEFT JOIN province ON b.province_id = province.provinceid
+LEFT JOIN ward ON b.ward_id = ward.wardid`;
+
+const selectProductSql = `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
+INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
+WHERE bill_detail.bill_id IN (?)`;
+
+function parseProducts(bills, products) {
+  const groupProduct = _.groupBy(products, 'bill_id');
+  for (let bill of bills) {
+    const billProducts = groupProduct[bill.id] || [];
+    bill.products = billProducts || [];
+    bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
+  }
+
+  return bills;
+}
+
+async function getBillById(id) {
+
+  return new Promise((resolve, reject) => {
+    pool.query(`
+        ${billSelectSql}
+        FROM (SELECT * FROM bill WHERE bill.id = ${id}) AS b
+        ${billJoinSql}
+      `, (error, bills) => {
+          pool.query(selectProductSql, 
+            bills.map( o => o.id), (err, products) => {
+              resolve(parseProducts(bills, products)[0]);
+            }
+          )
+      });
+  });
+}
 
 router.get('/', (req, res) => {
   const page = req.query.page;
@@ -22,15 +65,9 @@ router.get('/', (req, res) => {
   pool.getConnection((err, con) => {
       if (err) return res.status(400).send('Error');
       con.query(`
-            SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
-            district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
-            province.name AS _province, district.name AS _district, district.shipping AS district_shipping, district.shipping_time
+            ${billSelectSql}
             FROM (SELECT * FROM bill ${whereSql} ORDER BY id DESC LIMIT ${perPage}  OFFSET ${offset} ) as b
-            INNER JOIN customer ON b.customer_id = customer.id
-            INNER JOIN status ON b.status_id = status.id
-            INNER JOIN user ON b.user_id = user.id
-            INNER JOIN district ON b.district_id = district.districtid
-            INNER JOIN province ON b.province_id = province.provinceid
+            ${billJoinSql}
             `, (error, bills) => {
       if (error) {
         console.log(error);
@@ -43,22 +80,14 @@ router.get('/', (req, res) => {
           return;
         }
         con.query(
-          `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
-           INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
-           WHERE bill_detail.bill_id IN (?)`
+          selectProductSql
         ,[bills.map(o => o.id)], (error, products) => {
           if (error) {
             console.log(error);
             res.status(400).send('Error');
             con.release();
           } else {
-            const groupProduct = _.groupBy(products, 'bill_id');
-            for (let bill of bills) {
-              const billProducts = groupProduct[bill.id] || [];
-              bill.products = billProducts || [];
-              bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
-            }
-            res.status(200).json(_.sortBy(bills, 'id').reverse());
+            res.status(200).json(_.sortBy(parseProducts(bills, products), 'id').reverse());
             con.release();
           }
         })
@@ -93,29 +122,60 @@ router.get('/search', (req, res) => {
   const multiKeyword = req.query.q.split(',').length > 1 ;
   const type = req.query.type;
   const page = req.query.page;
+  const fields = (req.query.fields || '').split(',').filter(o => o);
   const perPage = +req.query.per_page;
   const offset = (page - 1) * perPage;
   let sql;
   let condition;
   if (multiKeyword) {
-    condition = `WHERE bill.code REGEXP '${keywords}'`
+    condition = `WHERE b.code REGEXP '${keywords}'`
   } else if (type === 'phone') {
     condition = `WHERE customer.phone = '${keywords}'`;
   } else if (type === 'id') {
-    condition = `WHERE bill.id = '${keywords}'`;
+    condition = `WHERE b.id = '${keywords}'`;
   } else if (type === 'duplicate') {
-    condition = `WHERE bill.duplicate = '2'`;
+    condition = `WHERE b.duplicate = '2'`;
   } else {
-    condition = `WHERE customer.phone LIKE '%${keywords}%' OR bill.facebook LIKE '%${keywords}%' OR bill.code LIKE '%${keywords}%' OR bill.customer_name LIKE '%${keywords}%'`;
+    condition = `WHERE customer.phone LIKE '%${keywords}%' OR b.facebook LIKE '%${keywords}%' OR b.code LIKE '%${keywords}%' OR b.customer_name LIKE '%${keywords}%'`;
   }
+
+  if (fields.length && keywords) {
+    const query = [];
+
+    for (let field of fields) {
+      switch(field) {
+        case 'code':
+          query.push(`b.code LIKE '${keywords}'`);
+          break;
+        case 'facebook':
+          query.push(`b.facebook LIKE '${keywords}'`);
+          break;
+        case 'phone':
+          query.push(`b.facebook LIKE '${keywords}'`);
+          break;
+        case 'customer_name':
+          query.push(`b.customer_name LIKE '${keywords}'`);
+          break;
+        case 'note':
+          query.push(`b.note LIKE '${keywords}'`);
+          break;
+        case 'address':
+        query.push(`b.address LIKE '${keywords}' OR ward.name LIKE '${keywords}' OR district.name LIKE '${keywords}' OR province.name LIKE '${keywords}'`);
+        break;
+      }
+    }
+
+    condition = `WHERE ${query.join(' OR ')}`;
+  }
+
   if (req.query.mode === 'count') {
     sql = `
-     SELECT COUNT(bill.id) AS bills
-     FROM bill
-     INNER JOIN customer ON bill.customer_id = customer.id
-     INNER JOIN status ON bill.status_id = status.id
-     INNER JOIN user ON bill.user_id = user.id
+     SELECT COUNT(b.id) AS bills
+     FROM (SELECT * FROM bill) AS b
+     ${billJoinSql}
      ${condition}`;
+
+     console.log(sql, 'count sql')
      pool.getConnection((err, con) => {
          if (err) return res.status(400).send('Error');
          con.query(sql, (error, result) => {
@@ -130,15 +190,9 @@ router.get('/search', (req, res) => {
      });
   } else {
     sql = `
-     SELECT bill.*, user.full_name AS user_name, customer.phone, status.name AS status, status.color,
-     district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
-     province.name AS _province, district.name AS _district, district.shipping AS district_shipping, district.shipping_time
-     FROM bill
-     INNER JOIN customer ON bill.customer_id = customer.id
-     INNER JOIN status ON bill.status_id = status.id
-     INNER JOIN user ON bill.user_id = user.id
-     INNER JOIN district ON bill.district_id = district.districtid
-     INNER JOIN province ON bill.province_id = province.provinceid
+     ${billSelectSql}
+     FROM (SELECT * FROM bill) AS b
+     ${billJoinSql}
      ${condition}
      ORDER BY id DESC
      LIMIT ${perPage} OFFSET ${offset};
@@ -157,22 +211,14 @@ router.get('/search', (req, res) => {
            return;
          }
          con.query(
-           `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
-            INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
-            WHERE bill_detail.bill_id IN (?)`
+          selectProductSql
          ,[bills.map(o => o.id)], (error, products) => {
            if (error) {
              console.log(error);
              res.status(400).send('Error');
              con.release();
            } else {
-             const groupProduct = _.groupBy(products, 'bill_id');
-             for (let bill of bills) {
-               const billProducts = groupProduct[bill.id] || [];
-               bill.products = billProducts || [];
-               bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
-             }
-             res.status(200).json(bills);
+             res.status(200).json(parseProducts(bills, products));
              con.release();
            }
          })
@@ -317,6 +363,7 @@ router.put('/change_status', (req, res) => {
               res.status(400).send('Error');
               con.release();
             } else {
+              util.emitUpdateBill(req, `sửa trạng thái đơn hàng ID: ${bills.map(o => o.id).join(', ')}`);
               res.status(200).send('Ok');
               // write log
               writeLog();
@@ -324,6 +371,7 @@ router.put('/change_status', (req, res) => {
             }
           });
         } else {
+          util.emitUpdateBill(req, `sửa trạng thái đơn hàng ID: ${bills.map(o => o.id).join(', ')}`);
           res.status(200).send('Ok');
           // write log
           writeLog();
@@ -363,6 +411,7 @@ router.put('/not_duplicate/:id', (req, res) => {
         res.status(400).send('Error');
         con.release();
       } else {
+        util.emitUpdateBill(req, `kiểm tra đơn hàng ID: ${req.params.id}`);
         res.status(200).send('Ok');
         con.release();
       }
@@ -379,6 +428,7 @@ router.put('/duplicate/:id', (req, res) => {
         res.status(400).send('Error');
         con.release();
       } else {
+        util.emitUpdateBill(req, `báo trùng đơn hàng ID: ${req.params.id}`);
         res.status(200).send('Ok');
         con.release();
       }
@@ -418,6 +468,7 @@ router.post('/', (req, res) => {
                   return [product.product_id, product.quantity, result.insertId];
                 })
                 if (!products.length) {
+                  util.emitUpdateBill(req, `tạo đơn hàng mới`);
                   res.status(200).send('Ok');
                   con.release();
                   return;
@@ -427,6 +478,7 @@ router.post('/', (req, res) => {
                   console.log(error);
                   res.status(400).send('Error');
                 }else{
+                  util.emitUpdateBill(req, `tạo đơn hàng mới`);
                   res.status(200).json(results);
                   con.release();
                 }
@@ -448,6 +500,7 @@ router.post('/', (req, res) => {
               return [product.product_id, product.quantity, result.insertId];
             })
             if (!products.length) {
+              util.emitUpdateBill(req, `tạo đơn hàng mới`);
               res.status(200).send('Ok');
               con.release();
               return;
@@ -457,6 +510,7 @@ router.post('/', (req, res) => {
               console.log(error);
               res.status(400).send('Error');
             }else{
+              util.emitUpdateBill(req, `tạo đơn hàng mới`);
               res.status(200).json(results);
               con.release();
             }
@@ -499,6 +553,7 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
             current_status_id = statusId
           };
           if (!current_status_id) {
+            util.emitUpdateBill(req, `cập nhật đơn bằng file excel`);
             res.status(200).json({ message: `Có lỗi xảy ra, ${updated.length}/${bills.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có mã ${bill[0]}` });
             con.release();
             stop = true;
@@ -508,6 +563,7 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
           con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
           if (error) {
             console.log(error);
+            util.emitUpdateBill(req, `cập nhật đơn bằng file excel`);
             res.status(200).json({ message: `Có lỗi xảy ra, ${updated.length}/${bills.length} hóa đơn đã được cập nhật, lỗi ở hóa đơn có mã ${bill[0]}` });
             con.release();
             stop = true;
@@ -515,6 +571,7 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
           } else {
             updated.push(bill);
             if (updated.length === bills.length) {
+              util.emitUpdateBill(req, `cập nhật đơn bằng file excel`);
               res.status(200).json({ message: `Cập nhật thành công, ${updated.length} hóa đơn đã được cập nhật` });
             }
           }
@@ -525,19 +582,25 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
   });
 });
 
-router.put('/', (req, res) => {
-  const bill = req.body.bill_info;
-  const originBill = req.body.origin_bill;
-  const changes = { user: req.body.user_full_name, data: [] };
-  const newProductInfo = req.body.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
-  for (let field in bill) {
-    if ((bill[field] !== originBill[field]) && field !== 'products'){
-      changes.data.push({ field, origin: originBill[field], changeto: bill[field] });
+function getBillChanges(userName, oldBill, newBill) {
+  const changes = { user: userName, data: [] }
+  const newProductInfo = newBill.products_info;
+  for (let field in newBill) {
+    if ((newBill[field] !== oldBill[field]) && field !== 'products'){
+      changes.data.push({ field, origin: oldBill[field], changeto: newBill[field] });
     }
   }
-  if (originBill.products_info !== newProductInfo) {
-    changes.data.push({ field: 'products_info', origin: originBill.products_info, changeto: newProductInfo});
+  if (oldBill.products_info !== newProductInfo) {
+    changes.data.push({ field: 'products_info', origin: oldBill.products_info, changeto: newProductInfo});
   }
+
+  return changes;
+}
+
+router.put('/', async (req, res) => {
+  const bill = req.body.bill_info;
+  const oldBill = await getBillById(bill.id);
+ 
   if (req.body.origin_status_id == 11 && bill.status_id != 11) {
     bill.user_id = req.body.user_id;
   }
@@ -560,19 +623,23 @@ router.put('/', (req, res) => {
           return [product.product_id, product.quantity, bill.id];
         })
         if (!products.length) {
+          util.emitUpdateBill(req, `sửa đơn hàng ID: ${bill.id}`);
           res.status(200).send('Ok');
           con.release();
           return;
         }
-        con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], function (error, results) {
+        con.query('INSERT INTO bill_detail (product_id, quantity, bill_id) VALUE ?', [products], async (error, results) => {
         if (error) {
           console.log(error);
           res.status(400).send('Error');
           con.release();
         }else{
+          util.emitUpdateBill(req, `sửa đơn hàng ID: ${bill.id}`);
           res.status(200).json(results);
           // write log
           if (req.body.write_log != 1) return;
+          const newBill = await getBillById(bill.id);
+          const changes = getBillChanges(req.body.user_full_name, oldBill, newBill);
           con.query('INSERT INTO bill_changelog SET ?', { bill_id: bill.id, create_at: (new Date()).valueOf(), content: JSON.stringify(changes) }, (error, result) => {
             if (error) {
               console.log(error);
@@ -612,6 +679,7 @@ router.delete('/:id', (req, res) => {
                     res.status(400).send('Error');
                     con.release();
                   } else {
+                    util.emitUpdateBill(req, `xóa đơn hàng ID: ${id}`);
                     res.status(200).send('Ok');
                     con.release();
                   }
@@ -871,6 +939,24 @@ router.get('/district', (req, res) => {
       });
     });
 })
+
+router.get('/ward', (req, res) => {
+  const keyword = req.query.q;
+  pool.getConnection(function(err, con) {
+    if (err) return res.status(400).send('Error');
+    con.query(`SELECT ward.name, ward.wardid FROM ward INNER JOIN district ON district.districtid = ward.districtid WHERE district.name = '${keyword}'` , function (error, results) {
+    if (error) {
+      console.log(error);
+      res.status(400).send('Error');
+      con.release();
+    }else{
+      res.status(200).json(results);
+      con.release();
+    }
+    });
+  });
+})
+
 router.get('/fix', (req, res) => {
     pool.getConnection(function(err, con) {
       if (err) return res.status(400).send('Error');

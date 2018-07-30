@@ -19,6 +19,15 @@ class Sidebar extends Component {
       samplePagesCollapsed: true,
     };
   }
+
+  componentWillMount() {
+    window.sibarComponent = this;
+  }
+
+  componentWillUnmount() {
+    window.sibarComponent = null;
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.user.userId && !this.props.user.userId) {
       this.getChangelog();
@@ -80,10 +89,13 @@ class Sidebar extends Component {
         return 'facebook';
       case 'customer_name':
         return 'Tên khách hàng';
-      case 'province':
+      case '_province':
        return 'Tỉnh/Thành phố';
-     case 'district':
+     case '_district':
        return 'Quận/Huyện';
+
+    case '_ward':
+      return 'Phường/Xã';
       default:
         return null;
     }

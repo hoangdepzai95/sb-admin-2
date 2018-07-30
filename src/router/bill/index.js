@@ -33,8 +33,10 @@ class Home extends Component {
         note: '',
         _province: '',
         _district: '',
+        _ward: '',
         province_id: '',
         district_id: '',
+        ward_id: '',
         decrease: 0,
         code: '',
         status_id: null,
@@ -48,6 +50,7 @@ class Home extends Component {
       keyword: '',
       searchType: '',
       idFilterStatus: [],
+      searchOptionsValue: '',
       selectedBills: [],
       singleBill: null,
       showChangeStatus: false,
@@ -58,7 +61,8 @@ class Home extends Component {
       showProducts: false,
       products_info: ''
     };
-    this.onSearchBill = _.debounce(this.onSearchBill, 1000);
+    this.onSearchBill = _.debounce(this.onSearchBill, 500);
+
   }
   componentWillMount() {
     const phone = this.getQueryStringValue('phone');
@@ -68,7 +72,14 @@ class Home extends Component {
     } else if (id) {
       this.onSearchBill(id, 'id');
     }
+
+    window.billComponent = this;
   }
+
+  componentWillUnmount() {
+    window.billComponent = null;
+  }
+
   componentDidMount() {
     const { loaded, currentPage,status } = this.props;
     const phone = this.getQueryStringValue('phone');
@@ -131,6 +142,17 @@ class Home extends Component {
         },
         products: [],
       });
+
+      if ((bill._province || '').trim()) {
+         this.addBill.getDistrict(bill._province)
+         
+      }
+
+      if ((bill._ward || '').trim()) {
+         this.addBill.getWard(bill._district);
+         
+      }
+
     } else {
       this.setState({
         customer: {
@@ -172,9 +194,7 @@ class Home extends Component {
   handleSelectPage(page) {
     const { bills } = this.props;
     this.setState({ page: page }, () => {
-      if (!bills[page]) {
-        this.getBills();
-      }
+      this.getBills();
     });
   }
   getStatus() {
@@ -210,6 +230,12 @@ class Home extends Component {
       this.getBills();
     });
   }
+
+  onSelectSearchOPtions(value) {
+    this.setState({ searchOptionsValue: value });
+    this.onSearchBill(this.state.keyword);
+  }
+
   clearAll() {
     this.setState({
       mode: 'normal',
@@ -244,7 +270,7 @@ class Home extends Component {
     this.searchBill(keyword, type, page);
   }
   searchBill(keyword, type = '', page) {
-    axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}`)
+    axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}&fields=${this.state.searchOptionsValue}`)
       .then(
         (res) => {
           this.props.dispatch(receiveBill(res.data, page));
@@ -256,7 +282,7 @@ class Home extends Component {
   }
   getTotalSearch(keyword, type = '', page) {
     const { mode, idFilterStatus } = this.state;
-    return axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}&mode=count`, ).then(
+    return axios.get(`/auth/bill/search?q=${keyword}&type=${type}&page=${page}&per_page=${PER_PAGE}&mode=count&fields=${this.state.searchOptionsValue}`, ).then(
       (res) => {
         this.props.dispatch(receiveTotalBill(res.data.quantity));
       }
@@ -330,7 +356,7 @@ class Home extends Component {
           categories,
           quantity,
           bill.address,
-          `${bill.address || ''}, ${bill._district}, ${bill._province}`,
+          `${bill.address || ''}, ${bill._ward}, ${bill._district}, ${bill._province}`,
           bill.province_custom_id,
           bill.district_custom_id,
           bill.pay || 0,
@@ -429,14 +455,13 @@ class Home extends Component {
           products = products.concat(bill.products);
       }
       products = _.groupBy(products, 'name');
-      console.log( products)
       const header = [
           'Sản phẩm',
           'Số lượng'
       ];
       let products_infos = [];
       for (let product_name in products) {
-          products_infos.push(`${product_name}: ${products[product_name].length}`);
+          products_infos.push(`${product_name}: ${_.sumBy(products[product_name], 'quantity')}`);
       }
       this.setState({
           showProducts: true,
@@ -609,6 +634,39 @@ class Home extends Component {
       return group;
   }
 
+  getInstance(instance) {
+    this.addBill = instance;
+  }
+
+  getSearchOptions() {
+    return [
+      {
+        value: 'code',
+        label: 'Mã'
+      },
+      {
+        value: 'facebook',
+        label: 'Facebook'
+      },
+      {
+        value: 'phone',
+        label: 'Số điện thoại'
+      },
+      {
+        value: 'address',
+        label: 'Địa chỉ'
+      },
+      {
+        value: 'customer_name',
+        label: 'Tên khách'
+      },
+      {
+        value: 'note',
+        label: 'Ghi chú'
+      }
+    ]
+  }
+
   render() {
     const { user, total } = this.props;
     const { showForm,
@@ -619,6 +677,7 @@ class Home extends Component {
         page,
         mode,
         idFilterStatus,
+        searchOptionsValue,
         selectedBills,
         showChangeStatus,
         originBill,
@@ -667,6 +726,17 @@ class Home extends Component {
             onChange={this.onChangeSearchBill.bind(this)}
             />
             <p></p>
+            <Select
+            name="form-field-name"
+            options={this.getSearchOptions()}
+            placeholder="Tìm theo"
+            searchable= {false}
+            multi
+            simpleValue
+            onChange={this.onSelectSearchOPtions.bind(this)}
+            value={searchOptionsValue}
+            />
+            <p></p>
           </Col>
           <Col md={3}>
             <Button bsStyle="primary" onClick={this.filterDuplicate.bind(this)}>
@@ -690,6 +760,7 @@ class Home extends Component {
                 onChange={this.onChange}
                 customer={customer}
                 billInfo={billInfo}
+                getInstance={this.getInstance.bind(this)}
                 products={products}
                 changeProduct={this.changeProduct.bind(this)}
                 page={page}
@@ -859,6 +930,11 @@ class Home extends Component {
                           </td>
                           <td>
                           {bill.address}
+                          {
+                              _.trim(bill._ward) ?
+                              <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill._ward}</p>
+                              : null
+                          }
                           {
                               _.trim(bill._district) ?
                               <p style={{color: `#${bill.district_color || '8EC13E'}`}}>{bill._district}</p>

@@ -5,6 +5,9 @@ import _ from 'lodash';
 import axios from 'axios';
 import base64 from 'js-base64';
 import { receiveUser } from '../actions/fetchData';
+import socketIOClient from 'socket.io-client';
+import { API_ENDPOINT } from '../config';
+import jwtDecode from 'jwt-decode';
 
 export function getUser(dispatch) {
   const tooken = localStorage.getItem('access_token');
@@ -58,6 +61,40 @@ export function listenToAjax() {
         });
       }
       origOpen.apply(this, arguments);
-      this.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('access_token')}`);
+      if (!url.includes('socket.io')) {
+       this.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('access_token')}`);
+      }
   };
+}
+
+function getAccessToken() {
+  return localStorage.getItem('access_token') || '';
+}
+
+function getTokenPayload() {
+  const token = getAccessToken();
+  return jwtDecode(token);
+}
+
+export function setUpSocket() {
+  const socket = socketIOClient(API_ENDPOINT.replace('/api', ''));
+  socket.on('connect', () => {
+      console.log('socket connected');
+  });
+
+  socket.on('updateBill', (dataString) => {
+    console.log('update order')
+    const data = JSON.parse(dataString);
+    if (data.username !== getTokenPayload().username) {
+        if (window.billComponent) {
+          window.billComponent.getBills();
+        }
+
+        if (window.sibarComponent) {
+          window.sibarComponent.getChangelog();
+        }
+
+        toastr.success(data.message, '', { timeOut: 6000, positionClass: 'toast-bottom-right' });
+    }
+  });
 }

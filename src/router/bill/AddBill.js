@@ -27,12 +27,15 @@ class AddBill extends Component {
       searchProducts: [],
       searchProvince: [],
       searchDistrict: [],
+      searchWard: [],
       loadingProduct: false,
       loadedBillDetail: false,
     };
     this.searchProduct = _.debounce(this.searchProduct, 1000);
     this.debouncedSearchCustomer = _.debounce(this.searchCustomer, 1000);
     this.onSearchProvince = _.debounce(this.onSearchProvince, 500);
+
+    this.props.getInstance(this);
   }
   componentWillUpdate(nextProps) {
     if(nextProps.showForm && !this.props.showForm) {
@@ -176,6 +179,7 @@ class AddBill extends Component {
           note: billInfo.note,
           province_id: billInfo.province_id,
           district_id: billInfo.district_id,
+          ward_id: billInfo.ward_id,
           customer_id: addedCustomer.id,
           code: billInfo.code,
           decrease: billInfo.decrease || 0,
@@ -264,6 +268,13 @@ class AddBill extends Component {
           return o;
       })
   }
+  getWardOption(data) {
+    return data.map(o => {
+        o.value = o.wardid;
+        o.label = o.name;
+        return o;
+    })
+}
   onSearchProvince(keyword) {
       if (keyword.length >= 1) {
           axios.get(`/auth/bill/search/province?q=${keyword}`)
@@ -297,22 +308,44 @@ class AddBill extends Component {
             }
         )
   }
+  getWard(district) {
+    axios.get(`/auth/bill/ward?q=${district}`)
+      .then(
+          (res) => {
+              console.log(res)
+              this.setState({ searchWard: this.getWardOption(res.data) })
+          },
+          (error) => {
+
+          }
+      )
+}
   onSelectDistrict(e) {
       const { onChange, parent } = this.props;
       onChange.call(parent, 'billInfo', '_district', { target: { value: e.name}});
       window.setTimeout(() => {
           onChange.call(parent, 'billInfo', 'district_id', { target: { value: e.districtid}});
       }, 0);
+
+      this.getWard(e.name);
+  }
+
+  onSelectWard(e) {
+    const { onChange, parent } = this.props;
+      onChange.call(parent, 'billInfo', '_ward', { target: { value: e.name}});
+      window.setTimeout(() => {
+          onChange.call(parent, 'billInfo', 'ward_id', { target: { value: e.wardid}});
+      }, 0);
   }
   onChangeRealPrice2(v) {
       const { onChange, parent } = this.props;
       onChange.call(parent, 'billInfo', 'don_si', { target: { value: v}});
   }
-  render() {
-    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict } = this.state;
+  render() { 
+    const { newcustomer, addedCustomer, searchProducts, loadingProduct, loadedBillDetail, phone, searchProvince, searchDistrict, searchWard } = this.state;
     const { showForm, close, type, onChange, parent, customer, billInfo, products, changeProduct } = this.props;
     return (
-          <Modal show={showForm} onHide={close} dialogClassName="custom-modal">
+          <Modal show={showForm} onHide={close} dialogClassName="custom-modal" backdrop={'static'}>
           <Modal.Header closeButton>
             <Modal.Title>{type === 'add' ? 'Tạo đơn hàng' : 'Sửa đơn hàng'}</Modal.Title>
           </Modal.Header>
@@ -516,6 +549,24 @@ class AddBill extends Component {
                         <p className="text-center">{billInfo._district}</p>
                       </Col>
                     </FormGroup>
+                    <FormGroup >
+                      <Col componentClass={ControlLabel} sm={2}>
+                        Phường/Xã
+                      </Col>
+                      <Col sm={6}>
+                          <Select
+                            name="form-field-name"
+                            options={searchWard}
+                            placeholder="Tìm phường/xã"
+                            noResultsText="Không tìm thấy"
+                            searchable= {true}
+                            onChange={this.onSelectWard.bind(this)}
+                          />
+                      </Col>
+                      <Col sm={4}>
+                        <p className="text-center">{billInfo._ward}</p>
+                      </Col>
+                    </FormGroup>
                     <FormGroup>
                       <Col componentClass={ControlLabel} sm={2}>
                         Phí ship
@@ -580,6 +631,9 @@ class AddBill extends Component {
                   </Form>
                 </Panel>
                 <div className="text-right">
+                  <Button active onClick={close} bsClass="left btn btn-default">
+                      Hủy
+                    </Button>&nbsp;
                 {
                   type === 'add' ?
                   <Button bsStyle="success" active onClick={this.beforeCreateBill.bind(this)} >

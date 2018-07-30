@@ -7,6 +7,7 @@
     "base-64": "^0.1.0",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.17.2",
+    "compression": "^1.7.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "crypto": "^1.0.1",
@@ -18,6 +19,7 @@
     "jquery": "^3.2.1",
     "js-base64": "^2.1.9",
     "jsonwebtoken": "^7.4.2",
+    "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
     "mime": "^1.3.6",
     "moment": "^2.18.1",
@@ -41,8 +43,9 @@
     "recharts": "^1.0.0-alpha.4",
     "redux": "^3.7.2",
     "shortid": "^2.2.8",
-    "socket.io": "^2.0.3",
-    "socket.io-client": "^2.0.3",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1",
+    "toastr": "^2.1.4",
     "ws": "^3.1.0"
   },
   "scripts": {
