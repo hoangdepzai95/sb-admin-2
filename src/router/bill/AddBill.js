@@ -172,6 +172,7 @@ class AddBill extends Component {
 
     if (!billInfo.province_id || !billInfo.district_id || !billInfo.ward_id) {
       window.toastr.error('Chưa đủ thông tin Tỉnh, Quận hoặc Xã');
+      return;
     }
 
     if (type === 'edit') {
