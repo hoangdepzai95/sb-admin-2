@@ -170,9 +170,21 @@ class AddBill extends Component {
       return;
     }
 
-    if (!billInfo.province_id || !billInfo.district_id || !billInfo.ward_id) {
-      window.toastr.error('Chưa đủ thông tin Tỉnh, Quận hoặc Xã');
-      return;
+    if (billInfo.status_id !== 11) {
+      if (!billInfo.province_id) {
+        window.toastr.error('Chưa chọn Tỉnh/Thành Phố');
+        return;
+      }
+
+      if (!billInfo.district_id) {
+        window.toastr.error('Chưa chọn Quận/Huyện');
+        return;
+      }
+
+      if (!billInfo.ward_id) {
+        window.toastr.error('Chưa chọn Phường/Xã');
+        return;
+      }
     }
 
     if (type === 'edit') {
