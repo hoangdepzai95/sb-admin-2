@@ -162,13 +162,18 @@ class AddBill extends Component {
     const { addedCustomer } = this.state;
     const billInfo = _.cloneDeep(this.props.billInfo);
     if (!billInfo.status_id) {
-      window.alert('Chưa chọn trạng thái');
+      window.toastr.error.alert('Chưa chọn trạng thái');
       return;
     }
     if (!addedCustomer) {
-      window.alert('Chưa có khách hàng');
+      window.toastr.error('Chưa có khách hàng');
       return;
     }
+
+    if (!billInfo.province_id || !billInfo.district_id || !billInfo.ward_id) {
+      window.toastr.error('Chưa đủ thông tin Tỉnh, Quận hoặc Xã');
+    }
+
     if (type === 'edit') {
       const originStatus = status.find(o => o.id == originBill.status_id);
       axios.put('/auth/bill', {
