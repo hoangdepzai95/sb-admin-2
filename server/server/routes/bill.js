@@ -139,28 +139,29 @@ router.get('/search', (req, res) => {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR b.facebook LIKE '%${keywords}%' OR b.code LIKE '%${keywords}%' OR b.customer_name LIKE '%${keywords}%'`;
   }
 
-  if (fields.length && keywords) {
+  if (fields.length && req.query.q) {
+    const keyword = (req.query.q || '').trim();
     const query = [];
 
     for (let field of fields) {
       switch(field) {
         case 'code':
-          query.push(`b.code LIKE '${keywords}'`);
+          query.push(`b.code LIKE '%${keyword}%'`);
           break;
         case 'facebook':
-          query.push(`b.facebook LIKE '${keywords}'`);
+          query.push(`b.facebook LIKE '%${keyword}%'`);
           break;
         case 'phone':
-          query.push(`customer.phone LIKE '${keywords}'`);
+          query.push(`customer.phone LIKE '%${keyword}%'`);
           break;
         case 'customer_name':
-          query.push(`b.customer_name LIKE '${keywords}'`);
+          query.push(`b.customer_name LIKE '%${keyword}%'`);
           break;
         case 'note':
-          query.push(`b.note LIKE '${keywords}'`);
+          query.push(`b.note LIKE '%${keyword}%'`);
           break;
         case 'address':
-        query.push(`b.address LIKE '${keywords}' OR ward.name LIKE '${keywords}' OR district.name LIKE '${keywords}' OR province.name LIKE '${keywords}'`);
+        query.push(`b.address LIKE '%${keyword}%' OR ward.name LIKE '%${keyword}%' OR district.name LIKE '%${keyword}%' OR province.name LIKE '%${keyword}%'`);
         break;
       }
     }
@@ -175,7 +176,6 @@ router.get('/search', (req, res) => {
      ${billJoinSql}
      ${condition}`;
 
-     console.log(sql, 'count sql')
      pool.getConnection((err, con) => {
          if (err) return res.status(400).send('Error');
          con.query(sql, (error, result) => {
@@ -194,7 +194,7 @@ router.get('/search', (req, res) => {
      FROM (SELECT * FROM bill) AS b
      ${billJoinSql}
      ${condition}
-     ORDER BY id DESC
+     ORDER BY b.id DESC
      LIMIT ${perPage} OFFSET ${offset};
    `;
    pool.getConnection((err, con) => {

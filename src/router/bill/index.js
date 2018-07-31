@@ -148,7 +148,7 @@ class Home extends Component {
          
       }
 
-      if ((bill._ward || '').trim()) {
+      if ((bill._district || '').trim()) {
          this.addBill.getWard(bill._district);
          
       }
