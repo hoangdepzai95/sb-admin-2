@@ -162,7 +162,7 @@ class AddBill extends Component {
     const { addedCustomer } = this.state;
     const billInfo = _.cloneDeep(this.props.billInfo);
     if (!billInfo.status_id) {
-      window.toastr.error.alert('Chưa chọn trạng thái');
+      window.toastr.error('Chưa chọn trạng thái');
       return;
     }
     if (!addedCustomer) {
