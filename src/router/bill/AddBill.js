@@ -157,10 +157,22 @@ class AddBill extends Component {
       this.createBill();
     }
   }
+
+  trimAddress(address) {
+    const req = /!|@| |%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/;
+
+    while (req.test(address[address.length - 1])) {
+      address = address.slice(0, address.length - 1);
+    }
+
+    return address;
+  }
+
   createBill() {
     const { products, user, type, close, page, originBill, status } = this.props;
     const { addedCustomer } = this.state;
     const billInfo = _.cloneDeep(this.props.billInfo);
+    billInfo.address = this.trimAddress(billInfo.address);
     if (!billInfo.status_id) {
       window.toastr.error('Chưa chọn trạng thái');
       return;
@@ -312,7 +324,7 @@ class AddBill extends Component {
       window.setTimeout(() => {
           onChange.call(parent, 'billInfo', 'province_id', { target: { value: e.provinceid}});
       }, 0);
-      this.getDistrict(e.name);
+      this.getDistrict(e.provinceid);
   }
   getDistrict(province) {
       axios.get(`/auth/bill/district?q=${province}`)
@@ -345,7 +357,7 @@ class AddBill extends Component {
           onChange.call(parent, 'billInfo', 'district_id', { target: { value: e.districtid}});
       }, 0);
 
-      this.getWard(e.name);
+      this.getWard(e.districtid);
   }
 
   onSelectWard(e) {

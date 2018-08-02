@@ -143,13 +143,13 @@ class Home extends Component {
         products: [],
       });
 
-      if ((bill._province || '').trim()) {
-         this.addBill.getDistrict(bill._province)
+      if ((bill.province_id || '').trim()) {
+         this.addBill.getDistrict(bill.province_id)
          
       }
 
-      if ((bill._district || '').trim()) {
-         this.addBill.getWard(bill._district);
+      if ((bill.district_id || '').trim()) {
+         this.addBill.getWard(bill.district_id);
          
       }
 

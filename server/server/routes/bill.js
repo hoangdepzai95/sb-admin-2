@@ -927,7 +927,7 @@ router.get('/district', (req, res) => {
     const keyword = req.query.q;
     pool.getConnection(function(err, con) {
       if (err) return res.status(400).send('Error');
-      con.query(`SELECT district.name, district.districtid FROM district INNER JOIN province ON district.provinceid = province.provinceid WHERE province.name = '${keyword}'` , function (error, results) {
+      con.query(`SELECT district.name, district.districtid FROM district INNER JOIN province ON district.provinceid = province.provinceid WHERE province.provinceid = '${keyword}'` , function (error, results) {
       if (error) {
         console.log(error);
         res.status(400).send('Error');
@@ -944,7 +944,7 @@ router.get('/ward', (req, res) => {
   const keyword = req.query.q;
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
-    con.query(`SELECT ward.name, ward.wardid FROM ward INNER JOIN district ON district.districtid = ward.districtid WHERE district.name = '${keyword}'` , function (error, results) {
+    con.query(`SELECT ward.name, ward.wardid FROM ward INNER JOIN district ON district.districtid = ward.districtid WHERE district.districtid = '${keyword}'` , function (error, results) {
     if (error) {
       console.log(error);
       res.status(400).send('Error');
