@@ -881,7 +881,7 @@ class Home extends Component {
                             </Button>
                             &nbsp;
                             {
-                              user.role == 1 || user.role == 2 ?
+                              user.role == 1 ?
                               <Button className="btn-bill-edit" bsStyle="danger" bsSize="xs" active onClick={this.deleteBill.bind(this, bill.id)}>
                                 Xóa
                               </Button>
