@@ -357,7 +357,7 @@ class Home extends Component {
           categories,
           quantity,
           bill.address,
-          `${bill.address || ''}, ${bill._ward}, ${bill._district}, ${bill._province}`,
+          [bill.address, bill._ward, bill._district, bill._province].filter(o => (o || '').trim()).join(', '),
           bill.province_custom_id,
           bill.district_custom_id,
           bill.pay || 0,

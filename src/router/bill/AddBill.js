@@ -172,7 +172,9 @@ class AddBill extends Component {
     const { products, user, type, close, page, originBill, status } = this.props;
     const { addedCustomer } = this.state;
     const billInfo = _.cloneDeep(this.props.billInfo);
-    billInfo.address = this.trimAddress(billInfo.address);
+    if (billInfo.address) {
+      billInfo.address = this.trimAddress(billInfo.address);
+    }
     if (!billInfo.status_id) {
       window.toastr.error('Chưa chọn trạng thái');
       return;
