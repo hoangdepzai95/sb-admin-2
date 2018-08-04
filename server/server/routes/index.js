@@ -29,7 +29,7 @@ function createAccessToken(username, full_name, role, userId) {
     sub: "lalaland|gonto",
     jti: genJti(), // unique identifier for the token
     alg: 'HS256'
-  }, 'hoangdepzai');
+  }, 'hoangdepzai2');
 }
 
 function getUserScheme(req) {
@@ -40,7 +40,7 @@ function getUserScheme(req) {
 }
 
 const jwtCheck = xjwt({
-  secret: 'hoangdepzai',
+  secret: 'hoangdepzai2',
   audience: 'nguyen',
   issuer: 'hoang',
 });
@@ -93,6 +93,9 @@ router.post('/login', function(req, res) {
     });
   });
 });
+
+router.use('/auth', jwtCheck);
+
 router.use('/auth/user', user);
 router.use('/auth/product', product);
 router.use('/auth/bill', bill);
