@@ -30,6 +30,7 @@ class Home extends Component {
       real_price_2: '',
       id_category: null,
       filterByRealPrice: false,
+      care_time: null
     };
   }
   componentDidMount() {
@@ -74,6 +75,7 @@ class Home extends Component {
         real_price: product.real_price,
         real_price_2: product.real_price_2,
         id_category: product.id_category,
+        care_time: product.care_time
       });
     } else {
       this.setState({
@@ -86,6 +88,7 @@ class Home extends Component {
         real_price: '',
         real_price_2: '',
         id_category: null,
+        care_time: null
       });
     }
   }
@@ -121,7 +124,7 @@ class Home extends Component {
   }
   addProduct(e) {
     e.preventDefault();
-    const { name, code, quantity, type, id, instock, file, price, id_category, real_price, real_price_2 } = this.state;
+    const { name, code, quantity, type, id, instock, file, price, id_category, real_price, real_price_2, care_time } = this.state;
     if (name.length < 1 || !price) {
       window.alert('Tên và giá sản phẩm không được bỏ trống');
       return;
@@ -139,6 +142,7 @@ class Home extends Component {
       real_price: real_price || 0,
       real_price_2: real_price_2 || 0,
       id_category,
+      care_time
     };
     if (type === 'edit') product.id = id;
     const formData = new FormData();
@@ -200,7 +204,7 @@ class Home extends Component {
   }
   render() {
     const { products, user, noProduct } = this.props;
-    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category, real_price, real_price_2, filterByRealPrice } = this.state;
+    const { showForm, name, username, password, role, type, code, quantity, instock, price, id_category, real_price, real_price_2, filterByRealPrice, care_time } = this.state;
     var options = [
   { value: 1 , label: 'Còn hàng' },
   { value: 0, label: 'Hết hàng' }
@@ -363,6 +367,18 @@ class Home extends Component {
                />
              </Col>
            </FormGroup>
+            <FormGroup >
+              <Col componentClass={ControlLabel} sm={2}>
+                Thời gian chăm sóc (ngày)
+              </Col>
+              <Col sm={10}>
+                <FormControl
+                  type="number"
+                  onChange={this.onChange.bind(this, 'care_time')}
+                  value={care_time}
+                />
+              </Col>
+            </FormGroup>
            <FormGroup >
              <Col componentClass={ControlLabel} sm={2}>
                Ảnh

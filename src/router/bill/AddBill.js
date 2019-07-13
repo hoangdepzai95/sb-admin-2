@@ -12,6 +12,7 @@ import AddProduct from '../product';
 import { receiveTotalBill, receiveBill } from '../../actions/fetchData';
 import { HOST, PER_PAGE } from '../../config';
 import Switch from 'rc-switch';
+import moment from 'moment'
 
 class AddBill extends Component {
   constructor(props) {
@@ -172,6 +173,11 @@ class AddBill extends Component {
     const { products, user, type, close, page, originBill, status } = this.props;
     const { addedCustomer } = this.state;
     const billInfo = _.cloneDeep(this.props.billInfo);
+
+    const minCaretime = _.min(products.map(product => product.care_time))
+
+    billInfo.care_time = minCaretime
+
     if (billInfo.address) {
       billInfo.address = this.trimAddress(billInfo.address);
     }
@@ -219,7 +225,8 @@ class AddBill extends Component {
           status_id: billInfo.status_id,
           facebook: billInfo.facebook,
           customer_name: billInfo.customer_name,
-          don_si: billInfo.don_si
+          don_si: billInfo.don_si,
+          care_time: billInfo.care_time
         },
         products: products.map((product) => {
           return { product_id: product.id, quantity: product.quantity, name: product.name };
@@ -228,7 +235,7 @@ class AddBill extends Component {
         origin_bill: originBill,
         user_full_name: user.full_name,
         origin_status_id: originBill.status_id,
-        write_log: originStatus.show_notify && user.role != 1 ? 1 : 0,
+        write_log: originStatus.show_notify && user.role != 1 ? 1 : 0
       })
         .then(
           (res) => {

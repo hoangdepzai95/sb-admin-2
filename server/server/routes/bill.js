@@ -6,6 +6,8 @@ const xlsx =  require('node-xlsx');
 const util = require('../../../util');
 const router = express.Router();
 const upload  = multer({ storage: multer.memoryStorage() });
+const moment = require('moment')
+
 
 const billSelectSql = `SELECT b.*, user.full_name AS user_name, customer.phone, status.name as status, status.color,
 district.color AS district_color, district.custom_id AS district_custom_id, province.custom_id AS province_custom_id,
@@ -19,7 +21,7 @@ LEFT JOIN district ON b.district_id = district.districtid
 LEFT JOIN province ON b.province_id = province.provinceid
 LEFT JOIN ward ON b.ward_id = ward.wardid`;
 
-const selectProductSql = `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category FROM bill_detail
+const selectProductSql = `SELECT bill_detail.bill_id, bill_detail.quantity, p.name, p.category, p.care_time FROM bill_detail
 INNER JOIN (SELECT product.*, product_category.category FROM product INNER JOIN product_category ON product.id_category = product_category.id) AS p ON bill_detail.product_id = p.id
 WHERE bill_detail.bill_id IN (?)`;
 
@@ -135,6 +137,10 @@ router.get('/search', (req, res) => {
     condition = `WHERE b.id = '${keywords}'`;
   } else if (type === 'duplicate') {
     condition = `WHERE b.duplicate = '2'`;
+  } else if (type === 'care') {
+    const now = moment().format('X')
+    condition = `WHERE (b.cared = '0' AND b.care_day < ${now})`;
+    console.log(condition)
   } else {
     condition = `WHERE customer.phone LIKE '%${keywords}%' OR b.facebook LIKE '%${keywords}%' OR b.code LIKE '%${keywords}%' OR b.customer_name LIKE '%${keywords}%'`;
   }
@@ -439,6 +445,9 @@ router.put('/duplicate/:id', (req, res) => {
 router.post('/', (req, res) => {
   const bill = req.body.bill_info;
   bill.create_at = (new Date()).valueOf();
+  if (_.trim(bill.code) && bill.care_time) {
+    bill.care_day = +moment().add(bill.care_time, 'days').format('X')
+  }
   pool.getConnection(function(err, con) {
     if (err) return res.status(400).send('Error');
     con.query(`SELECT * FROM bill WHERE customer_id = ${bill.customer_id}`, (error, result) => {
@@ -529,7 +538,7 @@ router.post('/excel', (req, res) => {
   res.end(buffer);
 });
 
-router.post('/excel/upload', upload.single('file'), (req, res) => {
+router.post('/excel/upload', upload.single('file'), async (req, res) => {
   const workSheetsFromBuffer = xlsx.parse(req.file.buffer);
   const bills = workSheetsFromBuffer[0].data;
   bills.shift();
@@ -545,7 +554,7 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
         const updated = [];
         let current_status_id;
         let stop = false;
-        bills.forEach((bill) => {
+        bills.forEach(async (bill) => {
           if (stop) return;
           const billStatus = status.find(o => o.name === _.trim(bill[2]));
           const statusId = billStatus ? billStatus.id : null;
@@ -559,7 +568,17 @@ router.post('/excel/upload', upload.single('file'), (req, res) => {
             stop = true;
             return;
           }
-          const value = [ { status_id: current_status_id, code: bill[1], real_shipping: bill[3] }, { id: bill[0] }];
+          const billCode = bill[1]
+          const billId = bill[0]
+          const value = [ { status_id: current_status_id, code: billCode, real_shipping: bill[3], cared: bill[4] || 0 }, { id: billId }];
+
+          if (billCode) {
+            const oldBill = await getBillById(billId)
+            if (oldBill.care_time) {
+              value[0].care_day = +moment().add(oldBill.care_time, 'days').format('X')
+            }
+          }
+
           con.query('UPDATE bill SET ? WHERE ?  ', value, (error, result) => {
           if (error) {
             console.log(error);
@@ -600,6 +619,10 @@ function getBillChanges(userName, oldBill, newBill) {
 router.put('/', async (req, res) => {
   const bill = req.body.bill_info;
   const oldBill = await getBillById(bill.id);
+
+  if (_.trim(bill.code) && !oldBill.code && oldBill.care_time) {
+    bill.care_day = +moment().add(oldBill.care_time, 'days').format('X')
+  }
  
   if (req.body.origin_status_id == 11 && bill.status_id != 11) {
     bill.user_id = req.body.user_id;

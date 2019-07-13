@@ -323,6 +323,7 @@ class Home extends Component {
         'Mã',
         'Trạng thái',
         'Giá cước',
+        'Chăm sóc',
         'Nhân viên',
         'Tên trên phiếu',
         'Facebook',
@@ -348,6 +349,7 @@ class Home extends Component {
           bill.code,
           bill.status,
           bill.real_shipping,
+          bill.cared,
           bill.user_name,
           bill.customer_name || bill.facebook || '',
           bill.facebook,
@@ -610,6 +612,9 @@ class Home extends Component {
   filterDuplicate() {
     this.onSearchBill('', 'duplicate');
   }
+  filterCare() {
+    this.onSearchBill('', 'care');
+  }
   handleChangeStart = (e) => {
     this.setState({ startDate: e , enableFilterDate: false });
 
@@ -742,6 +747,10 @@ class Home extends Component {
           <Col md={3}>
             <Button bsStyle="primary" onClick={this.filterDuplicate.bind(this)}>
               Lọc đơn trùng
+            </Button>
+            &nbsp;
+            <Button bsStyle="primary" onClick={this.filterCare.bind(this)}>
+              Lọc chăm sóc
             </Button>
             &nbsp;
             <Button bsStyle="warning" onClick={this.clearAll.bind(this)} id="clear-all">
