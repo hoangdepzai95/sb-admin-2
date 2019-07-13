@@ -127,8 +127,8 @@ app.use(function (err, req, res, next /* DON'T REMOVE THIS 'next' param*/) {
 
 const port = isProd ? 3000 : 3002;
 
-const server = http.createServer(app);
-const io = socketIo(server);
+const server2 = http.createServer(app);
+const io = socketIo(server2);
 
 app.set('socket', io);
 
@@ -142,6 +142,6 @@ io.on("connection", socket => {
 });
 
 
-server.listen(port, () => {
+server2.listen(port, () => {
   console.log(`The server is running at http://localhost:${port}/`);
 });
