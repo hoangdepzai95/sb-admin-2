@@ -8,7 +8,7 @@ function createPool() {
     host     : '103.63.109.151',
     user     : 'monty',
     password : 'Kidvn95123@',
-    database : isProd ? 'myapp' : 'hoang-app',
+    database : isProd ? 'myapp-2' : 'hoang-app',
     connectionLimit: 300,
   });
   return pool;

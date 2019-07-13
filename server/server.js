@@ -125,7 +125,7 @@ app.use(function (err, req, res, next /* DON'T REMOVE THIS 'next' param*/) {
     res.status(500).send('Something broke!');
 });
 
-const port = isProd ? 80 : 3002;
+const port = isProd ? 3000 : 3002;
 
 const server = http.createServer(app);
 const io = socketIo(server);
