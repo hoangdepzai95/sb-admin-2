@@ -11,7 +11,7 @@ import jwtDecode from 'jwt-decode';
 import Cookies from 'js-cookie'
 
 export function getUser(dispatch) {
-  const tooken = localStorage.getItem('access_token');
+  const tooken = getAccessToken()
   const info = JSON.parse(base64.Base64.decode(tooken.split('.')[1]));
   dispatch(receiveUser(info));
 }
