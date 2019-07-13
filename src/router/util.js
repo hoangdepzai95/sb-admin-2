@@ -8,6 +8,7 @@ import { receiveUser } from '../actions/fetchData';
 import socketIOClient from 'socket.io-client';
 import { API_ENDPOINT } from '../config';
 import jwtDecode from 'jwt-decode';
+import Cookies from 'js-cookie'
 
 export function getUser(dispatch) {
   const tooken = localStorage.getItem('access_token');
@@ -16,7 +17,7 @@ export function getUser(dispatch) {
 }
 
 export function isLogged() {
-  return !!localStorage.getItem('access_token');
+  return !!getAccessToken();
 }
 const IGNORE_ENDPOINT = [
   'threads?view=count&in=',
@@ -62,13 +63,13 @@ export function listenToAjax() {
       }
       origOpen.apply(this, arguments);
       if (!url.includes('socket.io')) {
-       this.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('access_token')}`);
+       this.setRequestHeader('Authorization', `Bearer ${getAccessToken()}`);
       }
   };
 }
 
 function getAccessToken() {
-  return localStorage.getItem('access_token') || '';
+  return Cookies.get('token')
 }
 
 function getTokenPayload() {
