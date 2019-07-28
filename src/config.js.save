@@ -1,0 +1,4 @@
+export const HOST = window.localtion.origin
+;
+export const API_ENDPOINT = `${HOST}/api`;
+export const PER_PAGE = 50;
