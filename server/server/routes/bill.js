@@ -30,7 +30,7 @@ function parseProducts(bills, products) {
   for (let bill of bills) {
     const billProducts = groupProduct[bill.id] || [];
     bill.products = billProducts || [];
-    bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}c) ` : ''}${product.name}`).join(', ');
+    bill.products_info = bill.products.map(product => `${product.quantity > 1 ? `(${product.quantity}) ` : ''}${product.name}`).join(', ');
   }
 
   return bills;
