@@ -5,7 +5,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "base-64": "^0.1.0",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.17.2",
     "compression": "^1.7.3",
     "cookie-parser": "^1.4.3",
