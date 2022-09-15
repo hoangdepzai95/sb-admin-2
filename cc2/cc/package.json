@@ -26,7 +26,7 @@
     "@ngx-translate/http-loader": "^2.0.0",
     "angular-in-memory-web-api": "^0.5.1",
     "animate.css": "^3.1.1",
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^3.4.1",
     "chart.js": "^2.7.1",
     "core-js": "^2.5.1",
     "font-awesome": "^4.7.0",
